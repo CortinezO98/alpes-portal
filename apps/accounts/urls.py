@@ -8,6 +8,8 @@ from .views import (
     UserDashboardView,
     UserLoginView,
     UserLogoutView,
+    UserManagementCreateView,
+    UserManagementListView,
 )
 
 
@@ -45,7 +47,16 @@ urlpatterns = [
         UserDashboardView.as_view(),
         name="user-dashboard",
     ),
-
+    path(
+        "usuarios/",
+        UserManagementListView.as_view(),
+        name="user-management-list",
+    ),
+    path(
+        "usuarios/nuevo/",
+        UserManagementCreateView.as_view(),
+        name="user-management-create",
+    ),
     path(
         "password/reset/",
         auth_views.PasswordResetView.as_view(
