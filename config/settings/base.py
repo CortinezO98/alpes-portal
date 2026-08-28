@@ -133,6 +133,7 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_ADAPTER = "apps.accounts.adapters.AlpesAccountAdapter"
+ACCOUNT_FORMS = {"signup": "apps.accounts.forms.PublicSignupForm"}
 SOCIALACCOUNT_ADAPTER = "apps.accounts.adapters.AlpesSocialAccountAdapter"
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = "mandatory"
