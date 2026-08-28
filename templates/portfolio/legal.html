@@ -1,0 +1,81 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}{{ seo_title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/portfolio.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/legal.css' %}">
+{% endblock %}
+
+{% block body %}
+<header class="public-header" data-public-header>
+    <div class="public-container public-header-inner">
+        <a class="public-brand" href="{% url 'portfolio:home' %}" aria-label="ALPES, volver al portafolio">
+            <span class="public-brand-mark" aria-hidden="true">A</span>
+            <span>
+                <strong>ALPES</strong>
+                <small>Coaching · Liderazgo · Transformación</small>
+            </span>
+        </a>
+        <nav class="public-nav legal-nav" aria-label="Navegación legal">
+            <a href="{% url 'portfolio:home' %}">Portafolio</a>
+            <a href="{% url 'portfolio:privacy' %}">Privacidad</a>
+            <a href="{% url 'portfolio:data-treatment' %}">Tratamiento de datos</a>
+            <a class="public-nav-login" href="{% url 'accounts:login' %}">Iniciar sesión</a>
+        </nav>
+    </div>
+</header>
+
+<main class="legal-main" id="inicio">
+    <section class="legal-hero">
+        <div class="public-container legal-hero-grid">
+            <div>
+                <p class="public-eyebrow">Privacidad y protección de datos</p>
+                <h1>{{ legal_page.title }}.</h1>
+            </div>
+            <div class="legal-status">
+                <span>Borrador operativo</span>
+                <p>{{ legal_page.intro }}</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="legal-content">
+        <div class="public-container legal-sections">
+            {% for title, text in legal_page.sections %}
+                <article>
+                    <span>0{{ forloop.counter }}</span>
+                    <div>
+                        <h2>{{ title }}</h2>
+                        <p>{{ text }}</p>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="legal-warning">
+        <div class="public-container legal-warning-inner">
+            <strong>Pendiente antes de producción</strong>
+            <p>
+                Deben completarse la identificación del responsable del tratamiento, datos de contacto formales,
+                procedimiento definitivo de consultas y reclamos y la aprobación jurídica del documento.
+            </p>
+        </div>
+    </section>
+</main>
+
+<footer class="public-footer">
+    <div class="public-container public-footer-inner">
+        <div>
+            <strong>ALPES</strong>
+            <p>Coaching Directivo, Liderazgo y Transformación.</p>
+        </div>
+        <div class="legal-footer-links">
+            <a href="{% url 'portfolio:privacy' %}">Privacidad</a>
+            <a href="{% url 'portfolio:data-treatment' %}">Tratamiento de datos</a>
+        </div>
+    </div>
+</footer>
+{% endblock %}
