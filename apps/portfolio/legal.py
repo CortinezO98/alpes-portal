@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.urls import reverse
 from django.views.generic import TemplateView
 
@@ -103,3 +104,21 @@ class PublicLegalView(TemplateView):
             }
         )
         return context
+
+
+def robots_txt(request):
+    sitemap_url = request.build_absolute_uri(reverse("portfolio:sitemap"))
+    content = "\n".join(
+        [
+            "User-agent: *",
+            "Allow: /",
+            "Disallow: /admin/",
+            "Disallow: /cuenta/",
+            "Disallow: /evaluaciones/",
+            "Disallow: /reportes/",
+            "Disallow: /auditoria/",
+            f"Sitemap: {sitemap_url}",
+            "",
+        ]
+    )
+    return HttpResponse(content, content_type="text/plain; charset=utf-8")
