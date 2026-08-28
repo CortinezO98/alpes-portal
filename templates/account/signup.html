@@ -8,36 +8,66 @@
 {% endblock %}
 
 {% block body %}
-<main class="auth-shell">
+<main class="auth-shell" id="inicio">
     <section class="auth-brand" aria-label="Identidad ALPES">
-        <div class="auth-brand-content">
-            <p class="auth-brand-mark">ALPES</p>
+        <div class="auth-brand-content animate__animated animate__fadeIn">
+            <a class="auth-brand-home" href="{% url 'portfolio:home' %}" aria-label="Volver al portafolio público de ALPES">
+                <span class="auth-brand-emblem" aria-hidden="true">A</span>
+                <span>
+                    <strong>ALPES</strong>
+                    <small>Volver al portafolio</small>
+                </span>
+            </a>
+
             <div>
                 <p class="auth-brand-kicker">Tu espacio ALPES</p>
-                <h1 class="auth-brand-title">Crea tu cuenta.</h1>
+                <h1 class="auth-brand-title">Empieza con una cuenta segura.</h1>
                 <p class="auth-brand-copy">
-                    Regístrate para acceder a los procesos y evaluaciones que sean asignados a tu cuenta.
+                    Regístrate para acceder únicamente a los procesos, evaluaciones y resultados
+                    que la administración asigne a tu perfil.
                 </p>
             </div>
-            <p class="auth-brand-copy">
-                El registro público crea únicamente una cuenta de usuario. Los accesos a servicios y evaluaciones son asignados por la administración.
+
+            <p class="auth-brand-note">
+                El registro público nunca concede permisos administrativos ni asigna servicios automáticamente.
             </p>
         </div>
     </section>
 
-    <section class="auth-panel">
-        <div class="auth-card">
-            <p class="auth-mobile-brand">ALPES</p>
-            <p class="auth-kicker">Registro</p>
-            <h2 class="auth-title">Comienza con tu correo.</h2>
-            <p class="auth-description">Después del registro deberás confirmar tu dirección de correo electrónico.</p>
+    <section class="auth-panel" aria-labelledby="signup-title">
+        <div class="auth-card animate__animated animate__fadeInUp">
+            <a class="auth-mobile-brand" href="{% url 'portfolio:home' %}" aria-label="Volver al portafolio público de ALPES">
+                <span class="auth-brand-emblem" aria-hidden="true">A</span>
+                <span>ALPES</span>
+                <span class="auth-home-arrow" aria-hidden="true">↗</span>
+            </a>
+
+            <div class="auth-heading">
+                <p class="auth-kicker">Crear cuenta</p>
+                <h2 class="auth-title" id="signup-title">Tu acceso comienza aquí.</h2>
+                <p class="auth-description">
+                    Puedes registrarte con Facebook o crear tu cuenta con correo electrónico.
+                    Si usas correo, te enviaremos un enlace de verificación.
+                </p>
+            </div>
 
             {% if facebook_auth_enabled %}
-                <form method="post" action="{% provider_login_url 'facebook' process='login' %}">
+                <form method="post" action="{% provider_login_url 'facebook' process='login' %}" class="auth-provider-form">
                     {% csrf_token %}
-                    <button class="button button-block" type="submit">Continuar con Facebook</button>
+                    <button class="auth-provider-button" type="submit">
+                        <span class="auth-facebook-icon" aria-hidden="true">f</span>
+                        <span>Continuar con Facebook</span>
+                    </button>
                 </form>
-                <p class="auth-description" aria-hidden="true">o crea tu cuenta con correo</p>
+
+                <div class="auth-divider" role="separator" aria-label="O crear cuenta con correo">
+                    <span>o crea tu cuenta con correo</span>
+                </div>
+            {% else %}
+                <div class="auth-method-label">
+                    <span class="auth-mail-icon" aria-hidden="true">@</span>
+                    <span>Crear cuenta con correo</span>
+                </div>
             {% endif %}
 
             {% if form.non_field_errors %}
@@ -52,15 +82,31 @@
                     <div class="form-field">
                         <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                         {{ field }}
-                        {% if field.help_text %}<div class="auth-description">{{ field.help_text|safe }}</div>{% endif %}
+                        {% if field.help_text %}
+                            <div class="auth-help">{{ field.help_text|safe }}</div>
+                        {% endif %}
                         {% for error in field.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
                     </div>
                 {% endfor %}
-                <button class="button button-primary button-block" type="submit">Crear cuenta</button>
+
+                <div class="auth-security-note">
+                    <span aria-hidden="true">✓</span>
+                    <p>Tu cuenta se crea como usuario estándar y requiere verificación de correo antes del acceso.</p>
+                </div>
+
+                <button class="button button-primary button-block auth-submit" type="submit">
+                    Crear cuenta con correo
+                </button>
             </form>
 
+            <div class="auth-account-switch">
+                <p>¿Ya tienes una cuenta?</p>
+                <a class="auth-secondary-action" href="{% url 'accounts:login' %}">Iniciar sesión</a>
+            </div>
+
             <footer class="auth-footer">
-                ¿Ya tienes una cuenta? <a class="auth-link" href="{% url 'accounts:login' %}">Iniciar sesión</a>
+                <span>Al continuar, tu acceso queda sujeto a los controles de seguridad de ALPES.</span>
+                <a class="auth-link" href="{% url 'portfolio:home' %}">Ir al portafolio público</a>
             </footer>
         </div>
     </section>
