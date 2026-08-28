@@ -11,7 +11,7 @@
 <section class="dashboard-header animate__animated animate__fadeInUp motion-soft">
     <p class="dashboard-eyebrow">Gestión de accesos</p>
     <h1 class="dashboard-title">Usuarios de la plataforma.</h1>
-    <p class="dashboard-description">Consulta las cuentas registradas y crea nuevos accesos con roles controlados.</p>
+    <p class="dashboard-description">Consulta las cuentas registradas y administra accesos con controles de privilegio.</p>
 </section>
 
 <div class="users-toolbar">
@@ -27,12 +27,18 @@
                 <th>Rol</th>
                 <th>Estado</th>
                 <th>Staff</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
             {% for user in users %}
                 <tr>
-                    <td>{{ user.email }}</td>
+                    <td>
+                        <strong>{{ user.email }}</strong>
+                        {% if user.pk == request.user.pk %}
+                            <span class="user-self-label">Tu cuenta</span>
+                        {% endif %}
+                    </td>
                     <td><span class="user-badge">{{ user.get_role_display }}</span></td>
                     <td>
                         {% if user.is_active %}
@@ -42,9 +48,24 @@
                         {% endif %}
                     </td>
                     <td>{{ user.is_staff|yesno:"Sí,No" }}</td>
+                    <td>
+                        {% if not user.is_superuser and user.role != "SUPERADMIN" %}
+                            <div class="user-actions">
+                                <a class="user-action-link" href="{% url 'accounts:user-management-edit' user.pk %}">Editar</a>
+                                <form method="post" action="{% url 'accounts:user-management-toggle-status' user.pk %}">
+                                    {% csrf_token %}
+                                    <button class="user-action-link user-action-button" type="submit">
+                                        {% if user.is_active %}Desactivar{% else %}Activar{% endif %}
+                                    </button>
+                                </form>
+                            </div>
+                        {% else %}
+                            <span class="user-protected">Protegido</span>
+                        {% endif %}
+                    </td>
                 </tr>
             {% empty %}
-                <tr><td colspan="4">No hay usuarios registrados.</td></tr>
+                <tr><td colspan="5">No hay usuarios registrados.</td></tr>
             {% endfor %}
         </tbody>
     </table>
