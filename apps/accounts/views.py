@@ -12,7 +12,6 @@ from apps.audit.services import (
     clear_attempts,
     is_rate_limited,
     record_attempt,
-    request_ip_hash,
     write_audit_event,
 )
 
@@ -38,27 +37,25 @@ class UserLoginView(LoginView):
             is_rate_limited(scope=scope, raw_key=raw_key)
             for scope, raw_key in keys.items()
         ):
+            request._login_rate_limited = True
             form = self.get_form()
             form.add_error(
                 None,
                 "Demasiados intentos. Intenta nuevamente en unos minutos.",
-            )
-            write_audit_event(
-                action=AuditEvent.Action.LOGIN_FAILURE,
-                request=request,
-                metadata={"rate_limited": True},
             )
             return self.form_invalid(form)
         return super().post(request, *args, **kwargs)
 
     def form_invalid(self, form):
         if self.request.method == "POST":
-            for scope, raw_key in self._rate_keys().items():
-                record_attempt(scope=scope, raw_key=raw_key)
+            limited = getattr(self.request, "_login_rate_limited", False)
+            if not limited:
+                for scope, raw_key in self._rate_keys().items():
+                    record_attempt(scope=scope, raw_key=raw_key)
             write_audit_event(
                 action=AuditEvent.Action.LOGIN_FAILURE,
                 request=self.request,
-                metadata={"rate_limited": False},
+                metadata={"rate_limited": limited},
             )
         return super().form_invalid(form)
 
