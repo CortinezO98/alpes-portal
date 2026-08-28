@@ -1,0 +1,35 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Confirma tu correo | ALPES{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}">
+{% endblock %}
+
+{% block body %}
+<main class="auth-shell">
+    <section class="auth-brand" aria-label="Identidad ALPES">
+        <div class="auth-brand-content">
+            <p class="auth-brand-mark">ALPES</p>
+            <div>
+                <p class="auth-brand-kicker">Seguridad de la cuenta</p>
+                <h1 class="auth-brand-title">Un paso antes de continuar.</h1>
+                <p class="auth-brand-copy">Confirmar tu correo nos ayuda a proteger tu identidad y mantener un acceso confiable a la plataforma.</p>
+            </div>
+            <p class="auth-brand-copy">No habilitamos servicios automáticamente: la administración asignará los procesos que correspondan a tu cuenta.</p>
+        </div>
+    </section>
+
+    <section class="auth-panel">
+        <div class="auth-card">
+            <p class="auth-mobile-brand">ALPES</p>
+            <p class="auth-kicker">Verificación</p>
+            <h2 class="auth-title">Revisa tu correo.</h2>
+            <p class="auth-description">Te enviamos un enlace para confirmar la dirección registrada. Ábrelo para completar la verificación de tu cuenta.</p>
+            <a class="button button-primary button-block" href="{% url 'accounts:login' %}">Volver al inicio de sesión</a>
+            <footer class="auth-footer">Si no encuentras el mensaje, revisa también la carpeta de correo no deseado.</footer>
+        </div>
+    </section>
+</main>
+{% endblock %}
