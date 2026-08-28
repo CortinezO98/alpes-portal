@@ -1,0 +1,43 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Confirmar correo | ALPES{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}">
+{% endblock %}
+
+{% block body %}
+<main class="auth-shell">
+    <section class="auth-brand" aria-label="Identidad ALPES">
+        <div class="auth-brand-content">
+            <p class="auth-brand-mark">ALPES</p>
+            <div>
+                <p class="auth-brand-kicker">Identidad verificada</p>
+                <h1 class="auth-brand-title">Protegemos tu acceso.</h1>
+                <p class="auth-brand-copy">La confirmación del correo vincula la cuenta con una dirección que puedes controlar.</p>
+            </div>
+            <p class="auth-brand-copy">Tu cuenta seguirá teniendo únicamente rol de usuario hasta que la administración asigne los servicios correspondientes.</p>
+        </div>
+    </section>
+
+    <section class="auth-panel">
+        <div class="auth-card">
+            <p class="auth-mobile-brand">ALPES</p>
+            <p class="auth-kicker">Confirmación</p>
+            {% if confirmation %}
+                <h2 class="auth-title">Confirma tu correo.</h2>
+                <p class="auth-description">Vas a confirmar <strong>{{ confirmation.email_address.email }}</strong> como correo de acceso a ALPES.</p>
+                <form method="post" class="auth-form">
+                    {% csrf_token %}
+                    <button class="button button-primary button-block" type="submit">Confirmar correo</button>
+                </form>
+            {% else %}
+                <h2 class="auth-title">El enlace ya no es válido.</h2>
+                <p class="auth-description">Solicita una nueva verificación desde el flujo de acceso para continuar.</p>
+                <a class="button button-primary button-block" href="{% url 'accounts:login' %}">Ir al inicio de sesión</a>
+            {% endif %}
+        </div>
+    </section>
+</main>
+{% endblock %}
