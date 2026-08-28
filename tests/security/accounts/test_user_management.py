@@ -77,3 +77,86 @@ def test_superadmin_role_cannot_be_created_from_management_form(client):
 
     assert response.status_code == 200
     assert not User.objects.filter(email="other-superadmin@example.com").exists()
+
+
+@pytest.mark.django_db
+def test_superadmin_can_edit_regular_user_and_sync_staff(client):
+    superadmin = User.objects.create_superuser(
+        email="superadmin@example.com",
+        password="SecurePass123!",
+    )
+    user = User.objects.create_user(
+        email="user@example.com",
+        password="SecurePass123!",
+        role=User.Role.USER,
+    )
+    client.force_login(superadmin)
+
+    response = client.post(
+        reverse("accounts:user-management-edit", args=[user.pk]),
+        {
+            "email": "admin-updated@example.com",
+            "role": User.Role.ADMIN,
+        },
+    )
+
+    assert response.status_code == 302
+    user.refresh_from_db()
+    assert user.email == "admin-updated@example.com"
+    assert user.role == User.Role.ADMIN
+    assert user.is_staff is True
+    assert user.is_superuser is False
+
+
+@pytest.mark.django_db
+def test_superadmin_account_cannot_be_edited_from_management(client):
+    superadmin = User.objects.create_superuser(
+        email="superadmin@example.com",
+        password="SecurePass123!",
+    )
+    client.force_login(superadmin)
+
+    response = client.get(
+        reverse("accounts:user-management-edit", args=[superadmin.pk])
+    )
+
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_superadmin_can_deactivate_regular_user(client):
+    superadmin = User.objects.create_superuser(
+        email="superadmin@example.com",
+        password="SecurePass123!",
+    )
+    user = User.objects.create_user(
+        email="user@example.com",
+        password="SecurePass123!",
+        role=User.Role.USER,
+    )
+    client.force_login(superadmin)
+
+    response = client.post(
+        reverse("accounts:user-management-toggle-status", args=[user.pk])
+    )
+
+    assert response.status_code == 302
+    user.refresh_from_db()
+    assert user.is_active is False
+
+
+@pytest.mark.django_db
+def test_superadmin_cannot_deactivate_own_account(client):
+    superadmin = User.objects.create_superuser(
+        email="superadmin@example.com",
+        password="SecurePass123!",
+    )
+    client.force_login(superadmin)
+
+    response = client.post(
+        reverse("accounts:user-management-toggle-status", args=[superadmin.pk])
+    )
+
+    assert response.status_code == 403
+    superadmin.refresh_from_db()
+    assert superadmin.is_active is True
