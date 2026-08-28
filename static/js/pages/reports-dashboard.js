@@ -12,6 +12,7 @@
         const scores = JSON.parse(scoresNode.textContent);
         const styles = getComputedStyle(document.documentElement);
         const primary = styles.getPropertyValue("--color-primary-700").trim() || "#58682f";
+        const text = styles.getPropertyValue("--color-text").trim() || "#29332d";
         const muted = styles.getPropertyValue("--color-text-muted").trim() || "#66736b";
         const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -22,17 +23,24 @@
                 datasets: [{
                     label: "Promedio",
                     data: scores,
-                    backgroundColor: "rgba(145, 170, 67, 0.34)",
+                    backgroundColor: "rgba(145, 170, 67, 0.30)",
                     borderColor: primary,
                     borderWidth: 1.5,
-                    borderRadius: 6,
-                    maxBarThickness: 46,
+                    borderRadius: 7,
+                    borderSkipped: false,
+                    maxBarThickness: 34,
                 }],
             },
             options: {
+                indexAxis: "y",
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: reduceMotion ? false : { duration: 550 },
+                animation: reduceMotion ? false : { duration: 500 },
+                layout: {
+                    padding: {
+                        right: 12,
+                    },
+                },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
@@ -42,24 +50,30 @@
                     },
                 },
                 scales: {
-                    y: {
+                    x: {
                         beginAtZero: true,
                         min: 0,
                         max: 10,
-                        ticks: { stepSize: 2, color: muted },
-                        grid: { color: "rgba(102, 115, 107, 0.14)" },
-                    },
-                    x: {
                         ticks: {
+                            stepSize: 2,
                             color: muted,
-                            maxRotation: 0,
+                        },
+                        grid: {
+                            color: "rgba(102, 115, 107, 0.12)",
+                        },
+                    },
+                    y: {
+                        ticks: {
+                            color: text,
                             autoSkip: false,
-                            callback(value) {
-                                const label = this.getLabelForValue(value);
-                                return label.length > 18 ? `${label.slice(0, 18)}…` : label;
+                            font: {
+                                size: 11,
+                                weight: "600",
                             },
                         },
-                        grid: { display: false },
+                        grid: {
+                            display: false,
+                        },
                     },
                 },
             },
