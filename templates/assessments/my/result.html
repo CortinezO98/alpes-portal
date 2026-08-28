@@ -11,20 +11,63 @@
 <section class="dashboard-header animate__animated animate__fadeInUp motion-soft">
     <p class="dashboard-eyebrow">Resultados</p>
     <h1 class="dashboard-title">Tu Rueda de la Vida ALPES.</h1>
-    <p class="dashboard-description">Este resumen muestra el promedio obtenido en cada dimensión. La visualización radar se incorporará sobre esta misma base.</p>
+    <p class="dashboard-description">
+        Visualiza el equilibrio de tus ocho dimensiones y revisa el promedio obtenido en cada una.
+        Esta lectura funciona como punto de partida para tu proceso de reflexión y acompañamiento.
+    </p>
 </section>
 
-<section class="result-grid" aria-label="Promedios por dimensión">
-    {% for dimension in dimensions %}
-        <article class="result-card animate__animated animate__fadeInUp motion-card">
-            <span class="result-order">{{ forloop.counter|stringformat:"02d" }}</span>
-            <h2>{{ dimension.name }}</h2>
-            <strong class="result-score">{{ dimension.average_score|floatformat:1 }}<span>/10</span></strong>
-        </article>
-    {% endfor %}
+<section class="result-overview animate__animated animate__fadeInUp motion-card" aria-labelledby="radar-title">
+    <div class="result-overview-copy">
+        <p class="dashboard-eyebrow">Vista integral</p>
+        <h2 id="radar-title" class="result-overview-title">Tu mapa de equilibrio.</h2>
+        <p>
+            Cuanto más se acerca una dimensión al borde exterior, mayor es su valoración actual.
+            El gráfico no representa un diagnóstico: muestra cómo percibes hoy cada área de tu vida.
+        </p>
+    </div>
+
+    <div class="result-chart-wrap">
+        <canvas
+            id="alpes-radar-chart"
+            role="img"
+            aria-label="Gráfico radar con los resultados de las ocho dimensiones de la evaluación ALPES"
+        ></canvas>
+        <p id="radar-fallback" class="result-chart-fallback" hidden>
+            No fue posible cargar la visualización. Los resultados numéricos permanecen disponibles debajo.
+        </p>
+    </div>
 </section>
+
+<section class="result-section" aria-labelledby="dimension-results-title">
+    <div class="result-section-head">
+        <div>
+            <p class="dashboard-eyebrow">Detalle</p>
+            <h2 id="dimension-results-title" class="result-section-title">Promedios por dimensión.</h2>
+        </div>
+        <p class="result-section-note">Escala de 1 a 10</p>
+    </div>
+
+    <div class="result-grid" aria-label="Promedios por dimensión">
+        {% for dimension in dimensions %}
+            <article class="result-card animate__animated animate__fadeInUp motion-card">
+                <span class="result-order">{{ forloop.counter|stringformat:"02d" }}</span>
+                <h3>{{ dimension.name }}</h3>
+                <strong class="result-score">{{ dimension.average_score|floatformat:1 }}<span>/10</span></strong>
+            </article>
+        {% endfor %}
+    </div>
+</section>
+
+{{ radar_labels|json_script:"alpes-radar-labels" }}
+{{ radar_scores|json_script:"alpes-radar-scores" }}
 
 <div class="assessment-runner-actions">
     <a class="button button-secondary" href="{% url 'assessments:my-list' %}">Volver a mis evaluaciones</a>
 </div>
+{% endblock %}
+
+{% block dashboard_extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+<script src="{% static 'js/pages/assessment-result.js' %}" defer></script>
 {% endblock %}
