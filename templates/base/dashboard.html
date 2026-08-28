@@ -21,10 +21,11 @@
                 <p class="app-nav-section">Plataforma</p>
                 {% if request.user.role == 'ADMIN' or request.user.role == 'SUPERADMIN' or request.user.is_superuser %}
                     <a class="app-nav-link" href="{% url 'assessments:management-list' %}">Evaluaciones</a>
+                    <a class="app-nav-link" href="{% url 'reports:dashboard' %}">Reportes</a>
                 {% else %}
                     <a class="app-nav-link" href="{% url 'assessments:my-list' %}">Mis evaluaciones</a>
+                    <span class="app-nav-link">Reportes</span>
                 {% endif %}
-                <span class="app-nav-link">Reportes</span>
                 {% if request.user.is_superuser or request.user.role == 'SUPERADMIN' %}
                     <a class="app-nav-link" href="{% url 'accounts:user-management-list' %}">
                         Usuarios
