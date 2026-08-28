@@ -30,6 +30,10 @@ FACEBOOK_APP_ID = env("FACEBOOK_APP_ID", default="").strip()
 FACEBOOK_APP_SECRET = env("FACEBOOK_APP_SECRET", default="").strip()
 FACEBOOK_AUTH_ENABLED = bool(FACEBOOK_APP_ID and FACEBOOK_APP_SECRET)
 
+GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID", default="").strip()
+GOOGLE_CLIENT_SECRET = env("GOOGLE_CLIENT_SECRET", default="").strip()
+GOOGLE_AUTH_ENABLED = bool(GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET)
+
 EMAIL_HOST = env("EMAIL_HOST", default="").strip()
 EMAIL_PORT = env.int("EMAIL_PORT", default=587)
 EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="").strip()
@@ -58,6 +62,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.facebook",
+    "allauth.socialaccount.providers.google",
 
     "apps.core.apps.CoreConfig",
     "apps.accounts.apps.AccountsConfig",
@@ -160,12 +165,22 @@ SOCIALACCOUNT_PROVIDERS = {
     "facebook": {
         "SCOPE": ["email", "public_profile"],
         "FIELDS": ["id", "email", "name", "first_name", "last_name"],
-    }
+    },
+    "google": {
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online"},
+    },
 }
 if FACEBOOK_AUTH_ENABLED:
     SOCIALACCOUNT_PROVIDERS["facebook"]["APP"] = {
         "client_id": FACEBOOK_APP_ID,
         "secret": FACEBOOK_APP_SECRET,
+        "key": "",
+    }
+if GOOGLE_AUTH_ENABLED:
+    SOCIALACCOUNT_PROVIDERS["google"]["APP"] = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "secret": GOOGLE_CLIENT_SECRET,
         "key": "",
     }
 
