@@ -1,3 +1,4 @@
+from allauth.account.forms import SignupForm
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
@@ -27,6 +28,45 @@ class EmailAuthenticationForm(AuthenticationForm):
             }
         ),
     )
+
+    def confirm_login_allowed(self, user):
+        super().confirm_login_allowed(user)
+
+        from allauth.account.models import EmailAddress
+
+        email_record = EmailAddress.objects.filter(user=user, email__iexact=user.email).first()
+        if email_record is not None and not email_record.verified:
+            raise forms.ValidationError(
+                "Confirma tu correo electrónico antes de iniciar sesión.",
+                code="email_not_verified",
+            )
+
+
+class PublicSignupForm(SignupForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].label = "Correo electrónico"
+        self.fields["email"].widget.attrs.update(
+            {
+                "class": "form-control",
+                "autocomplete": "email",
+                "placeholder": "nombre@correo.com",
+            }
+        )
+        self.fields["password1"].label = "Contraseña"
+        self.fields["password1"].widget.attrs.update(
+            {
+                "class": "form-control",
+                "autocomplete": "new-password",
+            }
+        )
+        self.fields["password2"].label = "Confirmar contraseña"
+        self.fields["password2"].widget.attrs.update(
+            {
+                "class": "form-control",
+                "autocomplete": "new-password",
+            }
+        )
 
 
 class UserCreateForm(UserCreationForm):
