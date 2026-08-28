@@ -1,27 +1,92 @@
-<!doctype html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1"
-    >
-    <title>Iniciar sesión | ALPES</title>
-</head>
+{% extends "base/base.html" %}
+{% load static %}
 
-<body>
-    <main>
-        <h1>Iniciar sesión</h1>
+{% block title %}Iniciar sesión | ALPES{% endblock %}
 
-        <form method="post">
-            {% csrf_token %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}">
+{% endblock %}
 
-            {{ form.as_p }}
+{% block body %}
+<main class="auth-shell">
+    <section class="auth-brand" aria-label="Identidad ALPES">
+        <div class="auth-brand-content">
+            <p class="auth-brand-mark">ALPES</p>
 
-            <button type="submit">
-                Ingresar
-            </button>
-        </form>
-    </main>
-</body>
-</html>
+            <div>
+                <p class="auth-brand-kicker">Liderazgo · Propósito · Bienestar</p>
+                <h1 class="auth-brand-title">Transformar con sentido.</h1>
+                <p class="auth-brand-copy">
+                    Un espacio para acompañar procesos de liderazgo, desarrollo humano
+                    y bienestar con una mirada integral, consciente y estratégica.
+                </p>
+            </div>
+
+            <p class="auth-brand-copy">
+                Plataforma privada de acompañamiento y evaluación ALPES.
+            </p>
+        </div>
+    </section>
+
+    <section class="auth-panel">
+        <div class="auth-card">
+            <p class="auth-mobile-brand">ALPES</p>
+            <p class="auth-kicker">Acceso privado</p>
+            <h2 class="auth-title">Bienvenido de nuevo.</h2>
+            <p class="auth-description">
+                Ingresa con el correo asociado a tu cuenta para continuar.
+            </p>
+
+            {% if form.non_field_errors %}
+                <div class="alert-error" role="alert">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" class="auth-form" novalidate>
+                {% csrf_token %}
+
+                <div class="form-field">
+                    <label class="form-label" for="{{ form.username.id_for_label }}">
+                        {{ form.username.label }}
+                    </label>
+                    {{ form.username }}
+                    {% for error in form.username.errors %}
+                        <p class="form-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label" for="{{ form.password.id_for_label }}">
+                        {{ form.password.label }}
+                    </label>
+                    {{ form.password }}
+                    {% for error in form.password.errors %}
+                        <p class="form-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
+
+                <div class="auth-actions">
+                    <a class="auth-link" href="{% url 'accounts:password-reset' %}">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
+
+                <button class="button button-primary button-block" type="submit">
+                    Ingresar
+                </button>
+            </form>
+
+            <footer class="auth-footer">
+                Acceso protegido. Si necesitas soporte, contacta al administrador de la plataforma.
+            </footer>
+        </div>
+    </section>
+</main>
+{% endblock %}
