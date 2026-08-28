@@ -10,6 +10,7 @@ class AlpesAccountAdapter(DefaultAccountAdapter):
         user.role = User.Role.USER
         user.is_staff = False
         user.is_superuser = False
+        user.email_verification_required = True
         if commit:
             user.save()
         return user
@@ -29,5 +30,6 @@ class AlpesSocialAccountAdapter(DefaultSocialAccountAdapter):
         user.role = User.Role.USER
         user.is_staff = False
         user.is_superuser = False
+        user.email_verification_required = True
         user = super().save_user(request, sociallogin, form=form)
         return user
