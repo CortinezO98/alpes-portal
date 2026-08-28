@@ -25,7 +25,7 @@ class AnalyticsDashboardView(
             "created_by",
         ).order_by("-created_at")
 
-        self.filter_form = AnalyticsFilterForm(self.request.GET or None)
+        self.filter_form = AnalyticsFilterForm(self.request.GET)
         if not self.filter_form.is_valid():
             return queryset.none()
 
