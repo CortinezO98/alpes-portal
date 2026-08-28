@@ -1,12 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
-from django.shortcuts import redirect
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import CreateView, ListView, TemplateView
+from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
-from .forms import EmailAuthenticationForm, UserCreateForm
+from .forms import EmailAuthenticationForm, UserCreateForm, UserUpdateForm
 from .mixins import RoleRequiredMixin
 from .models import User
 
@@ -105,3 +106,53 @@ class UserManagementCreateView(
             "La cuenta fue creada correctamente.",
         )
         return response
+
+
+class UserManagementUpdateView(
+    LoginRequiredMixin,
+    RoleRequiredMixin,
+    UpdateView,
+):
+    template_name = "accounts/users/edit.html"
+    form_class = UserUpdateForm
+    model = User
+    success_url = reverse_lazy("accounts:user-management-list")
+    allowed_roles = (User.Role.SUPERADMIN,)
+
+    def get_object(self, queryset=None):
+        user = super().get_object(queryset)
+        if user.is_superuser or user.role == User.Role.SUPERADMIN:
+            raise PermissionDenied
+        return user
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            "La cuenta fue actualizada correctamente.",
+        )
+        return response
+
+
+class UserManagementToggleStatusView(
+    LoginRequiredMixin,
+    RoleRequiredMixin,
+    View,
+):
+    allowed_roles = (User.Role.SUPERADMIN,)
+
+    def post(self, request, pk, *args, **kwargs):
+        user = get_object_or_404(User, pk=pk)
+
+        if user.pk == request.user.pk:
+            raise PermissionDenied
+
+        if user.is_superuser or user.role == User.Role.SUPERADMIN:
+            raise PermissionDenied
+
+        user.is_active = not user.is_active
+        user.save(update_fields=("is_active",))
+
+        state = "activada" if user.is_active else "desactivada"
+        messages.success(request, f"La cuenta fue {state} correctamente.")
+        return redirect("accounts:user-management-list")
