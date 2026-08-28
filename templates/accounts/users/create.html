@@ -1,0 +1,40 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Crear usuario | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/users.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="dashboard-header animate__animated animate__fadeInUp motion-soft">
+    <p class="dashboard-eyebrow">Gestión de accesos</p>
+    <h1 class="dashboard-title">Crear una nueva cuenta.</h1>
+    <p class="dashboard-description">Crea accesos de administrador o usuario. La creación de nuevas cuentas superadministradoras no está habilitada desde esta interfaz.</p>
+</section>
+
+<section class="user-form-card animate__animated animate__fadeInUp motion-card">
+    {% if form.non_field_errors %}
+        <div class="alert-error" role="alert">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <form method="post" class="user-form-grid" novalidate>
+        {% csrf_token %}
+
+        {% for field in form %}
+            <div class="form-field">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<p class="form-help">{{ field.help_text|safe }}</p>{% endif %}
+                {% for error in field.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+
+        <div class="user-form-actions">
+            <button class="button button-primary" type="submit">Crear usuario</button>
+            <a class="button button-secondary" href="{% url 'accounts:user-management-list' %}">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}
