@@ -112,7 +112,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="assessment",
-            index=models.Index(fields=["participant", "status"], name="assessment_participant_status_idx"),
+            index=models.Index(fields=["participant", "status"], name="assess_part_status_idx"),
         ),
         migrations.AddConstraint(
             model_name="answer",
