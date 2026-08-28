@@ -1,0 +1,30 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Resultados | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/assessments.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="dashboard-header animate__animated animate__fadeInUp motion-soft">
+    <p class="dashboard-eyebrow">Resultados</p>
+    <h1 class="dashboard-title">Tu Rueda de la Vida ALPES.</h1>
+    <p class="dashboard-description">Este resumen muestra el promedio obtenido en cada dimensión. La visualización radar se incorporará sobre esta misma base.</p>
+</section>
+
+<section class="result-grid" aria-label="Promedios por dimensión">
+    {% for dimension in dimensions %}
+        <article class="result-card animate__animated animate__fadeInUp motion-card">
+            <span class="result-order">{{ forloop.counter|stringformat:"02d" }}</span>
+            <h2>{{ dimension.name }}</h2>
+            <strong class="result-score">{{ dimension.average_score|floatformat:1 }}<span>/10</span></strong>
+        </article>
+    {% endfor %}
+</section>
+
+<div class="assessment-runner-actions">
+    <a class="button button-secondary" href="{% url 'assessments:my-list' %}">Volver a mis evaluaciones</a>
+</div>
+{% endblock %}
