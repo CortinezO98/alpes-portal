@@ -34,9 +34,9 @@
         <div>
             <p class="dashboard-card-kicker">Resultados</p>
             <h2 class="dashboard-card-title">Reportes</h2>
-            <p class="dashboard-card-copy">Accede a los resultados consolidados y reportes disponibles.</p>
+            <p class="dashboard-card-copy">Accede a indicadores agregados y resultados individuales de las evaluaciones.</p>
         </div>
-        <span class="dashboard-card-action">Próximamente</span>
+        <a class="dashboard-card-action" href="{% url 'reports:dashboard' %}">Ver reportes</a>
     </article>
 </section>
 {% endblock %}
