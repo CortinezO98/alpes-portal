@@ -1,0 +1,68 @@
+{% extends "base/base.html" %}
+{% load static socialaccount %}
+
+{% block title %}Crear cuenta | ALPES{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}">
+{% endblock %}
+
+{% block body %}
+<main class="auth-shell">
+    <section class="auth-brand" aria-label="Identidad ALPES">
+        <div class="auth-brand-content">
+            <p class="auth-brand-mark">ALPES</p>
+            <div>
+                <p class="auth-brand-kicker">Tu espacio ALPES</p>
+                <h1 class="auth-brand-title">Crea tu cuenta.</h1>
+                <p class="auth-brand-copy">
+                    Regístrate para acceder a los procesos y evaluaciones que sean asignados a tu cuenta.
+                </p>
+            </div>
+            <p class="auth-brand-copy">
+                El registro público crea únicamente una cuenta de usuario. Los accesos a servicios y evaluaciones son asignados por la administración.
+            </p>
+        </div>
+    </section>
+
+    <section class="auth-panel">
+        <div class="auth-card">
+            <p class="auth-mobile-brand">ALPES</p>
+            <p class="auth-kicker">Registro</p>
+            <h2 class="auth-title">Comienza con tu correo.</h2>
+            <p class="auth-description">Después del registro deberás confirmar tu dirección de correo electrónico.</p>
+
+            {% if facebook_auth_enabled %}
+                <form method="post" action="{% provider_login_url 'facebook' process='login' %}">
+                    {% csrf_token %}
+                    <button class="button button-block" type="submit">Continuar con Facebook</button>
+                </form>
+                <p class="auth-description" aria-hidden="true">o crea tu cuenta con correo</p>
+            {% endif %}
+
+            {% if form.non_field_errors %}
+                <div class="alert-error" role="alert">
+                    {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" class="auth-form" novalidate>
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="form-field">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}<div class="auth-description">{{ field.help_text|safe }}</div>{% endif %}
+                        {% for error in field.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                    </div>
+                {% endfor %}
+                <button class="button button-primary button-block" type="submit">Crear cuenta</button>
+            </form>
+
+            <footer class="auth-footer">
+                ¿Ya tienes una cuenta? <a class="auth-link" href="{% url 'accounts:login' %}">Iniciar sesión</a>
+            </footer>
+        </div>
+    </section>
+</main>
+{% endblock %}
