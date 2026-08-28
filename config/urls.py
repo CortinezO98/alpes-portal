@@ -12,4 +12,8 @@ urlpatterns = [
         "evaluaciones/",
         include("apps.assessments.urls"),
     ),
+    path(
+        "reportes/",
+        include("apps.reports.urls"),
+    ),
 ]

@@ -1,0 +1,117 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Reportes y analítica | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/reports.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="dashboard-header animate__animated animate__fadeInUp motion-soft">
+    <p class="dashboard-eyebrow">Analítica</p>
+    <h1 class="dashboard-title">Panorama de evaluaciones.</h1>
+    <p class="dashboard-description">
+        Revisa avance, finalización y comportamiento general de las dimensiones ALPES con filtros operativos.
+    </p>
+</section>
+
+<form method="get" class="report-filters" aria-label="Filtros de reportes">
+    <div class="report-filter-grid">
+        {% for field in filter_form %}
+            <div class="form-field">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+    {% if filter_form.non_field_errors %}
+        <div class="alert-error" role="alert">{{ filter_form.non_field_errors }}</div>
+    {% endif %}
+    <div class="report-filter-actions">
+        <button class="button button-primary" type="submit">Aplicar filtros</button>
+        <a class="button button-secondary" href="{% url 'reports:dashboard' %}">Limpiar</a>
+    </div>
+</form>
+
+<section class="report-kpi-grid" aria-label="Indicadores generales">
+    <article class="report-kpi"><span>Total</span><strong>{{ total_assessments }}</strong><small>evaluaciones filtradas</small></article>
+    <article class="report-kpi"><span>Completadas</span><strong>{{ completed_count }}</strong><small>{{ completion_rate }}% de finalización</small></article>
+    <article class="report-kpi"><span>En progreso</span><strong>{{ in_progress_count }}</strong><small>procesos activos</small></article>
+    <article class="report-kpi"><span>Borrador</span><strong>{{ draft_count }}</strong><small>aún sin iniciar</small></article>
+</section>
+
+<section class="report-insights-grid">
+    <article class="report-chart-card animate__animated animate__fadeInUp motion-card">
+        <div class="report-card-head">
+            <div>
+                <p class="dashboard-eyebrow">Resultado agregado</p>
+                <h2>Promedio por dimensión.</h2>
+            </div>
+            <span>Escala 1–10</span>
+        </div>
+        {% if dimension_averages %}
+            <div class="report-chart-wrap"><canvas id="reports-dimension-chart" aria-label="Promedio agregado por dimensión ALPES"></canvas></div>
+        {% else %}
+            <div class="report-empty">Aún no hay evaluaciones completadas para los filtros seleccionados.</div>
+        {% endif %}
+    </article>
+
+    <aside class="report-highlight-stack">
+        <article class="report-highlight">
+            <span>Dimensión más alta</span>
+            {% if highest_dimension %}
+                <strong>{{ highest_dimension.name }}</strong>
+                <small>{{ highest_dimension.average_score|floatformat:1 }}/10</small>
+            {% else %}
+                <strong>Sin datos</strong>
+            {% endif %}
+        </article>
+        <article class="report-highlight">
+            <span>Dimensión con mayor oportunidad</span>
+            {% if lowest_dimension %}
+                <strong>{{ lowest_dimension.name }}</strong>
+                <small>{{ lowest_dimension.average_score|floatformat:1 }}/10</small>
+            {% else %}
+                <strong>Sin datos</strong>
+            {% endif %}
+        </article>
+    </aside>
+</section>
+
+<section class="report-table-section" aria-labelledby="recent-assessments-title">
+    <div class="report-card-head">
+        <div>
+            <p class="dashboard-eyebrow">Seguimiento</p>
+            <h2 id="recent-assessments-title">Evaluaciones recientes.</h2>
+        </div>
+    </div>
+    <div class="report-table-wrap">
+        <table class="report-table">
+            <thead><tr><th>Participante</th><th>Plantilla</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
+            <tbody>
+                {% for assessment in assessments %}
+                    <tr>
+                        <td>{{ assessment.participant.email }}</td>
+                        <td>{{ assessment.template.name }}</td>
+                        <td><span class="assessment-status assessment-status-{{ assessment.status|lower }}">{{ assessment.get_status_display }}</span></td>
+                        <td>{{ assessment.created_at|date:"d/m/Y" }}</td>
+                        <td><a class="report-link" href="{% url 'reports:assessment-detail' assessment.pk %}">Ver detalle</a></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5">No hay evaluaciones para los filtros seleccionados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{{ chart_labels|json_script:"reports-chart-labels" }}
+{{ chart_scores|json_script:"reports-chart-scores" }}
+{% endblock %}
+
+{% block dashboard_extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+<script src="{% static 'js/pages/reports-dashboard.js' %}" defer></script>
+{% endblock %}

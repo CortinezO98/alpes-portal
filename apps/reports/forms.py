@@ -1,0 +1,44 @@
+from django import forms
+
+from apps.accounts.models import User
+from apps.assessments.models import Assessment
+
+
+class AnalyticsFilterForm(forms.Form):
+    status = forms.ChoiceField(
+        label="Estado",
+        required=False,
+        choices=(("", "Todos los estados"), *Assessment.Status.choices),
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    participant = forms.ModelChoiceField(
+        label="Participante",
+        required=False,
+        queryset=User.objects.none(),
+        empty_label="Todos los participantes",
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    date_from = forms.DateField(
+        label="Desde",
+        required=False,
+        widget=forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+    )
+    date_to = forms.DateField(
+        label="Hasta",
+        required=False,
+        widget=forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["participant"].queryset = User.objects.filter(
+            role=User.Role.USER,
+        ).order_by("email")
+
+    def clean(self):
+        cleaned = super().clean()
+        date_from = cleaned.get("date_from")
+        date_to = cleaned.get("date_to")
+        if date_from and date_to and date_from > date_to:
+            raise forms.ValidationError("La fecha inicial no puede ser posterior a la fecha final.")
+        return cleaned

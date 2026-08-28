@@ -1,0 +1,78 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Detalle de evaluación | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/assessments.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/reports.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="dashboard-header animate__animated animate__fadeInUp motion-soft">
+    <p class="dashboard-eyebrow">Reporte individual</p>
+    <h1 class="dashboard-title">Resultado de {{ assessment.participant.email }}.</h1>
+    <p class="dashboard-description">
+        {{ assessment.template.name }} · {{ assessment.get_status_display }} · asignada el {{ assessment.created_at|date:"d/m/Y" }}.
+    </p>
+</section>
+
+<section class="report-detail-meta">
+    <article><span>Participante</span><strong>{{ assessment.participant.email }}</strong></article>
+    <article><span>Estado</span><strong>{{ assessment.get_status_display }}</strong></article>
+    <article><span>Inicio</span><strong>{{ assessment.started_at|date:"d/m/Y H:i"|default:"Sin iniciar" }}</strong></article>
+    <article><span>Finalización</span><strong>{{ assessment.completed_at|date:"d/m/Y H:i"|default:"Pendiente" }}</strong></article>
+</section>
+
+{% if assessment.status == 'COMPLETED' %}
+<section class="result-overview animate__animated animate__fadeInUp motion-card" aria-labelledby="report-radar-title">
+    <div class="result-overview-copy">
+        <p class="dashboard-eyebrow">Vista integral</p>
+        <h2 id="report-radar-title" class="result-overview-title">Rueda de la Vida.</h2>
+        <p>Esta visualización resume los promedios obtenidos por el participante en las ocho dimensiones evaluadas.</p>
+    </div>
+    <div class="result-chart-wrap">
+        <canvas id="alpes-radar-chart" role="img" aria-label="Gráfico radar del resultado individual ALPES"></canvas>
+        <p id="radar-fallback" class="result-chart-fallback" hidden>No fue posible cargar la visualización.</p>
+    </div>
+</section>
+
+<section class="result-section">
+    <div class="result-section-head"><div><p class="dashboard-eyebrow">Detalle</p><h2 class="result-section-title">Promedios por dimensión.</h2></div></div>
+    <div class="result-grid">
+        {% for dimension in dimensions %}
+            <article class="result-card">
+                <span class="result-order">{{ forloop.counter|stringformat:"02d" }}</span>
+                <h3>{{ dimension.name }}</h3>
+                <strong class="result-score">{{ dimension.average_score|floatformat:1 }}<span>/10</span></strong>
+            </article>
+        {% endfor %}
+    </div>
+</section>
+
+{% if general_answers %}
+<section class="report-open-answers">
+    <div class="report-card-head"><div><p class="dashboard-eyebrow">Respuestas abiertas</p><h2>Lectura cualitativa.</h2></div></div>
+    <div class="report-answer-list">
+        {% for answer in general_answers %}
+            <article class="report-answer"><h3>{{ answer.question.text }}</h3><p>{{ answer.text|default:"Sin respuesta" }}</p></article>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{{ radar_labels|json_script:"alpes-radar-labels" }}
+{{ radar_scores|json_script:"alpes-radar-scores" }}
+{% else %}
+<div class="report-empty">Esta evaluación todavía no está completada. El resultado individual estará disponible al finalizar el proceso.</div>
+{% endif %}
+
+<div class="assessment-runner-actions"><a class="button button-secondary" href="{% url 'reports:dashboard' %}">Volver a reportes</a></div>
+{% endblock %}
+
+{% block dashboard_extra_js %}
+{% if assessment.status == 'COMPLETED' %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+<script src="{% static 'js/pages/assessment-result.js' %}" defer></script>
+{% endif %}
+{% endblock %}
