@@ -1,0 +1,52 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Usuarios | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/users.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="dashboard-header animate__animated animate__fadeInUp motion-soft">
+    <p class="dashboard-eyebrow">Gestión de accesos</p>
+    <h1 class="dashboard-title">Usuarios de la plataforma.</h1>
+    <p class="dashboard-description">Consulta las cuentas registradas y crea nuevos accesos con roles controlados.</p>
+</section>
+
+<div class="users-toolbar">
+    <p class="dashboard-description">{{ page_obj.paginator.count }} cuenta{{ page_obj.paginator.count|pluralize }} registrada{{ page_obj.paginator.count|pluralize }}.</p>
+    <a class="button button-primary" href="{% url 'accounts:user-management-create' %}">Crear usuario</a>
+</div>
+
+<div class="users-table-wrap animate__animated animate__fadeInUp motion-card">
+    <table class="users-table">
+        <thead>
+            <tr>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Staff</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.email }}</td>
+                    <td><span class="user-badge">{{ user.get_role_display }}</span></td>
+                    <td>
+                        {% if user.is_active %}
+                            <span class="user-status user-status-active">Activo</span>
+                        {% else %}
+                            <span class="user-status user-status-inactive">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.is_staff|yesno:"Sí,No" }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4">No hay usuarios registrados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
