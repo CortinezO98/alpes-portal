@@ -39,64 +39,6 @@
         "https://wa.me/573107426028?text=Hola%2C%20quisiera%20conocer%20m%C3%A1s%20sobre%20los%20servicios%20ALPES.";
 
     if (!document.querySelector("[data-whatsapp-float]")) {
-        const style = document.createElement("style");
-        style.textContent = `
-            .public-whatsapp-float {
-                position: fixed;
-                right: max(1.15rem, env(safe-area-inset-right));
-                bottom: max(1.15rem, env(safe-area-inset-bottom));
-                z-index: 45;
-                display: grid;
-                width: 3.5rem;
-                height: 3.5rem;
-                place-items: center;
-                border: 1px solid rgba(255, 255, 255, .32);
-                border-radius: 50%;
-                background: #25d366;
-                color: #fff;
-                box-shadow: 0 12px 28px rgba(41, 51, 45, .18);
-                text-decoration: none;
-                transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
-            }
-            .public-whatsapp-float:hover,
-            .public-whatsapp-float:focus-visible {
-                transform: translateY(-2px);
-                background: #20bd5a;
-                box-shadow: 0 16px 34px rgba(41, 51, 45, .22);
-            }
-            .public-whatsapp-float:focus-visible {
-                outline: 3px solid rgba(88, 104, 47, .28);
-                outline-offset: 3px;
-            }
-            .public-whatsapp-float svg {
-                width: 1.75rem;
-                height: 1.75rem;
-                fill: currentColor;
-            }
-            @media (max-width: 36rem) {
-                .public-whatsapp-float {
-                    right: max(.85rem, env(safe-area-inset-right));
-                    bottom: max(.85rem, env(safe-area-inset-bottom));
-                    width: 3.15rem;
-                    height: 3.15rem;
-                }
-                .public-whatsapp-float svg {
-                    width: 1.55rem;
-                    height: 1.55rem;
-                }
-            }
-            @media (prefers-reduced-motion: reduce) {
-                .public-whatsapp-float {
-                    transition: none;
-                }
-                .public-whatsapp-float:hover,
-                .public-whatsapp-float:focus-visible {
-                    transform: none;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-
         const whatsappButton = document.createElement("a");
         whatsappButton.className = "public-whatsapp-float";
         whatsappButton.href = whatsappHref;
