@@ -26,6 +26,10 @@ CSRF_TRUSTED_ORIGINS = env.list(
     default=[],
 )
 
+FACEBOOK_APP_ID = env("FACEBOOK_APP_ID", default="").strip()
+FACEBOOK_APP_SECRET = env("FACEBOOK_APP_SECRET", default="").strip()
+FACEBOOK_AUTH_ENABLED = bool(FACEBOOK_APP_ID and FACEBOOK_APP_SECRET)
+
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -34,6 +38,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.facebook",
 
     "apps.core.apps.CoreConfig",
     "apps.accounts.apps.AccountsConfig",
@@ -52,6 +61,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -72,6 +82,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.accounts.context_processors.social_auth",
             ],
         },
     },
@@ -108,6 +119,39 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+ACCOUNT_LOGIN_METHODS = {"email"}
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_ADAPTER = "apps.accounts.adapters.AlpesAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "apps.accounts.adapters.AlpesSocialAccountAdapter"
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = "mandatory"
+SOCIALACCOUNT_LOGIN_ON_GET = False
+SOCIALACCOUNT_STORE_TOKENS = False
+SOCIALACCOUNT_QUERY_EMAIL = True
+
+SOCIALACCOUNT_PROVIDERS = {
+    "facebook": {
+        "SCOPE": ["email", "public_profile"],
+        "FIELDS": ["id", "email", "name", "first_name", "last_name"],
+    }
+}
+if FACEBOOK_AUTH_ENABLED:
+    SOCIALACCOUNT_PROVIDERS["facebook"]["APP"] = {
+        "client_id": FACEBOOK_APP_ID,
+        "secret": FACEBOOK_APP_SECRET,
+        "key": "",
+    }
 
 
 LANGUAGE_CODE = "es-co"
