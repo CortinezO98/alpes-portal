@@ -1,5 +1,7 @@
 import pytest
 from allauth.account.models import EmailAddress
+from django.core import mail
+from django.test import override_settings
 from django.urls import reverse
 
 from apps.accounts.models import User
@@ -125,3 +127,23 @@ def test_facebook_button_is_hidden_without_credentials(client):
 
     assert response.status_code == 200
     assert b"Continuar con Facebook" not in response.content
+
+
+@pytest.mark.django_db
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+def test_public_signup_sends_branded_verification_email(client):
+    client.post(
+        reverse("accounts:signup"),
+        {
+            "email": "mail-check@example.com",
+            "password1": "StrongPass123!",
+            "password2": "StrongPass123!",
+        },
+    )
+
+    assert len(mail.outbox) == 1
+    message = mail.outbox[0]
+    assert message.to == ["mail-check@example.com"]
+    assert "Confirma tu correo" in message.subject
+    assert "ALPES" in message.body
+    assert "/cuenta/auth/confirm-email/" in message.body
