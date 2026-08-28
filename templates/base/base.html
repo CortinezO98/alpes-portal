@@ -41,6 +41,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    {% if seo_index %}<a class="public-skip-link" href="#inicio">Ir al contenido principal</a>{% endif %}
     {% block body %}{% endblock %}
     {% block extra_js %}{% endblock %}
 </body>
