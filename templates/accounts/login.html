@@ -1,5 +1,5 @@
 {% extends "base/base.html" %}
-{% load static %}
+{% load static socialaccount %}
 
 {% block title %}Iniciar sesión | ALPES{% endblock %}
 
@@ -36,6 +36,14 @@
             <p class="auth-description">
                 Ingresa con el correo asociado a tu cuenta para continuar.
             </p>
+
+            {% if facebook_auth_enabled %}
+                <form method="post" action="{% provider_login_url 'facebook' process='login' %}">
+                    {% csrf_token %}
+                    <button class="button button-block" type="submit">Continuar con Facebook</button>
+                </form>
+                <p class="auth-description" aria-hidden="true">o continúa con tu correo</p>
+            {% endif %}
 
             {% if form.non_field_errors %}
                 <div class="alert-error" role="alert">
@@ -84,7 +92,7 @@
             </form>
 
             <footer class="auth-footer">
-                Acceso protegido. Si necesitas soporte, contacta al administrador de la plataforma.
+                ¿Aún no tienes cuenta? <a class="auth-link" href="{% url 'accounts:signup' %}">Crear cuenta</a>
             </footer>
         </div>
     </section>
