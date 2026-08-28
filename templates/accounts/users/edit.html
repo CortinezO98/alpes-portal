@@ -1,0 +1,47 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Editar usuario | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/users.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="dashboard-header animate__animated animate__fadeInUp motion-soft">
+    <p class="dashboard-eyebrow">Gestión de accesos</p>
+    <h1 class="dashboard-title">Editar usuario.</h1>
+    <p class="dashboard-description">
+        Ajusta el correo o el rol de esta cuenta. Los privilegios de superadministración no se gestionan desde esta interfaz.
+    </p>
+</section>
+
+<section class="user-form-card animate__animated animate__fadeInUp motion-card">
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="user-form-grid">
+            <div class="form-field">
+                <label class="form-label" for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% for error in form.email.errors %}
+                    <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="{{ form.role.id_for_label }}">{{ form.role.label }}</label>
+                {{ form.role }}
+                {% for error in form.role.errors %}
+                    <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="user-form-actions">
+            <button class="button button-primary" type="submit">Guardar cambios</button>
+            <a class="button button-secondary" href="{% url 'accounts:user-management-list' %}">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}
