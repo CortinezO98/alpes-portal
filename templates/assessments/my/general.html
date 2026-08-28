@@ -1,0 +1,39 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Preguntas finales | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/assessments.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="assessment-runner animate__animated animate__fadeInUp motion-soft">
+    <div class="assessment-progress-head">
+        <div>
+            <p class="dashboard-eyebrow">Cierre de la evaluación</p>
+            <h1 class="assessment-runner-title">Tu mirada sobre esta nueva etapa.</h1>
+        </div>
+        <span class="assessment-progress-label">{{ progress_percent }}%</span>
+    </div>
+
+    <div class="assessment-progress-track"><span style="width: {{ progress_percent }}%"></span></div>
+    <p class="assessment-runner-copy">Estas preguntas abiertas complementan la Rueda de la Vida y permiten comprender mejor tus expectativas.</p>
+
+    <form method="post" class="assessment-question-list" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="assessment-question assessment-question-text">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ forloop.counter }}. {{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+
+        <div class="assessment-runner-actions">
+            <a class="button button-secondary" href="{% url 'assessments:my-list' %}">Guardar y salir</a>
+            <button class="button button-primary" type="submit">Finalizar evaluación</button>
+        </div>
+    </form>
+</section>
+{% endblock %}
