@@ -1,0 +1,32 @@
+.auth-provider-stack {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: var(--space-6);
+}
+
+.auth-provider-stack .auth-provider-form {
+    margin-top: 0;
+}
+
+.auth-google-icon {
+    width: 1.45rem;
+    height: 1.45rem;
+    flex: 0 0 1.45rem;
+}
+
+.auth-provider-google {
+    border-color: #dadce0;
+    color: #202124;
+}
+
+.auth-provider-google:hover {
+    border-color: #c7cacf;
+    background: #fafafa;
+}
+
+@media (max-width: 35rem) {
+    .auth-provider-button {
+        min-height: 3.4rem;
+        font-size: 0.88rem;
+    }
+}
