@@ -1,0 +1,235 @@
+.app-shell {
+    min-height: 100svh;
+    display: grid;
+    grid-template-columns: 1fr;
+    background: var(--color-bg);
+}
+
+.app-sidebar {
+    display: none;
+    background: var(--color-primary-700);
+    color: #fff;
+    padding: var(--space-6);
+}
+
+.app-sidebar-inner {
+    position: sticky;
+    top: 0;
+    min-height: calc(100svh - (var(--space-6) * 2));
+    display: flex;
+    flex-direction: column;
+}
+
+.app-brand {
+    margin: 0 0 var(--space-10);
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    text-decoration: none;
+}
+
+.app-nav {
+    display: grid;
+    gap: var(--space-2);
+}
+
+.app-nav-section {
+    margin: var(--space-6) 0 var(--space-2);
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.app-nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 2.75rem;
+    padding: 0.65rem 0.8rem;
+    border-radius: var(--radius-md);
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.app-nav-link:hover,
+.app-nav-link[aria-current="page"] {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.app-sidebar-footer {
+    margin-top: auto;
+    padding-top: var(--space-8);
+}
+
+.app-logout {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: #fff;
+    padding: 0.72rem 0.9rem;
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.app-main {
+    min-width: 0;
+}
+
+.app-topbar {
+    min-height: 4.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    background: rgba(248, 249, 244, 0.94);
+    padding: 0 var(--space-5);
+}
+
+.app-topbar-brand {
+    color: var(--color-primary-700);
+    font-size: 0.9rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+}
+
+.app-user {
+    min-width: 0;
+    text-align: right;
+}
+
+.app-user-role {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.app-user-email {
+    max-width: 14rem;
+    margin: 0.15rem 0 0;
+    overflow: hidden;
+    color: var(--color-text);
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-content {
+    width: min(100%, 92rem);
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+.dashboard-header {
+    display: grid;
+    gap: var(--space-3);
+    margin-bottom: var(--space-8);
+}
+
+.dashboard-eyebrow {
+    margin: 0;
+    color: var(--color-primary-700);
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+}
+
+.dashboard-title {
+    max-width: 16ch;
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(2.2rem, 5vw, 4.2rem);
+    font-weight: 400;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+}
+
+.dashboard-description {
+    max-width: 46rem;
+    margin: 0;
+    color: var(--color-text-muted);
+    line-height: 1.7;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: var(--space-4);
+}
+
+.dashboard-card {
+    min-height: 11rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    padding: var(--space-5);
+    box-shadow: 0 12px 36px rgba(41, 51, 45, 0.04);
+}
+
+.dashboard-card-kicker {
+    margin: 0;
+    color: var(--color-primary-700);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.dashboard-card-title {
+    margin: var(--space-3) 0 0;
+    font-size: 1.15rem;
+}
+
+.dashboard-card-copy {
+    margin: var(--space-3) 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
+.dashboard-card-action {
+    display: inline-flex;
+    margin-top: var(--space-5);
+    color: var(--color-primary-700);
+    font-size: 0.86rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.dashboard-card-action:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+@media (min-width: 64rem) {
+    .app-shell {
+        grid-template-columns: 17rem minmax(0, 1fr);
+    }
+
+    .app-sidebar {
+        display: block;
+    }
+
+    .app-topbar {
+        padding-inline: clamp(2rem, 4vw, 3.5rem);
+    }
+
+    .app-topbar-brand {
+        display: none;
+    }
+}
