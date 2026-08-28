@@ -32,7 +32,7 @@ jobs:
     env:
       DJANGO_ENV: development
       DJANGO_DEBUG: "False"
-      DJANGO_SECRET_KEY: ci-only-secret-key-not-for-production
+      DJANGO_SECRET_KEY: "ci-only-8Yx2vR9pQ4mK7sN1dF6hJ3cL5wT0zB8uE2gA9rP4xV7kM1qS"
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
       DJANGO_CSRF_TRUSTED_ORIGINS: https://localhost
       POSTGRES_DB: alpes_ci
@@ -72,7 +72,7 @@ jobs:
         run: pip-audit -r requirements.txt
 
       - name: Tests with coverage
-        run: pytest --cov=apps --cov-report=term-missing --cov-report=xml
+        run: pytest --cov=apps --cov-report=term-missing --cov-report=xml --cov-fail-under=80
 
       - name: Production security check
         env:
