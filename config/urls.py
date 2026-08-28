@@ -17,4 +17,8 @@ urlpatterns = [
         "reportes/",
         include("apps.reports.urls"),
     ),
+    path(
+        "auditoria/",
+        include("apps.audit.urls"),
+    ),
 ]
