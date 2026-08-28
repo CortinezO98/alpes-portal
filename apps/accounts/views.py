@@ -1,11 +1,12 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import TemplateView
+from django.views.generic import CreateView, ListView, TemplateView
 
-from .forms import EmailAuthenticationForm
+from .forms import EmailAuthenticationForm, UserCreateForm
 from .mixins import RoleRequiredMixin
 from .models import User
 
@@ -71,3 +72,36 @@ class UserDashboardView(
         User.Role.ADMIN,
         User.Role.SUPERADMIN,
     )
+
+
+class UserManagementListView(
+    LoginRequiredMixin,
+    RoleRequiredMixin,
+    ListView,
+):
+    template_name = "accounts/users/list.html"
+    context_object_name = "users"
+    allowed_roles = (User.Role.SUPERADMIN,)
+    paginate_by = 20
+
+    def get_queryset(self):
+        return User.objects.order_by("email")
+
+
+class UserManagementCreateView(
+    LoginRequiredMixin,
+    RoleRequiredMixin,
+    CreateView,
+):
+    template_name = "accounts/users/create.html"
+    form_class = UserCreateForm
+    success_url = reverse_lazy("accounts:user-management-list")
+    allowed_roles = (User.Role.SUPERADMIN,)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            "La cuenta fue creada correctamente.",
+        )
+        return response
