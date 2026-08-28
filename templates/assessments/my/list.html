@@ -1,0 +1,44 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Mis evaluaciones | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/assessments.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="dashboard-header animate__animated animate__fadeInUp motion-soft">
+    <p class="dashboard-eyebrow">Mi proceso</p>
+    <h1 class="dashboard-title">Mis evaluaciones.</h1>
+    <p class="dashboard-description">Continúa tus procesos pendientes o revisa resultados completados.</p>
+</section>
+
+<section class="assessment-card-grid" aria-label="Evaluaciones asignadas">
+    {% for assessment in assessments %}
+        <article class="assessment-card animate__animated animate__fadeInUp motion-card">
+            <div>
+                <div class="assessment-card-meta">
+                    <span class="assessment-status assessment-status-{{ assessment.status|lower }}">{{ assessment.get_status_display }}</span>
+                    <span>{{ assessment.created_at|date:"d/m/Y" }}</span>
+                </div>
+                <h2>{{ assessment.template.name }}</h2>
+                <p>8 dimensiones de reflexión integral y preguntas finales para acompañar tu proceso.</p>
+            </div>
+
+            {% if assessment.status == 'COMPLETED' %}
+                <a class="button button-secondary" href="{% url 'assessments:result' assessment.pk %}">Ver resultados</a>
+            {% else %}
+                <form method="post" action="{% url 'assessments:start' assessment.pk %}">
+                    {% csrf_token %}
+                    <button class="button button-primary" type="submit">
+                        {% if assessment.status == 'DRAFT' %}Comenzar{% else %}Continuar{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+        </article>
+    {% empty %}
+        <div class="assessment-empty">Aún no tienes evaluaciones asignadas.</div>
+    {% endfor %}
+</section>
+{% endblock %}

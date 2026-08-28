@@ -1,0 +1,39 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Evaluaciones | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/assessments.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="dashboard-header animate__animated animate__fadeInUp motion-soft">
+    <p class="dashboard-eyebrow">Seguimiento</p>
+    <h1 class="dashboard-title">Evaluaciones ALPES.</h1>
+    <p class="dashboard-description">Asigna instrumentos y consulta el estado de los procesos activos.</p>
+</section>
+
+<div class="assessment-toolbar">
+    <span class="dashboard-description">{{ page_obj.paginator.count }} evaluación{{ page_obj.paginator.count|pluralize:"es" }} registrada{{ page_obj.paginator.count|pluralize }}.</span>
+    <a class="button button-primary" href="{% url 'assessments:assign' %}">Asignar evaluación</a>
+</div>
+
+<div class="assessment-table-wrap animate__animated animate__fadeInUp motion-card">
+    <table class="assessment-table">
+        <thead><tr><th>Participante</th><th>Instrumento</th><th>Estado</th><th>Asignada</th></tr></thead>
+        <tbody>
+            {% for assessment in assessments %}
+                <tr>
+                    <td>{{ assessment.participant.email }}</td>
+                    <td>{{ assessment.template.name }}</td>
+                    <td><span class="assessment-status assessment-status-{{ assessment.status|lower }}">{{ assessment.get_status_display }}</span></td>
+                    <td>{{ assessment.created_at|date:"d/m/Y H:i" }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4">No hay evaluaciones asignadas todavía.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

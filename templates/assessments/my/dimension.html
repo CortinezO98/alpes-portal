@@ -1,0 +1,49 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ dimension.name }} | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/assessments.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="assessment-runner animate__animated animate__fadeInUp motion-soft">
+    <div class="assessment-progress-head">
+        <div>
+            <p class="dashboard-eyebrow">Dimensión {{ current_position }} de {{ total_dimensions }}</p>
+            <h1 class="assessment-runner-title">{{ dimension.name }}</h1>
+        </div>
+        <span class="assessment-progress-label">{{ progress_percent }}%</span>
+    </div>
+
+    <div class="assessment-progress-track" aria-label="Progreso de la evaluación">
+        <span style="width: {{ progress_percent }}%"></span>
+    </div>
+
+    <p class="assessment-runner-copy">Valora cada afirmación del 1 al 10, donde 1 representa la valoración más baja y 10 la más alta.</p>
+
+    <form method="post" class="assessment-question-list" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+            <fieldset class="assessment-question">
+                <legend>{{ forloop.counter }}. {{ field.label }}</legend>
+                <div class="scale-grid">
+                    {% for choice in field %}
+                        <label class="scale-option">
+                            {{ choice.tag }}
+                            <span>{{ choice.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                {% for error in field.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+            </fieldset>
+        {% endfor %}
+
+        <div class="assessment-runner-actions">
+            <a class="button button-secondary" href="{% url 'assessments:my-list' %}">Guardar y salir</a>
+            <button class="button button-primary" type="submit">Continuar</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

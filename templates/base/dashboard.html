@@ -19,7 +19,11 @@
                 </a>
 
                 <p class="app-nav-section">Plataforma</p>
-                <span class="app-nav-link">Evaluaciones</span>
+                {% if request.user.role == 'ADMIN' or request.user.role == 'SUPERADMIN' or request.user.is_superuser %}
+                    <a class="app-nav-link" href="{% url 'assessments:management-list' %}">Evaluaciones</a>
+                {% else %}
+                    <a class="app-nav-link" href="{% url 'assessments:my-list' %}">Mis evaluaciones</a>
+                {% endif %}
                 <span class="app-nav-link">Reportes</span>
                 {% if request.user.is_superuser or request.user.role == 'SUPERADMIN' %}
                     <a class="app-nav-link" href="{% url 'accounts:user-management-list' %}">
@@ -60,4 +64,8 @@
         </main>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    {% block dashboard_extra_js %}{% endblock %}
 {% endblock %}
