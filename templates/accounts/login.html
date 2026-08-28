@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+    <title>Iniciar sesión | ALPES</title>
+</head>
+
+<body>
+    <main>
+        <h1>Iniciar sesión</h1>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <button type="submit">
+                Ingresar
+            </button>
+        </form>
+    </main>
+</body>
+</html>

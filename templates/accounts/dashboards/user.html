@@ -1,0 +1,10 @@
+<h1>Mi espacio ALPES</h1>
+
+<p>{{ request.user.email }}</p>
+
+<form method="post" action="{% url 'accounts:logout' %}">
+    {% csrf_token %}
+    <button type="submit">
+        Cerrar sesión
+    </button>
+</form>
