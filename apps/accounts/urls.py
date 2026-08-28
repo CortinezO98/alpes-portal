@@ -12,6 +12,7 @@ from .views import (
     UserManagementListView,
     UserManagementToggleStatusView,
     UserManagementUpdateView,
+    UserPasswordResetView,
 )
 
 
@@ -71,12 +72,7 @@ urlpatterns = [
     ),
     path(
         "password/reset/",
-        auth_views.PasswordResetView.as_view(
-            template_name="accounts/password_reset_form.html",
-            email_template_name="accounts/password_reset_email.txt",
-            subject_template_name="accounts/password_reset_subject.txt",
-            success_url="/cuenta/password/reset/enviado/",
-        ),
+        UserPasswordResetView.as_view(),
         name="password-reset",
     ),
     path(
