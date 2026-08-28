@@ -1,0 +1,154 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}{{ seo_title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/portfolio.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/service-detail.css' %}">
+{% endblock %}
+
+{% block body %}
+<header class="public-header" data-public-header>
+    <div class="public-container public-header-inner">
+        <a class="public-brand" href="{% url 'portfolio:home' %}" aria-label="ALPES, volver al portafolio">
+            <span class="public-brand-mark" aria-hidden="true">A</span>
+            <span>
+                <strong>ALPES</strong>
+                <small>Coaching · Liderazgo · Transformación</small>
+            </span>
+        </a>
+
+        <button class="public-menu-button" type="button" aria-expanded="false" aria-controls="public-navigation" data-menu-button>
+            <span class="sr-only">Abrir navegación</span>
+            <span></span><span></span><span></span>
+        </button>
+
+        <nav class="public-nav" id="public-navigation" aria-label="Navegación pública" data-public-nav>
+            <a href="{% url 'portfolio:home' %}#perfil">Perfil</a>
+            <a href="{% url 'portfolio:home' %}#servicios">Servicios</a>
+            <a href="{% url 'portfolio:model_alpes' %}">Modelo ALPES</a>
+            <a href="{% url 'portfolio:home' %}#experiencia">Experiencia</a>
+            <a href="{% url 'portfolio:home' %}#contacto">Contacto</a>
+            <a class="public-nav-login" href="{% url 'accounts:login' %}">Iniciar sesión</a>
+        </nav>
+    </div>
+</header>
+
+<main id="inicio">
+    <section class="service-hero">
+        <div class="public-container service-hero-grid">
+            <div class="animate__animated animate__fadeInUp motion-soft">
+                <a class="service-back-link" href="{% url 'portfolio:home' %}#servicios">← Portafolio de servicios</a>
+                <p class="public-eyebrow">{{ service.eyebrow }} · {{ service.number }}</p>
+                <h1>{{ service.title }}</h1>
+                <p class="service-hero-lead">{{ service.lead }}</p>
+                <div class="public-hero-actions">
+                    <a
+                        class="public-button public-button-primary"
+                        href="https://wa.me/573107426028?text=Hola%2C%20quisiera%20conocer%20m%C3%A1s%20sobre%20los%20servicios%20ALPES."
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >Conversemos por WhatsApp</a>
+                    <a class="public-button public-button-secondary" href="#proceso">Ver proceso</a>
+                </div>
+            </div>
+            <aside class="service-hero-statement animate__animated animate__fadeInUp motion-card">
+                <span>ALPES</span>
+                <p>{{ service.statement }}</p>
+            </aside>
+        </div>
+    </section>
+
+    <section class="service-intro public-section">
+        <div class="public-container service-intro-grid">
+            <div>
+                <p class="public-eyebrow">Enfoque</p>
+                <h2 class="public-section-title">Acompañamiento diseñado para avanzar con claridad.</h2>
+            </div>
+            <div class="service-intro-copy">
+                <p>{{ service.description }}</p>
+                <div class="service-audience">
+                    <span>¿Para quién?</span>
+                    <p>{{ service.audience }}</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="service-includes public-section public-section-tinted">
+        <div class="public-container">
+            <div class="service-section-heading">
+                <div>
+                    <p class="public-eyebrow">Qué incluye</p>
+                    <h2 class="public-section-title">Componentes del acompañamiento.</h2>
+                </div>
+                <p>Una estructura concreta que permite pasar de la lectura inicial a acciones y resultados observables.</p>
+            </div>
+            <div class="service-includes-grid">
+                {% for item in service.includes %}
+                    <article>
+                        <span>0{{ forloop.counter }}</span>
+                        <p>{{ item }}</p>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="service-process public-section" id="proceso">
+        <div class="public-container service-process-grid">
+            <div>
+                <p class="public-eyebrow">Proceso</p>
+                <h2 class="public-section-title">Un camino estructurado, humano y accionable.</h2>
+            </div>
+            <ol class="service-process-list">
+                {% for number, title, description in service.steps %}
+                    <li>
+                        <span>{{ number }}</span>
+                        <div>
+                            <h3>{{ title }}</h3>
+                            <p>{{ description }}</p>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ol>
+        </div>
+    </section>
+
+    <section class="service-cta">
+        <div class="public-container service-cta-grid">
+            <div>
+                <p class="public-eyebrow public-eyebrow-light">Conversemos</p>
+                <h2>¿Quieres explorar este proceso para tu organización o para ti?</h2>
+            </div>
+            <div>
+                <p>Podemos partir de una conversación para comprender el contexto y revisar si este acompañamiento responde al reto actual.</p>
+                <div class="service-cta-actions">
+                    <a
+                        class="public-button service-button-light"
+                        href="https://wa.me/573107426028?text=Hola%2C%20quisiera%20conocer%20m%C3%A1s%20sobre%20los%20servicios%20ALPES."
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >Escribir por WhatsApp</a>
+                    <a class="service-home-link" href="{% url 'portfolio:home' %}">Volver al portafolio →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="public-footer">
+    <div class="public-container public-footer-inner">
+        <div>
+            <strong>ALPES</strong>
+            <p>Coaching Directivo, Liderazgo y Transformación.</p>
+        </div>
+        <p>José Alfonso Marrugo Roa · Portafolio de servicios</p>
+    </div>
+</footer>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/portfolio.js' %}" defer></script>
+{% endblock %}

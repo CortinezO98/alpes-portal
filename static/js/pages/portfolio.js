@@ -35,6 +35,32 @@
         });
     }
 
+    const serviceRoutes = [
+        "/servicios/liderazgo/",
+        "/servicios/jubilacion-plena/",
+        "/servicios/consultoria-organizacional/",
+        "/modelo-alpes/",
+    ];
+
+    document.querySelectorAll(".public-service-card").forEach((card, index) => {
+        if (!serviceRoutes[index] || card.querySelector("[data-service-detail-link]")) {
+            return;
+        }
+
+        const link = document.createElement("a");
+        link.href = serviceRoutes[index];
+        link.className = "public-service-detail-link";
+        link.setAttribute("data-service-detail-link", "");
+        link.textContent = "Conocer servicio →";
+
+        const existingLink = card.querySelector(".public-text-link");
+        if (existingLink) {
+            existingLink.replaceWith(link);
+        } else {
+            card.appendChild(link);
+        }
+    });
+
     const whatsappHref =
         "https://wa.me/573107426028?text=Hola%2C%20quisiera%20conocer%20m%C3%A1s%20sobre%20los%20servicios%20ALPES.";
 
