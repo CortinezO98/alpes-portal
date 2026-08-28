@@ -1,12 +1,23 @@
 from django.urls import path
 
-from .views import PublicHomeView, PublicServiceDetailView, robots_txt, sitemap_xml
+from .legal import PublicLegalView, robots_txt
+from .views import PublicHomeView, PublicServiceDetailView, sitemap_xml
 
 app_name = "portfolio"
 
 urlpatterns = [
     path("robots.txt", robots_txt, name="robots"),
     path("sitemap.xml", sitemap_xml, name="sitemap"),
+    path(
+        "privacidad/",
+        PublicLegalView.as_view(page_key="privacy"),
+        name="privacy",
+    ),
+    path(
+        "tratamiento-de-datos/",
+        PublicLegalView.as_view(page_key="data_treatment"),
+        name="data-treatment",
+    ),
     path(
         "servicios/liderazgo/",
         PublicServiceDetailView.as_view(page_key="leadership"),
