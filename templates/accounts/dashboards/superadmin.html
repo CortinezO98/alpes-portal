@@ -1,10 +1,42 @@
-<h1>Panel Superadministrador</h1>
+{% extends "base/dashboard.html" %}
 
-<p>{{ request.user.email }}</p>
+{% block title %}Panel Superadministrador | ALPES{% endblock %}
 
-<form method="post" action="{% url 'accounts:logout' %}">
-    {% csrf_token %}
-    <button type="submit">
-        Cerrar sesión
-    </button>
-</form>
+{% block dashboard_content %}
+<section class="dashboard-header">
+    <p class="dashboard-eyebrow">Superadministración</p>
+    <h1 class="dashboard-title">Control general de la plataforma.</h1>
+    <p class="dashboard-description">
+        Gestiona usuarios, evaluaciones, reportes y la operación general de ALPES desde un único espacio.
+    </p>
+</section>
+
+<section class="dashboard-grid" aria-label="Módulos de administración">
+    <article class="dashboard-card">
+        <div>
+            <p class="dashboard-card-kicker">Gestión</p>
+            <h2 class="dashboard-card-title">Usuarios y accesos</h2>
+            <p class="dashboard-card-copy">Administra cuentas, roles y permisos de la plataforma.</p>
+        </div>
+        <span class="dashboard-card-action">Próximamente</span>
+    </article>
+
+    <article class="dashboard-card">
+        <div>
+            <p class="dashboard-card-kicker">ALPES</p>
+            <h2 class="dashboard-card-title">Evaluaciones</h2>
+            <p class="dashboard-card-copy">Consulta el estado y avance de las evaluaciones registradas.</p>
+        </div>
+        <span class="dashboard-card-action">Próximamente</span>
+    </article>
+
+    <article class="dashboard-card">
+        <div>
+            <p class="dashboard-card-kicker">Analítica</p>
+            <h2 class="dashboard-card-title">Reportes</h2>
+            <p class="dashboard-card-copy">Centraliza resultados, indicadores y próximos reportes ejecutivos.</p>
+        </div>
+        <span class="dashboard-card-action">Próximamente</span>
+    </article>
+</section>
+{% endblock %}
