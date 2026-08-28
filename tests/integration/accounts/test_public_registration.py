@@ -132,7 +132,17 @@ def test_facebook_button_is_hidden_without_credentials(client):
 
 
 @pytest.mark.django_db
-@override_settings(FACEBOOK_AUTH_ENABLED=False)
+@override_settings(GOOGLE_AUTH_ENABLED=False)
+def test_google_button_is_hidden_without_credentials(client):
+    response = client.get(reverse("accounts:login"))
+
+    assert response.status_code == 200
+    assert b"Continuar con Google" not in response.content
+    assert b"Iniciar sesi\xc3\xb3n con correo" in response.content
+
+
+@pytest.mark.django_db
+@override_settings(FACEBOOK_AUTH_ENABLED=False, GOOGLE_AUTH_ENABLED=False)
 def test_auth_pages_link_back_to_public_portfolio(client):
     public_url = reverse("portfolio:home")
 
