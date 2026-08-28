@@ -119,3 +119,27 @@ def test_dimension_submission_saves_scores_and_marks_progress(client, assessment
         question__dimension=dimension,
         score=8,
     ).count() == 4
+
+
+@pytest.mark.django_db
+def test_completed_result_exposes_radar_labels_and_scores(client, assessment_setup):
+    _, participant, assessment = assessment_setup
+    questions = assessment.template.dimensions.order_by("order").values_list(
+        "questions__id",
+        flat=True,
+    )
+    for question_id in questions:
+        Answer.objects.create(
+            assessment=assessment,
+            question_id=question_id,
+            score=7,
+        )
+    assessment.status = Assessment.Status.COMPLETED
+    assessment.save(update_fields=("status", "updated_at"))
+    client.force_login(participant)
+
+    response = client.get(reverse("assessments:result", kwargs={"pk": assessment.pk}))
+
+    assert response.status_code == 200
+    assert len(response.context["radar_labels"]) == 8
+    assert response.context["radar_scores"] == [7.0] * 8
