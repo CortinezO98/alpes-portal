@@ -256,14 +256,21 @@ class AssessmentResultView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        dimensions = self.assessment.template.dimensions.annotate(
-            average_score=Avg(
-                "questions__answers__score",
-                filter=Q(questions__answers__assessment=self.assessment),
-            )
-        ).order_by("order", "id")
+        dimensions = list(
+            self.assessment.template.dimensions.annotate(
+                average_score=Avg(
+                    "questions__answers__score",
+                    filter=Q(questions__answers__assessment=self.assessment),
+                )
+            ).order_by("order", "id")
+        )
         context.update(
             assessment=self.assessment,
             dimensions=dimensions,
+            radar_labels=[dimension.name for dimension in dimensions],
+            radar_scores=[
+                round(float(dimension.average_score or 0), 2)
+                for dimension in dimensions
+            ],
         )
         return context
