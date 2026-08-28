@@ -2,6 +2,7 @@
     const header = document.querySelector("[data-public-header]");
     const menuButton = document.querySelector("[data-menu-button]");
     const navigation = document.querySelector("[data-public-nav]");
+    const menuLabel = menuButton?.querySelector(".sr-only");
 
     const syncHeader = () => {
         if (!header) {
@@ -10,22 +11,33 @@
         header.classList.toggle("is-scrolled", window.scrollY > 8);
     };
 
-    const closeMenu = () => {
+    const syncMenuState = (isOpen) => {
         if (!menuButton || !navigation) {
             return;
         }
-        navigation.classList.remove("is-open");
-        menuButton.setAttribute("aria-expanded", "false");
+        navigation.classList.toggle("is-open", isOpen);
+        menuButton.setAttribute("aria-expanded", String(isOpen));
+        if (menuLabel) {
+            menuLabel.textContent = isOpen ? "Cerrar navegación" : "Abrir navegación";
+        }
     };
+
+    const closeMenu = () => syncMenuState(false);
 
     if (menuButton && navigation) {
         menuButton.addEventListener("click", () => {
-            const isOpen = navigation.classList.toggle("is-open");
-            menuButton.setAttribute("aria-expanded", String(isOpen));
+            syncMenuState(!navigation.classList.contains("is-open"));
         });
 
         navigation.querySelectorAll("a").forEach((link) => {
             link.addEventListener("click", closeMenu);
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && navigation.classList.contains("is-open")) {
+                closeMenu();
+                menuButton.focus();
+            }
         });
 
         window.addEventListener("resize", () => {
