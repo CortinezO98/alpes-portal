@@ -10,6 +10,8 @@ from .views import (
     UserLogoutView,
     UserManagementCreateView,
     UserManagementListView,
+    UserManagementToggleStatusView,
+    UserManagementUpdateView,
 )
 
 
@@ -56,6 +58,16 @@ urlpatterns = [
         "usuarios/nuevo/",
         UserManagementCreateView.as_view(),
         name="user-management-create",
+    ),
+    path(
+        "usuarios/<int:pk>/editar/",
+        UserManagementUpdateView.as_view(),
+        name="user-management-edit",
+    ),
+    path(
+        "usuarios/<int:pk>/estado/",
+        UserManagementToggleStatusView.as_view(),
+        name="user-management-toggle-status",
     ),
     path(
         "password/reset/",
