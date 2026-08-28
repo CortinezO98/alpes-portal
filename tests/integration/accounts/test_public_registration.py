@@ -122,11 +122,29 @@ def test_admin_created_account_keeps_existing_login_behavior(client):
 
 
 @pytest.mark.django_db
+@override_settings(FACEBOOK_AUTH_ENABLED=False)
 def test_facebook_button_is_hidden_without_credentials(client):
     response = client.get(reverse("accounts:login"))
 
     assert response.status_code == 200
     assert b"Continuar con Facebook" not in response.content
+    assert b"Iniciar sesi\xc3\xb3n con correo" in response.content
+
+
+@pytest.mark.django_db
+@override_settings(FACEBOOK_AUTH_ENABLED=False)
+def test_auth_pages_link_back_to_public_portfolio(client):
+    public_url = reverse("portfolio:home")
+
+    login_response = client.get(reverse("accounts:login"))
+    signup_response = client.get(reverse("accounts:signup"))
+
+    assert login_response.status_code == 200
+    assert signup_response.status_code == 200
+    assert f'href="{public_url}"'.encode() in login_response.content
+    assert f'href="{public_url}"'.encode() in signup_response.content
+    assert b"portafolio p\xc3\xbablico" in login_response.content.lower()
+    assert b"portafolio p\xc3\xbablico" in signup_response.content.lower()
 
 
 @pytest.mark.django_db
