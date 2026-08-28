@@ -1,0 +1,39 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Asignar evaluación | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/assessments.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="dashboard-header animate__animated animate__fadeInUp motion-soft">
+    <p class="dashboard-eyebrow">Nueva asignación</p>
+    <h1 class="dashboard-title">Inicia un proceso ALPES.</h1>
+    <p class="dashboard-description">Selecciona el instrumento y el participante que realizará la evaluación.</p>
+</section>
+
+<section class="assessment-form-card animate__animated animate__fadeInUp motion-card">
+    <form method="post" class="assessment-form-grid" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert-error" role="alert">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        {% for field in form %}
+            <div class="form-field">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+
+        <div class="assessment-form-actions">
+            <button class="button button-primary" type="submit">Asignar evaluación</button>
+            <a class="button button-secondary" href="{% url 'assessments:management-list' %}">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}
