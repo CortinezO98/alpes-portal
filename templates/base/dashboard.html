@@ -1,0 +1,50 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/layout/dashboard.css' %}">
+{% block dashboard_extra_css %}{% endblock %}
+{% endblock %}
+
+{% block body %}
+<div class="app-shell">
+    <aside class="app-sidebar" aria-label="Navegación principal">
+        <div class="app-sidebar-inner">
+            <a class="app-brand" href="{% url 'accounts:dashboard' %}">ALPES</a>
+
+            <nav class="app-nav">
+                <p class="app-nav-section">Principal</p>
+                <a class="app-nav-link" href="{% url 'accounts:dashboard' %}" aria-current="page">
+                    Panel principal
+                </a>
+
+                <p class="app-nav-section">Plataforma</p>
+                <span class="app-nav-link">Evaluaciones</span>
+                <span class="app-nav-link">Reportes</span>
+                <span class="app-nav-link">Usuarios</span>
+            </nav>
+
+            <div class="app-sidebar-footer">
+                <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <button class="app-logout" type="submit">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </aside>
+
+    <div class="app-main">
+        <header class="app-topbar">
+            <div class="app-topbar-brand">ALPES</div>
+            <div class="app-user">
+                <p class="app-user-role">{{ request.user.get_role_display }}</p>
+                <p class="app-user-email">{{ request.user.email }}</p>
+            </div>
+        </header>
+
+        <main class="app-content">
+            {% block dashboard_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}

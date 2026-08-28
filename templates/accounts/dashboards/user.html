@@ -1,10 +1,33 @@
-<h1>Mi espacio ALPES</h1>
+{% extends "base/dashboard.html" %}
 
-<p>{{ request.user.email }}</p>
+{% block title %}Mi espacio | ALPES{% endblock %}
 
-<form method="post" action="{% url 'accounts:logout' %}">
-    {% csrf_token %}
-    <button type="submit">
-        Cerrar sesión
-    </button>
-</form>
+{% block dashboard_content %}
+<section class="dashboard-header">
+    <p class="dashboard-eyebrow">Mi espacio ALPES</p>
+    <h1 class="dashboard-title">Tu proceso, en un solo lugar.</h1>
+    <p class="dashboard-description">
+        Desde aquí podrás completar tus evaluaciones, revisar avances y consultar los resultados disponibles.
+    </p>
+</section>
+
+<section class="dashboard-grid" aria-label="Módulos personales">
+    <article class="dashboard-card">
+        <div>
+            <p class="dashboard-card-kicker">Proceso</p>
+            <h2 class="dashboard-card-title">Mis evaluaciones</h2>
+            <p class="dashboard-card-copy">Accede a las evaluaciones asignadas y continúa donde quedaste.</p>
+        </div>
+        <span class="dashboard-card-action">Próximamente</span>
+    </article>
+
+    <article class="dashboard-card">
+        <div>
+            <p class="dashboard-card-kicker">Resultados</p>
+            <h2 class="dashboard-card-title">Mi progreso</h2>
+            <p class="dashboard-card-copy">Consulta los resultados y visualizaciones disponibles de tu proceso.</p>
+        </div>
+        <span class="dashboard-card-action">Próximamente</span>
+    </article>
+</section>
+{% endblock %}
