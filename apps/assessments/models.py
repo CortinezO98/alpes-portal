@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Q
 
 
 class AssessmentTemplate(models.Model):
@@ -59,6 +60,15 @@ class Question(models.Model):
         Dimension,
         on_delete=models.CASCADE,
         related_name="questions",
+        null=True,
+        blank=True,
+    )
+    template = models.ForeignKey(
+        AssessmentTemplate,
+        on_delete=models.CASCADE,
+        related_name="general_questions",
+        null=True,
+        blank=True,
     )
     text = models.TextField()
     question_type = models.CharField(
@@ -71,15 +81,37 @@ class Question(models.Model):
     is_required = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ("dimension__order", "order", "id")
+        ordering = ("order", "id")
         constraints = [
             models.UniqueConstraint(
                 fields=("dimension", "order"),
                 name="assessment_question_dimension_order_unique",
-            )
+            ),
+            models.UniqueConstraint(
+                fields=("template", "order"),
+                condition=Q(dimension__isnull=True),
+                name="assess_tpl_order_uniq",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(dimension__isnull=False, template__isnull=True)
+                    | Q(dimension__isnull=True, template__isnull=False)
+                ),
+                name="assess_question_parent_xor",
+            ),
+            models.CheckConstraint(
+                condition=(Q(question_type="TEXT") | Q(dimension__isnull=False)),
+                name="assess_scale_needs_dim",
+            ),
         ]
         verbose_name = "pregunta"
         verbose_name_plural = "preguntas"
+
+    @property
+    def assessment_template(self):
+        if self.dimension_id:
+            return self.dimension.template
+        return self.template
 
     def __str__(self):
         return self.text[:80]
