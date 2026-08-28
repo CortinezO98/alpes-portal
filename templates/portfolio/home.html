@@ -1,0 +1,256 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}ALPES | Coaching Directivo, Liderazgo y Transformación{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/portfolio.css' %}">
+{% endblock %}
+
+{% block body %}
+<header class="public-header" data-public-header>
+    <div class="public-container public-header-inner">
+        <a class="public-brand" href="#inicio" aria-label="ALPES, volver al inicio">
+            <span class="public-brand-mark" aria-hidden="true">A</span>
+            <span>
+                <strong>ALPES</strong>
+                <small>Coaching · Liderazgo · Transformación</small>
+            </span>
+        </a>
+
+        <button class="public-menu-button" type="button" aria-expanded="false" aria-controls="public-navigation" data-menu-button>
+            <span class="sr-only">Abrir navegación</span>
+            <span></span><span></span><span></span>
+        </button>
+
+        <nav class="public-nav" id="public-navigation" aria-label="Navegación pública" data-public-nav>
+            <a href="#perfil">Perfil</a>
+            <a href="#servicios">Servicios</a>
+            <a href="#modelo-alpes">Modelo ALPES</a>
+            <a href="#experiencia">Experiencia</a>
+            <a href="#faq">FAQ</a>
+            <a href="#contacto">Contacto</a>
+            <a class="public-nav-login" href="{% url 'accounts:login' %}">Iniciar sesión</a>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <section class="public-hero" id="inicio">
+        <div class="public-container public-hero-grid">
+            <div class="public-hero-copy animate__animated animate__fadeInUp motion-soft">
+                <p class="public-eyebrow">Coaching directivo · Liderazgo · Transformación</p>
+                <h1>Transformamos líderes, fortalecemos culturas.</h1>
+                <p class="public-hero-lead">
+                    Acompañamiento a personas y organizaciones para construir resultados más humanos,
+                    sostenibles y alineados con un propósito claro.
+                </p>
+                <div class="public-hero-actions">
+                    <a class="public-button public-button-primary" href="#servicios">Conocer servicios</a>
+                    <a class="public-button public-button-secondary" href="#contacto">Conversemos</a>
+                </div>
+            </div>
+
+            <aside class="public-hero-panel animate__animated animate__fadeInUp motion-card" aria-label="Enfoque ALPES">
+                <span class="public-panel-number">34</span>
+                <p class="public-panel-label">años de experiencia liderando procesos administrativos, laborales y de talento humano.</p>
+                <div class="public-hero-panel-divider"></div>
+                <p class="public-panel-quote">“Servir a los demás” como propósito que orienta cada proceso de acompañamiento.</p>
+            </aside>
+        </div>
+        <div class="public-hero-line" aria-hidden="true"></div>
+    </section>
+
+    <section class="public-section" id="perfil">
+        <div class="public-container public-profile-grid">
+            <div>
+                <p class="public-eyebrow">Perfil profesional</p>
+                <h2 class="public-section-title">José Alfonso Marrugo Roa.</h2>
+            </div>
+            <div class="public-profile-copy">
+                <p>
+                    Economista, especialista en Administración de Empresa, con formación en Coaching Ejecutivo,
+                    Magíster en Innovación y Emprendimiento y Magíster en Coaching Directivo y Liderazgo.
+                </p>
+                <p>
+                    Su experiencia integra 34 años en GE Ecopetrol liderando procesos administrativos, laborales
+                    y asociados con Talento Humano, con una motivación permanente por el desarrollo y crecimiento de las personas.
+                </p>
+            </div>
+        </div>
+
+        <div class="public-container public-values-grid" aria-label="Principios de trabajo">
+            <article><span>01</span><h3>Propósito</h3><p>Acompañar procesos que conecten resultados, bienestar y sentido.</p></article>
+            <article><span>02</span><h3>Personas</h3><p>Fortalecer seres humanos integralmente buenos y líderes conscientes.</p></article>
+            <article><span>03</span><h3>Organización</h3><p>Construir culturas saludables, relaciones sólidas y resultados sostenibles.</p></article>
+        </div>
+    </section>
+
+    <section class="public-section public-section-tinted" id="servicios">
+        <div class="public-container public-section-heading">
+            <div>
+                <p class="public-eyebrow">Portafolio de servicios</p>
+                <h2 class="public-section-title">Acompañamiento con foco humano y organizacional.</h2>
+            </div>
+            <p>
+                Cuatro líneas de servicio para fortalecer liderazgo, acompañar transiciones de vida,
+                desarrollar organizaciones y convertir retos en caminos de acción.
+            </p>
+        </div>
+
+        <div class="public-container public-services-grid">
+            <article class="public-service-card">
+                <span class="public-service-number">01</span>
+                <div>
+                    <p class="public-service-kicker">Liderazgo</p>
+                    <h3>Acompañamiento al Liderazgo de la organización</h3>
+                    <p>Fortalecimiento de habilidades humanas, estratégicas y relacionales, alineado con la cultura y los objetivos de la organización.</p>
+                </div>
+                <ul>
+                    <li>Autovaloración de competencias.</li>
+                    <li>4 sesiones individuales de mentoría.</li>
+                    <li>4 sesiones individuales de coaching.</li>
+                    <li>Reporte individual y organizacional.</li>
+                </ul>
+            </article>
+
+            <article class="public-service-card">
+                <span class="public-service-number">02</span>
+                <div>
+                    <p class="public-service-kicker">Transición</p>
+                    <h3>Jubilación Plena</h3>
+                    <p>Programa para acompañar al personal próximo a pensionarse hacia una nueva etapa con propósito, bienestar y sentido.</p>
+                </div>
+                <ul>
+                    <li>Rueda de la vida para prepensionados.</li>
+                    <li>Conversaciones transformadoras.</li>
+                    <li>Mapa de retos y sueños.</li>
+                    <li>Planes de acción y reportes.</li>
+                </ul>
+            </article>
+
+            <article class="public-service-card">
+                <span class="public-service-number">03</span>
+                <div>
+                    <p class="public-service-kicker">Organización</p>
+                    <h3>Mentorías y Consultorías Organizacionales</h3>
+                    <p>Acompañamiento para fortalecer procesos que permiten a las organizaciones alcanzar sus propósitos.</p>
+                </div>
+                <ul>
+                    <li>Modelo de liderazgo y cultura organizacional.</li>
+                    <li>Gestión del desempeño y clima.</li>
+                    <li>Gestión del cambio y talento humano.</li>
+                    <li>Relaciones laborales y sindicales.</li>
+                </ul>
+            </article>
+
+            <article class="public-service-card public-service-card-featured">
+                <span class="public-service-number">04</span>
+                <div>
+                    <p class="public-service-kicker">Metodología propia</p>
+                    <h3>Modelo ALPES</h3>
+                    <p>Una lectura integral de las áreas de vida para concretar retos, sueños personales y organizacionales, y construir caminos posibles.</p>
+                </div>
+                <a class="public-text-link" href="#modelo-alpes">Conocer las etapas →</a>
+            </article>
+        </div>
+    </section>
+
+    <section class="public-section public-model" id="modelo-alpes">
+        <div class="public-container public-model-grid">
+            <div class="public-model-intro">
+                <p class="public-eyebrow">Modelo ALPES</p>
+                <h2 class="public-section-title">Propósito, bienestar y equilibrio llevados a un camino de acción.</h2>
+                <p>
+                    ALPES analiza la situación actual de la persona, ayuda a construir su futuro deseado y convierte esa visión en planes alcanzables sustentados en responsabilidad, disciplina y compromiso.
+                </p>
+            </div>
+
+            <ol class="public-model-steps">
+                <li>
+                    <span>01</span>
+                    <div><h3>Análisis de las áreas de la vida</h3><p>Lectura de salud, finanzas, profesión, motivación y otras dimensiones para identificar oportunidades de mejora.</p></div>
+                </li>
+                <li>
+                    <span>02</span>
+                    <div><h3>Mapa de retos y sueños</h3><p>Definición del futuro deseado para que la persona tome control consciente de su propia vida.</p></div>
+                </li>
+                <li>
+                    <span>03</span>
+                    <div><h3>Camino al éxito</h3><p>Construcción de planes de acción alcanzables con hitos y compromisos claros.</p></div>
+                </li>
+            </ol>
+        </div>
+    </section>
+
+    <section class="public-section public-section-dark" id="experiencia">
+        <div class="public-container public-experience-grid">
+            <div>
+                <p class="public-eyebrow public-eyebrow-light">Formación y experiencia</p>
+                <h2 class="public-section-title">Experiencia ejecutiva convertida en acompañamiento.</h2>
+            </div>
+            <div class="public-experience-list">
+                <div><strong>34 años</strong><span>de experiencia en GE Ecopetrol.</span></div>
+                <div><strong>Talento Humano</strong><span>liderazgo de procesos administrativos, laborales y de personas.</span></div>
+                <div><strong>Coaching</strong><span>formación ejecutiva y Magíster en Coaching Directivo y Liderazgo.</span></div>
+                <div><strong>Innovación</strong><span>Magíster en Innovación y Emprendimiento.</span></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="public-section" id="faq">
+        <div class="public-container public-faq-grid">
+            <div>
+                <p class="public-eyebrow">Preguntas frecuentes</p>
+                <h2 class="public-section-title">Antes de iniciar un proceso.</h2>
+            </div>
+            <div class="public-faq-list">
+                <details>
+                    <summary>¿El acompañamiento de liderazgo se adapta a cada organización?</summary>
+                    <p>Sí. El proceso parte de la identificación de necesidades, acuerdos de trabajo y objetivos concertados entre sponsor, líder y coach.</p>
+                </details>
+                <details>
+                    <summary>¿Jubilación Plena incluye resultados individuales y organizacionales?</summary>
+                    <p>Sí. El proceso contempla análisis individual, mapa de retos y sueños, planes de acción y reportes tanto por participante como para la organización.</p>
+                </details>
+                <details>
+                    <summary>¿Qué temas pueden trabajarse en mentoría y consultoría?</summary>
+                    <p>Liderazgo, cultura, desempeño, clima, cambio, planeación estratégica de Talento Humano y relaciones laborales y sindicales.</p>
+                </details>
+                <details>
+                    <summary>¿Qué busca el Modelo ALPES?</summary>
+                    <p>Entender la situación actual, definir retos y sueños y construir un camino de acción hacia una vida con propósito, bienestar y equilibrio.</p>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <section class="public-cta" id="contacto">
+        <div class="public-container public-cta-inner">
+            <div>
+                <p class="public-eyebrow">Conversemos</p>
+                <h2>¿Qué transformación necesita hoy tu organización o tu equipo?</h2>
+                <p>Podemos partir de una conversación para identificar el reto, el contexto y el tipo de acompañamiento más adecuado.</p>
+            </div>
+            <div class="public-cta-actions">
+                <a class="public-button public-button-primary" href="#inicio">Volver al inicio</a>
+                <a class="public-button public-button-secondary" href="{% url 'accounts:login' %}">Acceso a la plataforma</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="public-footer">
+    <div class="public-container public-footer-inner">
+        <div>
+            <strong>ALPES</strong>
+            <p>Coaching Directivo, Liderazgo y Transformación.</p>
+        </div>
+        <p>José Alfonso Marrugo Roa · Portafolio de servicios</p>
+    </div>
+</footer>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/portfolio.js' %}" defer></script>
+{% endblock %}
