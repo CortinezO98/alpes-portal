@@ -1,0 +1,12 @@
+Hola,
+
+Gracias por crear tu cuenta en ALPES.
+
+Para confirmar que esta dirección de correo te pertenece, abre el siguiente enlace:
+
+{{ activate_url }}
+
+Si no solicitaste esta cuenta, puedes ignorar este mensaje.
+
+ALPES
+Coaching · Liderazgo · Transformación
