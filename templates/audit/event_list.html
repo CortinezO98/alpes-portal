@@ -1,0 +1,80 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Auditoría | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/audit.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="audit-page">
+    <header class="audit-header">
+        <div>
+            <p class="audit-eyebrow">Seguridad y trazabilidad</p>
+            <h1>Auditoría del sistema.</h1>
+            <p>Consulta eventos sensibles de autenticación y administración. Este registro es de solo lectura.</p>
+        </div>
+        <form class="audit-filter" method="get">
+            <label for="action">Evento</label>
+            <select id="action" name="action">
+                <option value="">Todos los eventos</option>
+                {% for value, label in action_choices %}
+                    <option value="{{ value }}" {% if selected_action == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Filtrar</button>
+        </form>
+    </header>
+
+    <div class="audit-table-wrap">
+        <table class="audit-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Evento</th>
+                    <th>Actor</th>
+                    <th>Objetivo</th>
+                    <th>IP protegida</th>
+                    <th>Detalle</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                    <tr>
+                        <td>{{ event.created_at|date:"d/m/Y H:i:s" }}</td>
+                        <td>{{ event.get_action_display }}</td>
+                        <td>{{ event.actor.email|default:"Sistema / anónimo" }}</td>
+                        <td>{{ event.target_label|default:"—" }}</td>
+                        <td><code>{{ event.ip_hash|slice:":10" }}{% if event.ip_hash %}…{% endif %}</code></td>
+                        <td>
+                            {% if event.metadata %}
+                                <details>
+                                    <summary>Ver detalle</summary>
+                                    <pre>{{ event.metadata }}</pre>
+                                </details>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6">No hay eventos para el filtro seleccionado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if is_paginated %}
+        <nav class="audit-pagination" aria-label="Paginación de auditoría">
+            {% if page_obj.has_previous %}
+                <a href="?action={{ selected_action }}&page={{ page_obj.previous_page_number }}">Anterior</a>
+            {% endif %}
+            <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?action={{ selected_action }}&page={{ page_obj.next_page_number }}">Siguiente</a>
+            {% endif %}
+        </nav>
+    {% endif %}
+</section>
+{% endblock %}
