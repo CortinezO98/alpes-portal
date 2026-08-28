@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .legal import PublicLegalView
-from .views import PublicHomeView, PublicServiceDetailView, robots_txt, sitemap_xml
+from .legal import PublicLegalView, robots_txt
+from .views import PublicHomeView, PublicServiceDetailView, sitemap_xml
 
 app_name = "portfolio"
 
