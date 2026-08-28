@@ -1,11 +1,20 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
+
+from apps.audit.models import AuditEvent
+from apps.audit.services import (
+    clear_attempts,
+    is_rate_limited,
+    record_attempt,
+    request_ip_hash,
+    write_audit_event,
+)
 
 from .forms import EmailAuthenticationForm, UserCreateForm, UserUpdateForm
 from .mixins import RoleRequiredMixin
@@ -16,6 +25,85 @@ class UserLoginView(LoginView):
     template_name = "accounts/login.html"
     authentication_form = EmailAuthenticationForm
     redirect_authenticated_user = True
+
+    def _rate_keys(self):
+        return {
+            "login_ip": self.request.META.get("REMOTE_ADDR", "unknown"),
+            "login_identity": self.request.POST.get("username", ""),
+        }
+
+    def post(self, request, *args, **kwargs):
+        keys = self._rate_keys()
+        if any(
+            is_rate_limited(scope=scope, raw_key=raw_key)
+            for scope, raw_key in keys.items()
+        ):
+            form = self.get_form()
+            form.add_error(
+                None,
+                "Demasiados intentos. Intenta nuevamente en unos minutos.",
+            )
+            write_audit_event(
+                action=AuditEvent.Action.LOGIN_FAILURE,
+                request=request,
+                metadata={"rate_limited": True},
+            )
+            return self.form_invalid(form)
+        return super().post(request, *args, **kwargs)
+
+    def form_invalid(self, form):
+        if self.request.method == "POST":
+            for scope, raw_key in self._rate_keys().items():
+                record_attempt(scope=scope, raw_key=raw_key)
+            write_audit_event(
+                action=AuditEvent.Action.LOGIN_FAILURE,
+                request=self.request,
+                metadata={"rate_limited": False},
+            )
+        return super().form_invalid(form)
+
+    def form_valid(self, form):
+        for scope, raw_key in self._rate_keys().items():
+            clear_attempts(scope=scope, raw_key=raw_key)
+        response = super().form_valid(form)
+        write_audit_event(
+            action=AuditEvent.Action.LOGIN_SUCCESS,
+            request=self.request,
+            actor=self.request.user,
+        )
+        return response
+
+
+class UserPasswordResetView(PasswordResetView):
+    template_name = "accounts/password_reset_form.html"
+    email_template_name = "accounts/password_reset_email.txt"
+    subject_template_name = "accounts/password_reset_subject.txt"
+    success_url = reverse_lazy("accounts:password-reset-done")
+
+    def post(self, request, *args, **kwargs):
+        email = request.POST.get("email", "")
+        ip = request.META.get("REMOTE_ADDR", "unknown")
+        keys = {
+            "password_reset_ip": ip,
+            "password_reset_identity": email,
+        }
+        limited = any(
+            is_rate_limited(scope=scope, raw_key=raw_key)
+            for scope, raw_key in keys.items()
+        )
+
+        for scope, raw_key in keys.items():
+            record_attempt(scope=scope, raw_key=raw_key)
+
+        write_audit_event(
+            action=AuditEvent.Action.PASSWORD_RESET_REQUEST,
+            request=request,
+            metadata={"rate_limited": limited},
+        )
+
+        if limited:
+            return redirect("accounts:password-reset-done")
+        return super().post(request, *args, **kwargs)
 
 
 class UserLogoutView(LogoutView):
@@ -101,6 +189,13 @@ class UserManagementCreateView(
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        write_audit_event(
+            action=AuditEvent.Action.USER_CREATED,
+            request=self.request,
+            actor=self.request.user,
+            target=self.object,
+            metadata={"role": self.object.role},
+        )
         messages.success(
             self.request,
             "La cuenta fue creada correctamente.",
@@ -126,7 +221,19 @@ class UserManagementUpdateView(
         return user
 
     def form_valid(self, form):
+        previous = User.objects.get(pk=self.object.pk)
         response = super().form_valid(form)
+        write_audit_event(
+            action=AuditEvent.Action.USER_UPDATED,
+            request=self.request,
+            actor=self.request.user,
+            target=self.object,
+            metadata={
+                "previous_role": previous.role,
+                "new_role": self.object.role,
+                "email_changed": previous.email != self.object.email,
+            },
+        )
         messages.success(
             self.request,
             "La cuenta fue actualizada correctamente.",
@@ -152,6 +259,14 @@ class UserManagementToggleStatusView(
 
         user.is_active = not user.is_active
         user.save(update_fields=("is_active",))
+
+        write_audit_event(
+            action=AuditEvent.Action.USER_STATUS_CHANGED,
+            request=request,
+            actor=request.user,
+            target=user,
+            metadata={"is_active": user.is_active},
+        )
 
         state = "activada" if user.is_active else "desactivada"
         messages.success(request, f"La cuenta fue {state} correctamente.")
