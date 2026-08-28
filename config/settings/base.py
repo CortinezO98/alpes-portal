@@ -30,6 +30,21 @@ FACEBOOK_APP_ID = env("FACEBOOK_APP_ID", default="").strip()
 FACEBOOK_APP_SECRET = env("FACEBOOK_APP_SECRET", default="").strip()
 FACEBOOK_AUTH_ENABLED = bool(FACEBOOK_APP_ID and FACEBOOK_APP_SECRET)
 
+EMAIL_HOST = env("EMAIL_HOST", default="").strip()
+EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="").strip()
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
+EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=15)
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="ALPES <no-reply@localhost>")
+SERVER_EMAIL = env("SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
+EMAIL_SUBJECT_PREFIX = "[ALPES] "
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+if EMAIL_USE_TLS and EMAIL_USE_SSL:
+    raise ValueError("EMAIL_USE_TLS y EMAIL_USE_SSL no pueden estar activos al mismo tiempo.")
+
 
 INSTALLED_APPS = [
     "django.contrib.admin",
