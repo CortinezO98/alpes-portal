@@ -8,41 +8,65 @@
 {% endblock %}
 
 {% block body %}
-<main class="auth-shell">
+<main class="auth-shell" id="inicio">
     <section class="auth-brand" aria-label="Identidad ALPES">
-        <div class="auth-brand-content">
-            <p class="auth-brand-mark">ALPES</p>
+        <div class="auth-brand-content animate__animated animate__fadeIn">
+            <a class="auth-brand-home" href="{% url 'portfolio:home' %}" aria-label="Volver al portafolio público de ALPES">
+                <span class="auth-brand-emblem" aria-hidden="true">A</span>
+                <span>
+                    <strong>ALPES</strong>
+                    <small>Volver al portafolio</small>
+                </span>
+            </a>
 
             <div>
                 <p class="auth-brand-kicker">Liderazgo · Propósito · Bienestar</p>
                 <h1 class="auth-brand-title">Transformar con sentido.</h1>
                 <p class="auth-brand-copy">
-                    Un espacio para acompañar procesos de liderazgo, desarrollo humano
+                    Un espacio privado para acompañar procesos de liderazgo, desarrollo humano
                     y bienestar con una mirada integral, consciente y estratégica.
                 </p>
             </div>
 
-            <p class="auth-brand-copy">
-                Plataforma privada de acompañamiento y evaluación ALPES.
+            <p class="auth-brand-note">
+                Acceso seguro a evaluaciones, resultados y procesos asignados en ALPES.
             </p>
         </div>
     </section>
 
-    <section class="auth-panel">
-        <div class="auth-card">
-            <p class="auth-mobile-brand">ALPES</p>
-            <p class="auth-kicker">Acceso privado</p>
-            <h2 class="auth-title">Bienvenido de nuevo.</h2>
-            <p class="auth-description">
-                Ingresa con el correo asociado a tu cuenta para continuar.
-            </p>
+    <section class="auth-panel" aria-labelledby="login-title">
+        <div class="auth-card animate__animated animate__fadeInUp">
+            <a class="auth-mobile-brand" href="{% url 'portfolio:home' %}" aria-label="Volver al portafolio público de ALPES">
+                <span class="auth-brand-emblem" aria-hidden="true">A</span>
+                <span>ALPES</span>
+                <span class="auth-home-arrow" aria-hidden="true">↗</span>
+            </a>
+
+            <div class="auth-heading">
+                <p class="auth-kicker">Acceso privado</p>
+                <h2 class="auth-title" id="login-title">Bienvenido de nuevo.</h2>
+                <p class="auth-description">
+                    Ingresa a tu espacio ALPES con Facebook o con el correo asociado a tu cuenta.
+                </p>
+            </div>
 
             {% if facebook_auth_enabled %}
-                <form method="post" action="{% provider_login_url 'facebook' process='login' %}">
+                <form method="post" action="{% provider_login_url 'facebook' process='login' %}" class="auth-provider-form">
                     {% csrf_token %}
-                    <button class="button button-block" type="submit">Continuar con Facebook</button>
+                    <button class="auth-provider-button" type="submit">
+                        <span class="auth-facebook-icon" aria-hidden="true">f</span>
+                        <span>Continuar con Facebook</span>
+                    </button>
                 </form>
-                <p class="auth-description" aria-hidden="true">o continúa con tu correo</p>
+
+                <div class="auth-divider" role="separator" aria-label="O continuar con correo">
+                    <span>o continúa con correo</span>
+                </div>
+            {% else %}
+                <div class="auth-method-label">
+                    <span class="auth-mail-icon" aria-hidden="true">@</span>
+                    <span>Iniciar sesión con correo</span>
+                </div>
             {% endif %}
 
             {% if form.non_field_errors %}
@@ -67,9 +91,14 @@
                 </div>
 
                 <div class="form-field">
-                    <label class="form-label" for="{{ form.password.id_for_label }}">
-                        {{ form.password.label }}
-                    </label>
+                    <div class="auth-label-row">
+                        <label class="form-label" for="{{ form.password.id_for_label }}">
+                            {{ form.password.label }}
+                        </label>
+                        <a class="auth-link auth-link-subtle" href="{% url 'accounts:password-reset' %}">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
                     {{ form.password }}
                     {% for error in form.password.errors %}
                         <p class="form-error">{{ error }}</p>
@@ -80,19 +109,19 @@
                     <input type="hidden" name="next" value="{{ next }}">
                 {% endif %}
 
-                <div class="auth-actions">
-                    <a class="auth-link" href="{% url 'accounts:password-reset' %}">
-                        ¿Olvidaste tu contraseña?
-                    </a>
-                </div>
-
-                <button class="button button-primary button-block" type="submit">
-                    Ingresar
+                <button class="button button-primary button-block auth-submit" type="submit">
+                    Iniciar sesión con correo
                 </button>
             </form>
 
+            <div class="auth-account-switch">
+                <p>¿Aún no tienes una cuenta?</p>
+                <a class="auth-secondary-action" href="{% url 'accounts:signup' %}">Crear cuenta</a>
+            </div>
+
             <footer class="auth-footer">
-                ¿Aún no tienes cuenta? <a class="auth-link" href="{% url 'accounts:signup' %}">Crear cuenta</a>
+                <span>Acceso protegido por controles de seguridad ALPES.</span>
+                <a class="auth-link" href="{% url 'portfolio:home' %}">Ir al portafolio público</a>
             </footer>
         </div>
     </section>
