@@ -122,7 +122,7 @@ class Assessment(models.Model):
         indexes = [
             models.Index(
                 fields=("participant", "status"),
-                name="assessment_participant_status_idx",
+                name="assess_part_status_idx",
             )
         ]
         verbose_name = "evaluación"
