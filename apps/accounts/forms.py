@@ -31,11 +31,7 @@ class EmailAuthenticationForm(AuthenticationForm):
 
     def confirm_login_allowed(self, user):
         super().confirm_login_allowed(user)
-
-        from allauth.account.models import EmailAddress
-
-        email_record = EmailAddress.objects.filter(user=user, email__iexact=user.email).first()
-        if email_record is not None and not email_record.verified:
+        if user.email_verification_required and not user.is_email_verified:
             raise forms.ValidationError(
                 "Confirma tu correo electrónico antes de iniciar sesión.",
                 code="email_not_verified",
@@ -125,6 +121,7 @@ class UserCreateForm(UserCreationForm):
         user.role = self.cleaned_data["role"]
         user.is_staff = user.role == User.Role.ADMIN
         user.is_superuser = False
+        user.email_verification_required = False
         if commit:
             user.save()
         return user
