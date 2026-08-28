@@ -14,14 +14,18 @@
 
             <nav class="app-nav">
                 <p class="app-nav-section">Principal</p>
-                <a class="app-nav-link" href="{% url 'accounts:dashboard' %}" aria-current="page">
+                <a class="app-nav-link" href="{% url 'accounts:dashboard' %}">
                     Panel principal
                 </a>
 
                 <p class="app-nav-section">Plataforma</p>
                 <span class="app-nav-link">Evaluaciones</span>
                 <span class="app-nav-link">Reportes</span>
-                <span class="app-nav-link">Usuarios</span>
+                {% if request.user.is_superuser or request.user.role == 'SUPERADMIN' %}
+                    <a class="app-nav-link" href="{% url 'accounts:user-management-list' %}">
+                        Usuarios
+                    </a>
+                {% endif %}
             </nav>
 
             <div class="app-sidebar-footer">
@@ -43,6 +47,15 @@
         </header>
 
         <main class="app-content">
+            {% if messages %}
+                <div class="app-messages" aria-live="polite">
+                    {% for message in messages %}
+                        <div class="app-message app-message-{{ message.tags|default:'info' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
             {% block dashboard_content %}{% endblock %}
         </main>
     </div>
