@@ -8,4 +8,8 @@ urlpatterns = [
         "cuenta/",
         include("apps.accounts.urls"),
     ),
+    path(
+        "evaluaciones/",
+        include("apps.assessments.urls"),
+    ),
 ]
