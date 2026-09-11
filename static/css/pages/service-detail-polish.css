@@ -27,7 +27,8 @@
 }
 
 .service-leadership-figure,
-.service-retirement-figure {
+.service-retirement-figure,
+.service-consulting-figure {
     overflow: hidden;
     margin: 0 0 clamp(1.8rem, 3.5vw, 2.75rem);
     border: 1px solid var(--color-border);
@@ -37,7 +38,8 @@
 }
 
 .service-leadership-figure img,
-.service-retirement-figure img {
+.service-retirement-figure img,
+.service-consulting-figure img {
     display: block;
     width: 100%;
     aspect-ratio: 16 / 9;
@@ -45,26 +47,31 @@
     object-position: 65% center;
 }
 
-.service-retirement-figure {
+.service-retirement-figure,
+.service-consulting-figure {
     margin-top: clamp(1.25rem, 2.4vw, 1.8rem);
     margin-bottom: 0;
 }
 
-.service-retirement-figure img {
+.service-retirement-figure img,
+.service-consulting-figure img {
     aspect-ratio: 2 / 1;
     object-position: 65% 58%;
 }
 
-.service-intro-copy--retirement .service-audience {
+.service-intro-copy--retirement .service-audience,
+.service-intro-copy--consulting .service-audience {
     margin-top: 1.5rem;
     padding-top: 1.15rem;
 }
 
-.service-page--retirement .service-intro {
+.service-page--retirement .service-intro,
+.service-page--consulting .service-intro {
     padding-bottom: clamp(2.5rem, 4vw, 4rem);
 }
 
-.service-page--retirement .service-includes {
+.service-page--retirement .service-includes,
+.service-page--consulting .service-includes {
     padding-top: clamp(3.25rem, 5vw, 4.75rem);
 }
 
@@ -89,7 +96,8 @@
 }
 
 .service-leadership-outcomes,
-.service-retirement-outcomes {
+.service-retirement-outcomes,
+.service-consulting-outcomes {
     overflow: hidden;
     position: relative;
     margin-top: clamp(2.6rem, 5vw, 4.25rem);
@@ -98,7 +106,8 @@
 }
 
 .service-leadership-roadmap,
-.service-retirement-roadmap {
+.service-retirement-roadmap,
+.service-consulting-roadmap {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -108,7 +117,8 @@
 }
 
 .service-leadership-outcomes-content,
-.service-retirement-outcomes-content {
+.service-retirement-outcomes-content,
+.service-consulting-outcomes-content {
     position: relative;
     z-index: 1;
     width: min(100%, 21rem);
@@ -119,7 +129,8 @@
 }
 
 .service-leadership-outcomes h3,
-.service-retirement-outcomes h3 {
+.service-retirement-outcomes h3,
+.service-consulting-outcomes h3 {
     max-width: 18rem;
     margin: .75rem 0 1.25rem;
     color: var(--color-text);
@@ -130,7 +141,8 @@
 }
 
 .service-leadership-outcomes ul,
-.service-retirement-outcomes ul {
+.service-retirement-outcomes ul,
+.service-consulting-outcomes ul {
     display: grid;
     gap: .8rem;
     margin: 0;
@@ -139,7 +151,8 @@
 }
 
 .service-leadership-outcomes li,
-.service-retirement-outcomes li {
+.service-retirement-outcomes li,
+.service-consulting-outcomes li {
     display: grid;
     grid-template-columns: .7rem 1fr;
     gap: .5rem;
@@ -150,7 +163,8 @@
 }
 
 .service-leadership-outcomes li::before,
-.service-retirement-outcomes li::before {
+.service-retirement-outcomes li::before,
+.service-consulting-outcomes li::before {
     content: "•";
     color: var(--color-accent);
     font-size: 1.2rem;
@@ -161,12 +175,15 @@
     .service-leadership-outcomes,
     .service-leadership-outcomes-content,
     .service-retirement-outcomes,
-    .service-retirement-outcomes-content {
+    .service-retirement-outcomes-content,
+    .service-consulting-outcomes,
+    .service-consulting-outcomes-content {
         min-height: 25rem;
     }
 
     .service-leadership-outcomes-content,
-    .service-retirement-outcomes-content {
+    .service-retirement-outcomes-content,
+    .service-consulting-outcomes-content {
         width: 100%;
         background: linear-gradient(90deg, rgba(247, 244, 236, .96), rgba(247, 244, 236, .62));
     }

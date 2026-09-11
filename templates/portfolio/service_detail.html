@@ -43,7 +43,7 @@
     </div>
 </header>
 
-<main id="inicio"{% if service.number == "01" %} class="service-page--leadership"{% elif service.number == "02" %} class="service-page--retirement"{% endif %}>
+<main id="inicio"{% if service.number == "01" %} class="service-page--leadership"{% elif service.number == "02" %} class="service-page--retirement"{% elif service.number == "03" %} class="service-page--consulting"{% endif %}>
     <section class="service-hero">
         <div class="public-container service-hero-grid">
             <div class="animate__animated animate__fadeInUp motion-soft">
@@ -81,9 +81,13 @@
                     <figure class="service-retirement-figure">
                         <img src="{% static 'img/retirement-journey-detail.png' %}" alt="Pareja adulta caminando junto al mar, en una nueva etapa de vida">
                     </figure>
+                {% elif service.number == "03" %}
+                    <figure class="service-consulting-figure">
+                        <img src="{% static 'img/organizational-consulting-detail.png' %}" alt="Equipo directivo trabajando en una sesión de consultoría organizacional">
+                    </figure>
                 {% endif %}
             </div>
-            <div class="service-intro-copy{% if service.number == "02" %} service-intro-copy--retirement{% endif %}">
+            <div class="service-intro-copy{% if service.number == "02" %} service-intro-copy--retirement{% elif service.number == "03" %} service-intro-copy--consulting{% endif %}">
                 <p>{{ service.description }}</p>
                 <div class="service-audience">
                     <span>¿Para quién?</span>
@@ -112,6 +116,19 @@
                                 <li>Claridad para reconocer prioridades y proyectar nuevos caminos.</li>
                                 <li>Mayor bienestar y equilibrio en las áreas importantes de la vida.</li>
                                 <li>Acciones concretas para avanzar hacia una jubilación con propósito.</li>
+                            </ul>
+                        </div>
+                    </section>
+                {% elif service.number == "03" %}
+                    <section class="service-consulting-outcomes" aria-labelledby="consulting-outcomes-title">
+                        <img class="service-consulting-roadmap" src="{% static 'img/leadership-roadmap.png' %}" alt="Ruta visual para fortalecer capacidades organizacionales y alcanzar objetivos">
+                        <div class="service-consulting-outcomes-content">
+                            <p class="public-eyebrow">Resultados del proceso</p>
+                            <h3 id="consulting-outcomes-title">Capacidades que impulsan resultados.</h3>
+                            <ul>
+                                <li>Prioridades organizacionales y una ruta de trabajo más claras.</li>
+                                <li>Equipos alineados con los objetivos estratégicos.</li>
+                                <li>Procesos fortalecidos para lograr resultados sostenibles.</li>
                             </ul>
                         </div>
                     </section>
@@ -157,7 +174,7 @@
         <div class="public-container service-process-grid">
             <div>
                 <p class="public-eyebrow">Proceso</p>
-                <h2 class="public-section-title">{% if service.number == "01" %}Fases del programa.{% elif service.number == "02" %}Proceso de acompañamiento.{% else %}Un camino estructurado, humano y accionable.{% endif %}</h2>
+                <h2 class="public-section-title">{% if service.number == "01" %}Fases del programa.{% elif service.number == "02" %}Proceso de acompañamiento.{% elif service.number == "03" %}Procesos de mentoría y consultoría.{% else %}Un camino estructurado, humano y accionable.{% endif %}</h2>
             </div>
             {% if service.number == "01" %}
                 <ol class="service-process-list">
@@ -179,6 +196,16 @@
                     <li><span>5</span><div><h3>Planes de acción</h3><p>Traducimos las metas y los sueños en acciones concretas para avanzar con claridad.</p></div></li>
                     <li><span>6</span><div><h3>Reporte individual</h3><p>Cada participante recibe una síntesis de su proceso, reflexiones y próximos pasos.</p></div></li>
                     <li><span>7</span><div><h3>Reporte organizacional</h3><p>La organización recibe una mirada de cierre que respeta los acuerdos de confidencialidad.</p></div></li>
+                </ol>
+            {% elif service.number == "03" %}
+                <ol class="service-process-list">
+                    <li><span>1</span><div><h3>Modelo de liderazgo organizacional</h3><p>Diseño del modelo de liderazgo y acompañamiento en su implementación.</p></div></li>
+                    <li><span>2</span><div><h3>Cultura organizacional</h3><p>Fortalecimiento de los valores, prácticas y relaciones que sostienen la cultura.</p></div></li>
+                    <li><span>3</span><div><h3>Gestión del desempeño por resultados</h3><p>Definición de prácticas para orientar el desempeño hacia objetivos compartidos.</p></div></li>
+                    <li><span>4</span><div><h3>Clima organizacional</h3><p>Lectura y mejora de las condiciones que favorecen el compromiso y la colaboración.</p></div></li>
+                    <li><span>5</span><div><h3>Gestión del cambio</h3><p>Acompañamiento para movilizar a las personas durante procesos de transformación.</p></div></li>
+                    <li><span>6</span><div><h3>Planeación estratégica de Talento Humano</h3><p>Diseño de prioridades de talento alineadas con los retos estratégicos de la organización.</p></div></li>
+                    <li><span>7</span><div><h3>Relaciones laborales y sindicales</h3><p>Orientación para fortalecer relaciones laborales constructivas y sostenibles.</p></div></li>
                 </ol>
             {% else %}
                 <ol class="service-process-list">
