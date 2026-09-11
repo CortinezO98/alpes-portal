@@ -72,7 +72,7 @@
                 </div>
             </div>
             <aside class="service-hero-statement animate__animated animate__fadeInUp motion-card">
-                <span>ALPES</span>
+                {% if service.number != "01" %}<span>ALPES</span>{% endif %}
                 <p>{{ service.statement }}</p>
             </aside>
         </div>
