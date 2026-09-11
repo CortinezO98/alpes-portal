@@ -43,7 +43,7 @@
     </div>
 </header>
 
-<main id="inicio"{% if service.number == "01" %} class="service-page--leadership"{% endif %}>
+<main id="inicio"{% if service.number == "01" %} class="service-page--leadership"{% elif service.number == "02" %} class="service-page--retirement"{% endif %}>
     <section class="service-hero">
         <div class="public-container service-hero-grid">
             <div class="animate__animated animate__fadeInUp motion-soft">

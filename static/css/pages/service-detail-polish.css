@@ -60,6 +60,14 @@
     padding-top: 1.15rem;
 }
 
+.service-page--retirement .service-intro {
+    padding-bottom: clamp(2.5rem, 4vw, 4rem);
+}
+
+.service-page--retirement .service-includes {
+    padding-top: clamp(3.25rem, 5vw, 4.75rem);
+}
+
 .service-page--leadership .service-includes,
 .service-page--leadership .service-process {
     padding-block: clamp(4.5rem, 7vw, 7rem);
