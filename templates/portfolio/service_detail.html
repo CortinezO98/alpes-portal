@@ -78,6 +78,17 @@
                     <span>¿Para quién?</span>
                     <p>{{ service.audience }}</p>
                 </div>
+                {% if service.number == "01" %}
+                    <section class="service-leadership-outcomes" aria-labelledby="leadership-outcomes-title">
+                        <p class="public-eyebrow">Resultados del proceso</p>
+                        <h3 id="leadership-outcomes-title">Resultados que se vuelven visibles.</h3>
+                        <ul>
+                            <li>Mayor claridad para priorizar y decidir.</li>
+                            <li>Conversaciones más efectivas con el equipo.</li>
+                            <li>Acciones concretas desde la primera sesión.</li>
+                        </ul>
+                    </section>
+                {% endif %}
             </div>
         </div>
     </section>

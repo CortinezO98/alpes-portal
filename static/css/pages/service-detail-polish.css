@@ -52,3 +52,44 @@
         padding-top: 0;
     }
 }
+
+.service-leadership-outcomes {
+    margin-top: clamp(2.6rem, 5vw, 4.25rem);
+    border-top: 1px solid rgba(198, 154, 69, .72);
+    padding-top: 1.35rem;
+}
+
+.service-leadership-outcomes h3 {
+    max-width: 18rem;
+    margin: .75rem 0 1.25rem;
+    color: var(--color-text);
+    font-family: var(--font-serif);
+    font-size: clamp(1.65rem, 2.3vw, 2.2rem);
+    font-weight: 400;
+    line-height: 1.05;
+}
+
+.service-leadership-outcomes ul {
+    display: grid;
+    gap: .8rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.service-leadership-outcomes li {
+    display: grid;
+    grid-template-columns: .7rem 1fr;
+    gap: .5rem;
+    align-items: start;
+    color: var(--color-text-muted);
+    font-size: .96rem;
+    line-height: 1.55;
+}
+
+.service-leadership-outcomes li::before {
+    content: "•";
+    color: var(--color-accent);
+    font-size: 1.2rem;
+    line-height: .9;
+}
