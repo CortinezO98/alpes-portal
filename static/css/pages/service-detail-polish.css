@@ -45,6 +45,11 @@
     object-position: 65% center;
 }
 
+.service-retirement-figure {
+    margin-top: clamp(1.8rem, 3.5vw, 2.75rem);
+    margin-bottom: 0;
+}
+
 .service-page--leadership .service-includes,
 .service-page--leadership .service-process {
     padding-block: clamp(4.5rem, 7vw, 7rem);

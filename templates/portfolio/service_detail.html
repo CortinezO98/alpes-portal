@@ -74,13 +74,14 @@
                     <figure class="service-leadership-figure">
                         <img src="{% static 'img/leadership-coaching-detail.png' %}" alt="Líder en una conversación de coaching ejecutivo">
                     </figure>
-                {% elif service.number == "02" %}
+                {% endif %}
+                <p class="public-eyebrow">Enfoque</p>
+                <h2 class="public-section-title">Acompañamiento diseñado para avanzar con claridad.</h2>
+                {% if service.number == "02" %}
                     <figure class="service-retirement-figure">
                         <img src="{% static 'img/retirement-journey-detail.png' %}" alt="Pareja adulta caminando junto al mar, en una nueva etapa de vida">
                     </figure>
                 {% endif %}
-                <p class="public-eyebrow">Enfoque</p>
-                <h2 class="public-section-title">Acompañamiento diseñado para avanzar con claridad.</h2>
             </div>
             <div class="service-intro-copy">
                 <p>{{ service.description }}</p>
