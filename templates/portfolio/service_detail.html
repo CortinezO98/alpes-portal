@@ -6,6 +6,24 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/portfolio.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/service-detail.css' %}">
+<style>
+    .service-leadership-figure {
+        overflow: hidden;
+        margin: 2.5rem 0 0;
+        border: 1px solid var(--color-border);
+        border-radius: 1rem;
+        background: var(--color-primary-100);
+        box-shadow: 0 1.5rem 3rem rgba(11, 79, 74, .1);
+    }
+
+    .service-leadership-figure img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        object-fit: cover;
+        object-position: 65% center;
+    }
+</style>
 {% endblock %}
 
 {% block body %}
@@ -65,6 +83,11 @@
             <div>
                 <p class="public-eyebrow">Enfoque</p>
                 <h2 class="public-section-title">Acompañamiento diseñado para avanzar con claridad.</h2>
+                {% if service.number == "01" %}
+                    <figure class="service-leadership-figure">
+                        <img src="{% static 'img/leadership-coaching-detail.png' %}" alt="Líder en una conversación de coaching ejecutivo">
+                    </figure>
+                {% endif %}
             </div>
             <div class="service-intro-copy">
                 <p>{{ service.description }}</p>
