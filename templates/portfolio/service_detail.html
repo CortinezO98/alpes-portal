@@ -80,19 +80,32 @@
         <div class="public-container">
             <div class="service-section-heading">
                 <div>
-                    <p class="public-eyebrow">Qué incluye</p>
-                    <h2 class="public-section-title">Componentes del acompañamiento.</h2>
+                    <p class="public-eyebrow">{% if service.number == "01" %}Ventajas{% else %}Qué incluye{% endif %}</p>
+                    <h2 class="public-section-title">{% if service.number == "01" %}Beneficios para el líder y la organización.{% else %}Componentes del acompañamiento.{% endif %}</h2>
                 </div>
-                <p>Una estructura concreta que permite pasar de la lectura inicial a acciones y resultados observables.</p>
+                <p>{% if service.number == "01" %}Un acompañamiento que fortalece capacidades individuales y genera resultados sostenibles en la organización.{% else %}Una estructura concreta que permite pasar de la lectura inicial a acciones y resultados observables.{% endif %}</p>
             </div>
-            <div class="service-includes-grid">
-                {% for item in service.includes %}
-                    <article>
-                        <span>0{{ forloop.counter }}</span>
-                        <p>{{ item }}</p>
-                    </article>
-                {% endfor %}
-            </div>
+            {% if service.number == "01" %}
+                <div class="service-includes-grid">
+                    <article><span>01</span><p>Fortalece la cultura organizacional.</p></article>
+                    <article><span>02</span><p>Mejora el clima laboral y las relaciones.</p></article>
+                    <article><span>03</span><p>Incrementa el compromiso y la motivación.</p></article>
+                    <article><span>04</span><p>Fortalece líderes preparados para afrontar desafíos actuales.</p></article>
+                    <article><span>05</span><p>Potencia el desempeño y los resultados.</p></article>
+                    <article><span>06</span><p>Reduce conflictos y mejora la comunicación.</p></article>
+                    <article><span>07</span><p>Favorece la retención y el desarrollo del talento.</p></article>
+                    <article><span>08</span><p>Genera procesos de transformación sostenible.</p></article>
+                </div>
+            {% else %}
+                <div class="service-includes-grid">
+                    {% for item in service.includes %}
+                        <article>
+                            <span>0{{ forloop.counter }}</span>
+                            <p>{{ item }}</p>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
     </section>
 
@@ -100,19 +113,32 @@
         <div class="public-container service-process-grid">
             <div>
                 <p class="public-eyebrow">Proceso</p>
-                <h2 class="public-section-title">Un camino estructurado, humano y accionable.</h2>
+                <h2 class="public-section-title">{% if service.number == "01" %}Fases del programa.{% else %}Un camino estructurado, humano y accionable.{% endif %}</h2>
             </div>
-            <ol class="service-process-list">
-                {% for number, title, description in service.steps %}
-                    <li>
-                        <span>{{ number }}</span>
-                        <div>
-                            <h3>{{ title }}</h3>
-                            <p>{{ description }}</p>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ol>
+            {% if service.number == "01" %}
+                <ol class="service-process-list">
+                    <li><span>1</span><div><h3>Identificación de necesidades</h3><p>Identificamos las necesidades de la organización y el contexto del líder.</p></div></li>
+                    <li><span>2</span><div><h3>Alianza y acuerdos</h3><p>Definimos confidencialidad, periodicidad, modalidad y los acuerdos que guían el proceso.</p></div></li>
+                    <li><span>3</span><div><h3>Reunión tripartita</h3><p>El sponsor, el líder y el coach acuerdan el objetivo del proceso.</p></div></li>
+                    <li><span>4</span><div><h3>Autovaloración</h3><p>Reconocemos las competencias de liderazgo que orientarán el acompañamiento.</p></div></li>
+                    <li><span>5</span><div><h3>Mentoría individual</h3><p>Cuatro sesiones individuales de mentoría para ampliar recursos y perspectivas.</p></div></li>
+                    <li><span>6</span><div><h3>Coaching individual</h3><p>Cuatro sesiones individuales de coaching enfocadas en acciones concretas.</p></div></li>
+                    <li><span>7</span><div><h3>Reporte individual</h3><p>Una síntesis de avances y aprendizajes para el líder.</p></div></li>
+                    <li><span>8</span><div><h3>Reporte organizacional</h3><p>Una mirada de cierre para la organización, respetando los acuerdos de confidencialidad.</p></div></li>
+                </ol>
+            {% else %}
+                <ol class="service-process-list">
+                    {% for number, title, description in service.steps %}
+                        <li>
+                            <span>{{ number }}</span>
+                            <div>
+                                <h3>{{ title }}</h3>
+                                <p>{{ description }}</p>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ol>
+            {% endif %}
         </div>
     </section>
 
