@@ -61,18 +61,6 @@
         }
     });
 
-    const footerInner = document.querySelector(".public-footer-inner");
-    if (footerInner && !footerInner.querySelector("[data-legal-links]")) {
-        const legalLinks = document.createElement("div");
-        legalLinks.className = "public-legal-links";
-        legalLinks.setAttribute("data-legal-links", "");
-        legalLinks.innerHTML = `
-            <a href="/privacidad/">Privacidad</a>
-            <a href="/tratamiento-de-datos/">Tratamiento de datos</a>
-        `;
-        footerInner.appendChild(legalLinks);
-    }
-
     const whatsappHref =
         "https://wa.me/573107426028?text=Hola%2C%20quisiera%20conocer%20m%C3%A1s%20sobre%20los%20servicios%20ALPES.";
 
