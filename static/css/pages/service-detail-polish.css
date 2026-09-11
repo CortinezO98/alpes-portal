@@ -26,7 +26,8 @@
     padding-top: .35rem;
 }
 
-.service-leadership-figure {
+.service-leadership-figure,
+.service-retirement-figure {
     overflow: hidden;
     margin: 0 0 clamp(1.8rem, 3.5vw, 2.75rem);
     border: 1px solid var(--color-border);
@@ -35,7 +36,8 @@
     box-shadow: 0 1.5rem 3rem rgba(11, 79, 74, .1);
 }
 
-.service-leadership-figure img {
+.service-leadership-figure img,
+.service-retirement-figure img {
     display: block;
     width: 100%;
     aspect-ratio: 16 / 9;
