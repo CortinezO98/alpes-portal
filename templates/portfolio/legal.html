@@ -6,6 +6,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/portfolio.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/legal.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/public-footer.css' %}">
 {% endblock %}
 
 {% block body %}
@@ -68,11 +69,10 @@
 
 <footer class="public-footer">
     <div class="public-container public-footer-inner">
-        <div>
-            <strong>ALPES</strong>
-            <p>Coaching Directivo, Liderazgo y Transformación.</p>
+        <div class="public-footer-copy">
+            <p>© 2026 José A. Marrugo Roa — Coaching &amp; Consultoría Organizacional. Todos los derechos reservados.</p>
         </div>
-        <div class="legal-footer-links">
+        <div class="public-footer-links legal-footer-links">
             <a href="{% url 'portfolio:privacy' %}">Privacidad</a>
             <a href="{% url 'portfolio:data-treatment' %}">Tratamiento de datos</a>
         </div>
