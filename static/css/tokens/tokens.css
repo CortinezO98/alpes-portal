@@ -1,28 +1,34 @@
 :root {
-    --color-primary-50: #f6f8ed;
-    --color-primary-100: #edf2da;
-    --color-primary-200: #dce7b6;
-    --color-primary-300: #c8d690;
-    --color-primary-400: #aec35f;
-    --color-primary-500: #91aa43;
-    --color-primary-600: #718735;
-    --color-primary-700: #58682f;
-    --color-primary-800: #485429;
-    --color-primary-900: #3d4726;
-
-    --color-bg: #f8f9f4;
-    --color-surface: #ffffff;
-    --color-surface-soft: #f2f5eb;
-    --color-text: #29332d;
-    --color-text-muted: #66736b;
-    --color-border: #dce2d8;
-    --color-danger: #9d2d2d;
-    --color-danger-soft: #fff1f1;
-    --color-focus: #58682f;
-
+    --color-petroleum-deep: #0b4f4a;
+    --color-petroleum-dark: #125b57;
+    --color-petroleum: #176b68;
+    --color-teal: #247b78;
+    --color-ocean: #328c87;
+    --color-petroleum-light: #55a39d;
+    --color-aqua-muted: #83bdb7;
+    --color-primary-50: #f7f4ec;
+    --color-primary-100: #f7f4ec;
+    --color-primary-200: #83bdb7;
+    --color-primary-300: #83bdb7;
+    --color-primary-400: #55a39d;
+    --color-primary-500: #328c87;
+    --color-primary-600: #247b78;
+    --color-primary-700: #176b68;
+    --color-primary-800: #125b57;
+    --color-primary-900: #0b4f4a;
+    --color-secondary-700: #234a62;
+    --color-accent: #c69a45;
+    --color-bg: #f7f4ec;
+    --color-surface: #f7f4ec;
+    --color-surface-soft: #f7f4ec;
+    --color-text: #333333;
+    --color-text-muted: #333333;
+    --color-border: #83bdb7;
+    --color-danger: #234a62;
+    --color-danger-soft: #f7f4ec;
+    --color-focus: #176b68;
     --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --font-serif: Georgia, "Times New Roman", serif;
-
     --space-1: 0.25rem;
     --space-2: 0.5rem;
     --space-3: 0.75rem;
@@ -33,14 +39,11 @@
     --space-10: 2.5rem;
     --space-12: 3rem;
     --space-16: 4rem;
-
     --radius-sm: 0.4rem;
     --radius-md: 0.75rem;
     --radius-lg: 1.25rem;
-
-    --shadow-sm: 0 1px 2px rgba(41, 51, 45, 0.06);
-    --shadow-md: 0 14px 40px rgba(41, 51, 45, 0.10);
-
+    --shadow-sm: 0 1px 2px rgba(11, 79, 74, 0.06);
+    --shadow-md: 0 14px 40px rgba(11, 79, 74, 0.10);
     --container-md: 72rem;
     --transition-fast: 160ms ease;
 }
