@@ -46,8 +46,18 @@
 }
 
 .service-retirement-figure {
-    margin-top: clamp(1.8rem, 3.5vw, 2.75rem);
+    margin-top: clamp(1.25rem, 2.4vw, 1.8rem);
     margin-bottom: 0;
+}
+
+.service-retirement-figure img {
+    aspect-ratio: 2 / 1;
+    object-position: 65% 58%;
+}
+
+.service-intro-copy--retirement .service-audience {
+    margin-top: 1.5rem;
+    padding-top: 1.15rem;
 }
 
 .service-page--leadership .service-includes,

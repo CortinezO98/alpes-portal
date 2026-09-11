@@ -83,7 +83,7 @@
                     </figure>
                 {% endif %}
             </div>
-            <div class="service-intro-copy">
+            <div class="service-intro-copy{% if service.number == "02" %} service-intro-copy--retirement{% endif %}">
                 <p>{{ service.description }}</p>
                 <div class="service-audience">
                     <span>¿Para quién?</span>
