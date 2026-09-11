@@ -195,20 +195,54 @@
     <section class="public-cta" id="contacto">
         <div class="public-container public-cta-inner">
             <div>
-                <p class="public-eyebrow">Conversemos</p>
-                <h2>¿Qué transformación necesita hoy tu organización o tu equipo?</h2>
-                <p>Podemos partir de una conversación para identificar el reto, el contexto y el tipo de acompañamiento más adecuado.</p>
+                <p class="public-eyebrow">Contacto</p>
+                <h2>Conversemos sobre tu próximo paso</h2>
+                <p>Cuéntame brevemente el reto que quieres abordar. Responderé personalmente para orientarte hacia el acompañamiento más adecuado.</p>
+                <div class="public-cta-whatsapp">
+                    <span class="public-cta-contact-icon" aria-hidden="true">◌</span>
+                    <div>
+                        <strong>WhatsApp</strong>
+                        <a
+                            href="https://wa.me/573107426028?text=Hola%2C%20quisiera%20conocer%20m%C3%A1s%20sobre%20los%20servicios%20de%20Jos%C3%A9%20A.%20Marrugo%20Roa."
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Iniciar conversación por WhatsApp con José A. Marrugo Roa"
+                        >Iniciar conversación</a>
+                    </div>
+                </div>
             </div>
-            <div class="public-cta-actions">
-                <a
-                    class="public-button public-button-primary"
-                    href="https://wa.me/573107426028?text=Hola%2C%20quisiera%20conocer%20m%C3%A1s%20sobre%20los%20servicios%20ALPES."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Escribir por WhatsApp a ALPES"
-                >Escribir por WhatsApp</a>
-                <a class="public-button public-button-secondary" href="{% url 'accounts:login' %}">Acceso a la plataforma</a>
-            </div>
+            <form class="public-contact-form" data-contact-form aria-label="Formulario de contacto">
+                <div class="public-contact-form-fields">
+                    <div class="public-contact-field">
+                        <label for="contact-name">Nombre completo</label>
+                        <input id="contact-name" name="name" type="text" autocomplete="name" placeholder="Tu nombre" required>
+                    </div>
+                    <div class="public-contact-field">
+                        <label for="contact-email">Correo electrónico</label>
+                        <input id="contact-email" name="email" type="email" autocomplete="email" placeholder="tu@correo.com" required>
+                    </div>
+                    <div class="public-contact-field">
+                        <label for="contact-company">Empresa <span>(opcional)</span></label>
+                        <input id="contact-company" name="company" type="text" autocomplete="organization" placeholder="Nombre de tu organización">
+                    </div>
+                    <div class="public-contact-field">
+                        <label for="contact-interest">Me interesa</label>
+                        <select id="contact-interest" name="interest" required>
+                            <option value="" selected disabled>Selecciona una opción</option>
+                            <option>Acompañamiento al Liderazgo</option>
+                            <option>Jubilación Plena</option>
+                            <option>Desarrollo Organizacional</option>
+                            <option>Modelo ALPES</option>
+                        </select>
+                    </div>
+                    <div class="public-contact-field public-contact-field-message">
+                        <label for="contact-message">Mensaje</label>
+                        <textarea id="contact-message" name="message" rows="5" placeholder="Cuéntame brevemente tu situación o el objetivo que quieres alcanzar…" required></textarea>
+                    </div>
+                </div>
+                <button class="public-contact-submit" type="submit">Enviar mensaje <span aria-hidden="true">↗</span></button>
+                <p class="public-contact-form-note" data-contact-status aria-live="polite">Tu información se utilizará únicamente para atender tu consulta.</p>
+            </form>
         </div>
     </section>
 </main>
@@ -228,4 +262,5 @@
 
 {% block extra_js %}
 <script src="{% static 'js/pages/portfolio.js' %}" defer></script>
+<script src="{% static 'js/pages/contact-mailto.js' %}" defer></script>
 {% endblock %}
