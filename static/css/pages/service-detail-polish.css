@@ -17,6 +17,11 @@
     align-items: start;
 }
 
+.service-page--leadership .service-intro {
+    padding-top: clamp(4.5rem, 7vw, 6.5rem);
+    padding-bottom: clamp(3.25rem, 5vw, 4.5rem);
+}
+
 .service-page--leadership .service-intro-copy {
     padding-top: .35rem;
 }
@@ -50,6 +55,11 @@
 
     .service-page--leadership .service-intro-copy {
         padding-top: 0;
+    }
+
+    .service-page--leadership .service-intro {
+        padding-top: 3.5rem;
+        padding-bottom: 3rem;
     }
 }
 
