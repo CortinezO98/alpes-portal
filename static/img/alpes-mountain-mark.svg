@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 72" role="img" aria-labelledby="title">
+  <title>ALPES</title>
+  <path fill="#0B4F4A" d="M4 63 42 22l14 14L77 5l33 39 12-13 34 32H4Z"/>
+  <path fill="#176B68" d="m42 22 14 14 8-9 16 24-22-15-8 8 6-20-14-2Z"/>
+  <path fill="#247B78" d="m77 5 33 39-13-7-7 8-10-18-8 8 5-30Z"/>
+  <path fill="#55A39D" d="m122 31 34 32-23-14-7 5-7-13 3-10Z"/>
+  <path fill="#C69A45" d="M4 65h152v4H4z"/>
+</svg>
