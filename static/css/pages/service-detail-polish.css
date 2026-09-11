@@ -88,7 +88,8 @@
     }
 }
 
-.service-leadership-outcomes {
+.service-leadership-outcomes,
+.service-retirement-outcomes {
     overflow: hidden;
     position: relative;
     margin-top: clamp(2.6rem, 5vw, 4.25rem);
@@ -96,7 +97,8 @@
     background: var(--color-primary-100);
 }
 
-.service-leadership-roadmap {
+.service-leadership-roadmap,
+.service-retirement-roadmap {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -105,7 +107,8 @@
     object-position: center;
 }
 
-.service-leadership-outcomes-content {
+.service-leadership-outcomes-content,
+.service-retirement-outcomes-content {
     position: relative;
     z-index: 1;
     width: min(100%, 21rem);
@@ -115,7 +118,8 @@
     background: linear-gradient(90deg, rgba(247, 244, 236, .98) 68%, rgba(247, 244, 236, .25));
 }
 
-.service-leadership-outcomes h3 {
+.service-leadership-outcomes h3,
+.service-retirement-outcomes h3 {
     max-width: 18rem;
     margin: .75rem 0 1.25rem;
     color: var(--color-text);
@@ -125,7 +129,8 @@
     line-height: 1.05;
 }
 
-.service-leadership-outcomes ul {
+.service-leadership-outcomes ul,
+.service-retirement-outcomes ul {
     display: grid;
     gap: .8rem;
     margin: 0;
@@ -133,7 +138,8 @@
     list-style: none;
 }
 
-.service-leadership-outcomes li {
+.service-leadership-outcomes li,
+.service-retirement-outcomes li {
     display: grid;
     grid-template-columns: .7rem 1fr;
     gap: .5rem;
@@ -143,7 +149,8 @@
     line-height: 1.55;
 }
 
-.service-leadership-outcomes li::before {
+.service-leadership-outcomes li::before,
+.service-retirement-outcomes li::before {
     content: "•";
     color: var(--color-accent);
     font-size: 1.2rem;
@@ -152,11 +159,14 @@
 
 @media (max-width: 47.99rem) {
     .service-leadership-outcomes,
-    .service-leadership-outcomes-content {
+    .service-leadership-outcomes-content,
+    .service-retirement-outcomes,
+    .service-retirement-outcomes-content {
         min-height: 25rem;
     }
 
-    .service-leadership-outcomes-content {
+    .service-leadership-outcomes-content,
+    .service-retirement-outcomes-content {
         width: 100%;
         background: linear-gradient(90deg, rgba(247, 244, 236, .96), rgba(247, 244, 236, .62));
     }
