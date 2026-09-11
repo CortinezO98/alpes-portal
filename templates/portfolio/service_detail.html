@@ -64,13 +64,13 @@
     <section class="service-intro public-section">
         <div class="public-container service-intro-grid">
             <div>
-                <p class="public-eyebrow">Enfoque</p>
-                <h2 class="public-section-title">Acompañamiento diseñado para avanzar con claridad.</h2>
                 {% if service.number == "01" %}
                     <figure class="service-leadership-figure">
                         <img src="{% static 'img/leadership-coaching-detail.png' %}" alt="Líder en una conversación de coaching ejecutivo">
                     </figure>
                 {% endif %}
+                <p class="public-eyebrow">Enfoque</p>
+                <h2 class="public-section-title">Acompañamiento diseñado para avanzar con claridad.</h2>
             </div>
             <div class="service-intro-copy">
                 <p>{{ service.description }}</p>
