@@ -80,13 +80,16 @@
                 </div>
                 {% if service.number == "01" %}
                     <section class="service-leadership-outcomes" aria-labelledby="leadership-outcomes-title">
-                        <p class="public-eyebrow">Resultados del proceso</p>
-                        <h3 id="leadership-outcomes-title">Resultados que se vuelven visibles.</h3>
-                        <ul>
-                            <li>Mayor claridad para priorizar y decidir.</li>
-                            <li>Conversaciones más efectivas con el equipo.</li>
-                            <li>Acciones concretas desde la primera sesión.</li>
-                        </ul>
+                        <img class="service-leadership-roadmap" src="{% static 'img/leadership-roadmap.png' %}" alt="Ruta de desarrollo del liderazgo hacia una meta clara">
+                        <div class="service-leadership-outcomes-content">
+                            <p class="public-eyebrow">Resultados del proceso</p>
+                            <h3 id="leadership-outcomes-title">Resultados que se vuelven visibles.</h3>
+                            <ul>
+                                <li>Mayor claridad para priorizar y decidir.</li>
+                                <li>Conversaciones más efectivas con el equipo.</li>
+                                <li>Acciones concretas desde la primera sesión.</li>
+                            </ul>
+                        </div>
                     </section>
                 {% endif %}
             </div>

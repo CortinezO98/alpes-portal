@@ -54,9 +54,30 @@
 }
 
 .service-leadership-outcomes {
+    overflow: hidden;
+    position: relative;
     margin-top: clamp(2.6rem, 5vw, 4.25rem);
-    border-top: 1px solid rgba(198, 154, 69, .72);
-    padding-top: 1.35rem;
+    min-height: 23rem;
+    background: var(--color-primary-100);
+}
+
+.service-leadership-roadmap {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.service-leadership-outcomes-content {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 21rem);
+    min-height: 23rem;
+    box-sizing: border-box;
+    padding: clamp(1.5rem, 3vw, 2rem);
+    background: linear-gradient(90deg, rgba(247, 244, 236, .98) 68%, rgba(247, 244, 236, .25));
 }
 
 .service-leadership-outcomes h3 {
@@ -92,4 +113,16 @@
     color: var(--color-accent);
     font-size: 1.2rem;
     line-height: .9;
+}
+
+@media (max-width: 47.99rem) {
+    .service-leadership-outcomes,
+    .service-leadership-outcomes-content {
+        min-height: 25rem;
+    }
+
+    .service-leadership-outcomes-content {
+        width: 100%;
+        background: linear-gradient(90deg, rgba(247, 244, 236, .96), rgba(247, 244, 236, .62));
+    }
 }
