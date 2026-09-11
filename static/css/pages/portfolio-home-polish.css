@@ -1,0 +1,71 @@
+/* Ritmo editorial exclusivo de la página principal. */
+.public-hero-grid {
+    min-height: min(46rem, calc(100svh - 5.75rem));
+    padding-block: clamp(4.25rem, 6.5vw, 6.5rem);
+}
+
+.public-hero h1 {
+    font-size: clamp(3.75rem, 6.4vw, 6.9rem);
+}
+
+.public-eyebrow {
+    margin-bottom: .95rem;
+    font-size: .78rem;
+    letter-spacing: .15em;
+}
+
+.public-section {
+    padding-block: clamp(4.5rem, 6.5vw, 6.75rem);
+}
+
+.public-section-title {
+    font-size: clamp(2.6rem, 4.2vw, 4.35rem);
+    line-height: .98;
+}
+
+.public-profile-copy p,
+.public-section-heading > p {
+    line-height: 1.74;
+}
+
+.public-profile-copy p + p {
+    margin-top: 1.15rem;
+}
+
+.public-values-grid,
+.public-services-grid {
+    margin-top: clamp(3rem, 4.5vw, 4.25rem);
+}
+
+.public-service-card {
+    min-height: 28rem;
+    gap: 1.65rem;
+}
+
+.public-model-steps li {
+    padding-block: 1.5rem;
+}
+
+.public-experience-list div {
+    padding-block: 1.25rem;
+}
+
+.public-cta {
+    padding-block: clamp(4.25rem, 6vw, 6.5rem);
+}
+
+@media (min-width: 72rem) {
+    .public-service-card {
+        min-height: 31rem;
+    }
+}
+
+@media (max-width: 36rem) {
+    .public-hero-grid {
+        padding-block: 3.75rem 4rem;
+    }
+
+    .public-section {
+        padding-block: 4rem;
+    }
+}
