@@ -39,7 +39,6 @@
         "/servicios/liderazgo/",
         "/servicios/jubilacion-plena/",
         "/servicios/consultoria-organizacional/",
-        "/modelo-alpes/",
     ];
 
     document.querySelectorAll(".public-service-card").forEach((card, index) => {
