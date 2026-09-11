@@ -37,6 +37,14 @@
     margin-top: clamp(3rem, 4.5vw, 4.25rem);
 }
 
+#perfil {
+    padding-bottom: clamp(3.25rem, 4.5vw, 4.5rem);
+}
+
+#servicios {
+    padding-top: clamp(3.75rem, 5vw, 5rem);
+}
+
 .public-service-card {
     min-height: 28rem;
     gap: 1.65rem;
@@ -67,5 +75,13 @@
 
     .public-section {
         padding-block: 4rem;
+    }
+
+    #perfil {
+        padding-bottom: 3rem;
+    }
+
+    #servicios {
+        padding-top: 3.5rem;
     }
 }
