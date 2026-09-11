@@ -6,24 +6,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/portfolio.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/service-detail.css' %}">
-<style>
-    .service-leadership-figure {
-        overflow: hidden;
-        margin: 2.5rem 0 0;
-        border: 1px solid var(--color-border);
-        border-radius: 1rem;
-        background: var(--color-primary-100);
-        box-shadow: 0 1.5rem 3rem rgba(11, 79, 74, .1);
-    }
-
-    .service-leadership-figure img {
-        display: block;
-        width: 100%;
-        aspect-ratio: 16 / 10;
-        object-fit: cover;
-        object-position: 65% center;
-    }
-</style>
+<link rel="stylesheet" href="{% static 'css/pages/service-detail-polish.css' %}">
 {% endblock %}
 
 {% block body %}
@@ -53,7 +36,7 @@
     </div>
 </header>
 
-<main id="inicio">
+<main id="inicio"{% if service.number == "01" %} class="service-page--leadership"{% endif %}>
     <section class="service-hero">
         <div class="public-container service-hero-grid">
             <div class="animate__animated animate__fadeInUp motion-soft">
@@ -71,7 +54,7 @@
                     <a class="public-button public-button-secondary" href="#proceso">Ver proceso</a>
                 </div>
             </div>
-            <aside class="service-hero-statement animate__animated animate__fadeInUp motion-card">
+            <aside class="service-hero-statement{% if service.number == "01" %} service-hero-statement--leadership{% endif %} animate__animated animate__fadeInUp motion-card">
                 {% if service.number != "01" %}<span>ALPES</span>{% endif %}
                 <p>{{ service.statement }}</p>
             </aside>

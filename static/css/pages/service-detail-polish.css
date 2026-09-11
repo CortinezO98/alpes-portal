@@ -1,0 +1,54 @@
+.service-page--leadership .service-hero {
+    padding-bottom: clamp(4.5rem, 7vw, 6.5rem);
+}
+
+.service-hero-statement--leadership {
+    align-self: end;
+    border-left-width: 2px;
+    padding-block: .35rem;
+}
+
+.service-hero-statement--leadership p {
+    max-width: 15ch;
+    margin: 0;
+}
+
+.service-page--leadership .service-intro-grid {
+    align-items: start;
+}
+
+.service-page--leadership .service-intro-copy {
+    padding-top: .35rem;
+}
+
+.service-leadership-figure {
+    overflow: hidden;
+    margin: clamp(2rem, 4vw, 3.25rem) 0 0;
+    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+    background: var(--color-primary-100);
+    box-shadow: 0 1.5rem 3rem rgba(11, 79, 74, .1);
+}
+
+.service-leadership-figure img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    object-position: 65% center;
+}
+
+.service-page--leadership .service-includes,
+.service-page--leadership .service-process {
+    padding-block: clamp(4.5rem, 7vw, 7rem);
+}
+
+@media (max-width: 47.99rem) {
+    .service-hero-statement--leadership {
+        margin-top: .25rem;
+    }
+
+    .service-page--leadership .service-intro-copy {
+        padding-top: 0;
+    }
+}
