@@ -19,6 +19,12 @@
     flex-wrap: wrap;
 }
 
+@media (min-width: 37rem) {
+    .public-footer-links {
+        margin-right: 5rem;
+    }
+}
+
 .public-footer-links a {
     color: var(--color-text);
     font-size: .8rem;
