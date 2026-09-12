@@ -23,145 +23,6 @@
     line-height: .98;
 }
 
-.public-welcome-film {
-    padding: clamp(3.5rem, 5.5vw, 5.5rem) 0 0;
-    background: var(--color-surface-soft);
-}
-
-.public-welcome-film-grid {
-    display: grid;
-    gap: clamp(1.75rem, 4vw, 4rem);
-    align-items: center;
-}
-
-.public-welcome-film-copy h2 {
-    max-width: 12ch;
-    margin: 0;
-    color: var(--color-text);
-    font-family: var(--font-serif);
-    font-size: clamp(2.35rem, 3.8vw, 4.1rem);
-    font-weight: 400;
-    line-height: .98;
-    letter-spacing: -.045em;
-}
-
-.public-welcome-film-copy > p:last-child {
-    max-width: 34rem;
-    margin: 1.2rem 0 0;
-    color: var(--color-text-muted);
-    font-size: 1rem;
-    line-height: 1.72;
-}
-
-.public-welcome-film-stage {
-    position: relative;
-    min-height: 21rem;
-    overflow: hidden;
-    border: 1px solid var(--color-border);
-    border-radius: 1rem;
-    background: var(--color-primary-900);
-    box-shadow: 0 1.4rem 3.4rem rgba(11, 79, 74, .13);
-    isolation: isolate;
-}
-
-.public-welcome-film-scene,
-.public-welcome-film-overlay {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-}
-
-.public-welcome-film-scene {
-    object-fit: cover;
-    opacity: 0;
-    transform: scale(1.04);
-}
-
-.public-welcome-film-scene--one {
-    animation: alpes-film-scene-one 18s infinite ease-in-out;
-}
-
-.public-welcome-film-scene--two {
-    animation: alpes-film-scene-two 18s infinite ease-in-out;
-}
-
-.public-welcome-film-scene--three {
-    animation: alpes-film-scene-three 18s infinite ease-in-out;
-}
-
-.public-welcome-film-overlay {
-    z-index: 1;
-    background: linear-gradient(90deg, rgba(7, 54, 52, .6), rgba(7, 54, 52, .05) 70%);
-    pointer-events: none;
-}
-
-.public-welcome-film-captions {
-    position: absolute;
-    z-index: 2;
-    right: 1.5rem;
-    bottom: 1.35rem;
-    left: 1.5rem;
-    min-height: 2.4rem;
-    color: #f7f4ec;
-    font-family: var(--font-serif);
-    font-size: clamp(1.55rem, 2.4vw, 2.3rem);
-    line-height: 1.05;
-}
-
-.public-welcome-film-caption {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-}
-
-.public-welcome-film-caption--one {
-    animation: alpes-film-caption-one 18s infinite ease-in-out;
-}
-
-.public-welcome-film-caption--two {
-    animation: alpes-film-caption-two 18s infinite ease-in-out;
-}
-
-.public-welcome-film-caption--three {
-    animation: alpes-film-caption-three 18s infinite ease-in-out;
-}
-
-@keyframes alpes-film-scene-one {
-    0%, 30% { opacity: 1; transform: scale(1); }
-    34%, 100% { opacity: 0; transform: scale(1.04); }
-}
-
-@keyframes alpes-film-scene-two {
-    0%, 30% { opacity: 0; transform: scale(1.04); }
-    34%, 63% { opacity: 1; transform: scale(1); }
-    67%, 100% { opacity: 0; transform: scale(1.04); }
-}
-
-@keyframes alpes-film-scene-three {
-    0%, 63% { opacity: 0; transform: scale(1.04); }
-    67%, 96% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(1.04); }
-}
-
-@keyframes alpes-film-caption-one {
-    0%, 5% { opacity: 0; transform: translateY(.4rem); }
-    10%, 27% { opacity: 1; transform: translateY(0); }
-    32%, 100% { opacity: 0; transform: translateY(-.25rem); }
-}
-
-@keyframes alpes-film-caption-two {
-    0%, 38% { opacity: 0; transform: translateY(.4rem); }
-    43%, 60% { opacity: 1; transform: translateY(0); }
-    65%, 100% { opacity: 0; transform: translateY(-.25rem); }
-}
-
-@keyframes alpes-film-caption-three {
-    0%, 71% { opacity: 0; transform: translateY(.4rem); }
-    76%, 93% { opacity: 1; transform: translateY(0); }
-    98%, 100% { opacity: 0; transform: translateY(-.25rem); }
-}
-
 .public-profile-copy p,
 .public-section-heading > p {
     line-height: 1.74;
@@ -369,14 +230,6 @@
 }
 
 @media (max-width: 47.99rem) {
-    .public-welcome-film {
-        padding-top: 3.5rem;
-    }
-
-    .public-welcome-film-stage {
-        min-height: 18rem;
-    }
-
     .public-contact-form {
         justify-self: stretch;
         width: 100%;
@@ -398,10 +251,6 @@
 }
 
 @media (min-width: 72rem) {
-    .public-welcome-film-grid {
-        grid-template-columns: minmax(16rem, .65fr) minmax(28rem, 1.35fr);
-    }
-
     .public-services-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -432,20 +281,4 @@
         padding-top: 3.5rem;
     }
 
-    .public-welcome-film-stage {
-        min-height: 16rem;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .public-welcome-film-scene,
-    .public-welcome-film-caption {
-        animation: none;
-    }
-
-    .public-welcome-film-scene--one,
-    .public-welcome-film-caption--one {
-        opacity: 1;
-        transform: none;
-    }
 }
