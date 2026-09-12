@@ -5,76 +5,62 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/portfolio.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/legal.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/legal.css' %}?v=legal-policy-1">
 <link rel="stylesheet" href="{% static 'css/pages/public-footer.css' %}?v=footer-offset-1">
 {% endblock %}
 
 {% block body %}
 <header class="public-header" data-public-header>
     <div class="public-container public-header-inner">
-        <a class="public-brand" href="{% url 'portfolio:home' %}" aria-label="ALPES, volver al portafolio">
-            <span class="public-brand-mark" aria-hidden="true">A</span>
-            <span>
-                <strong>ALPES</strong>
-                <small>Coaching · Liderazgo · Transformación</small>
-            </span>
+        <a class="public-brand" href="{% url 'portfolio:home' %}" aria-label="José A. Marrugo Roa, volver al portafolio">
+            <img class="public-brand-mark" src="{% static 'img/alpes-mountain-mark.svg' %}" alt="ALPES">
+            <span><strong>José A. Marrugo Roa</strong><small>Coaching · Liderazgo · Transformación</small></span>
         </a>
-        <nav class="public-nav legal-nav" aria-label="Navegación legal">
-            <a href="{% url 'portfolio:home' %}">Portafolio</a>
-            <a href="{% url 'portfolio:privacy' %}">Privacidad</a>
-            <a href="{% url 'portfolio:data-treatment' %}">Tratamiento de datos</a>
+        <button class="public-menu-button" type="button" aria-expanded="false" aria-controls="public-navigation" data-menu-button><span class="sr-only">Abrir navegación</span><span></span><span></span><span></span></button>
+        <nav class="public-nav legal-nav" id="public-navigation" aria-label="Navegación pública" data-public-nav>
+            <a href="{% url 'portfolio:home' %}#perfil">Perfil</a><a href="{% url 'portfolio:home' %}#servicios">Servicios</a><a href="{% url 'portfolio:home' %}#experiencia">Experiencia</a><a href="{% url 'portfolio:home' %}#contacto">Contacto</a>
         </nav>
     </div>
 </header>
 
 <main class="legal-main" id="inicio">
-    <section class="legal-hero">
-        <div class="public-container legal-hero-grid">
-            <div>
-                <p class="public-eyebrow">Privacidad y protección de datos</p>
-                <h1>{{ legal_page.title }}.</h1>
-            </div>
-            <div class="legal-status">
-                <span>Borrador operativo</span>
-                <p>{{ legal_page.intro }}</p>
-            </div>
+{% if legal_page.route_name == "portfolio:privacy" %}
+    <section class="legal-hero"><div class="public-container legal-hero-grid">
+        <div><p class="public-eyebrow">Información legal</p><h1>Tu privacidad,<br>con claridad.</h1><p class="legal-lead">Este aviso explica qué información compartes al contactar a José A. Marrugo Roa, para qué se utiliza y cómo puedes ejercer tus derechos.</p></div>
+        <aside class="legal-status" aria-label="Resumen de la política"><span>Política vigente</span><p><strong>Responsable</strong><br>José A. Marrugo Roa<br>Atención virtual desde Colombia.</p><p><strong>Última actualización</strong><br>12 de septiembre de 2026.</p></aside>
+    </div></section>
+    <section class="legal-layout"><div class="public-container legal-layout-grid">
+        <aside class="legal-index" aria-label="Contenido de la política"><p>En esta página</p><a href="#alcance">Alcance</a><a href="#informacion">Información que recibimos</a><a href="#finalidades">Cómo la utilizamos</a><a href="#derechos">Tus derechos</a><a href="#contacto-datos">Canal de atención</a></aside>
+        <div class="legal-sections">
+            <article id="alcance"><span>01</span><div><h2>Alcance y responsable</h2><p>Esta política aplica a la información personal que las personas entregan de manera voluntaria a través del sitio web, el formulario de contacto, el correo electrónico o los enlaces de contacto publicados por José A. Marrugo Roa, responsable del tratamiento. Está orientada por la Ley 1581 de 2012, sus normas reglamentarias y las disposiciones que las modifiquen o sustituyan.</p></div></article>
+            <article id="informacion"><span>02</span><div><h2>Información que podemos recibir</h2><p>Al escribirnos puedes compartir tu nombre, correo electrónico, empresa u organización —si decides indicarla—, tema de interés y el mensaje que envíes. El sitio no solicita datos sensibles. Te pedimos no incluir información sensible, financiera, médica ni datos de terceros que no sean necesarios para atender tu solicitud.</p></div></article>
+            <article id="finalidades"><span>03</span><div><h2>Cómo utilizamos tu información</h2><p>Usamos la información exclusivamente para responder tu mensaje, comprender el contexto de tu consulta, agendar o dar seguimiento a una conversación solicitada, preparar una propuesta cuando la pidas y cumplir deberes legales aplicables. No vendemos, alquilamos ni utilizamos tus datos para fines distintos sin una base legal o tu autorización cuando esta sea requerida.</p></div></article>
+            <article><span>04</span><div><h2>Autorización y servicios externos</h2><p>Al enviar voluntariamente un formulario o comunicarte por los canales publicados, autorizas el tratamiento necesario para atender esa solicitud. Si eliges continuar una conversación mediante correo, WhatsApp u otra plataforma externa, el uso de esa plataforma también estará sujeto a sus propias políticas de privacidad. Puedes retirar tu autorización cuando la ley lo permita.</p></div></article>
+            <article id="derechos"><span>05</span><div><h2>Tus derechos como titular</h2><p>Puedes conocer, actualizar y rectificar tus datos; solicitar prueba de la autorización, cuando aplique; conocer el uso que se les ha dado; presentar consultas o reclamos; solicitar la supresión de la información o revocar la autorización en los casos permitidos por la ley. Si consideras que una solicitud no fue atendida adecuadamente, puedes acudir ante la Superintendencia de Industria y Comercio, después de haber gestionado tu petición con el responsable.</p></div></article>
+            <article><span>06</span><div><h2>Seguridad y conservación</h2><p>Se adoptan medidas razonables de organización y seguridad para evitar accesos, usos o divulgaciones no autorizadas. La información se conserva solo durante el tiempo necesario para atender la finalidad informada, mantener los soportes de la relación o cumplir obligaciones legales; después se elimina, anonimiza o bloquea cuando corresponda.</p></div></article>
+            <article id="contacto-datos"><span>07</span><div><h2>Consulta, reclamo o actualización</h2><p>Escríbenos a <a href="mailto:Josemarrugo@hotmail.com">Josemarrugo@hotmail.com</a> con el asunto <strong>“Protección de datos”</strong>. Indica tu nombre, medio de respuesta, descripción clara de la solicitud y los documentos que permitan verificar tu identidad si son necesarios. Las consultas y reclamos se tramitarán dentro de los términos previstos en la normativa colombiana.</p></div></article>
         </div>
-    </section>
-
-    <section class="legal-content">
-        <div class="public-container legal-sections">
-            {% for title, text in legal_page.sections %}
-                <article>
-                    <span>0{{ forloop.counter }}</span>
-                    <div>
-                        <h2>{{ title }}</h2>
-                        <p>{{ text }}</p>
-                    </div>
-                </article>
-            {% endfor %}
+    </div></section>
+{% else %}
+    <section class="legal-hero"><div class="public-container legal-hero-grid">
+        <div><p class="public-eyebrow">Información legal</p><h1>Tratamiento de<br>datos personales.</h1><p class="legal-lead">Esta política establece cómo se recogen, usan, protegen y gestionan los datos personales que compartes al contactar los servicios de coaching y consultoría.</p></div>
+        <aside class="legal-status" aria-label="Resumen de la política"><span>Política vigente</span><p><strong>Responsable</strong><br>José A. Marrugo Roa<br>Atención virtual desde Colombia.</p><p><strong>Vigencia</strong><br>Desde el 12 de septiembre de 2026.</p></aside>
+    </div></section>
+    <section class="legal-layout"><div class="public-container legal-layout-grid">
+        <aside class="legal-index" aria-label="Contenido de la política"><p>En esta página</p><a href="#responsable">Responsable</a><a href="#datos-finalidades">Datos y finalidades</a><a href="#autorizacion">Autorización</a><a href="#procedimiento">Procedimiento</a><a href="#vigencia">Vigencia</a></aside>
+        <div class="legal-sections">
+            <article id="responsable"><span>01</span><div><h2>Responsable y ámbito de aplicación</h2><p>José A. Marrugo Roa es responsable del tratamiento de los datos personales recibidos a través de este sitio y de los canales de contacto que allí se habiliten. Esta política aplica a personas que solicitan información, una conversación, una propuesta o acompañamiento profesional. La atención se presta virtualmente desde Colombia.</p></div></article>
+            <article><span>02</span><div><h2>Principios que guían el tratamiento</h2><p>El tratamiento se realizará de manera legal, transparente y limitada a una finalidad legítima e informada. La información será pertinente, actualizada, confidencial y protegida con medidas razonables. Solo se conservará mientras sea necesaria para cumplir la finalidad, obligaciones legales o atender requerimientos válidos.</p></div></article>
+            <article id="datos-finalidades"><span>03</span><div><h2>Datos y finalidades</h2><p>Podemos tratar datos de identificación y contacto, información sobre tu organización si la proporcionas, el tema de interés y el contenido de tu mensaje. Su finalidad es atender consultas, coordinar conversaciones, elaborar propuestas solicitadas, prestar o dar seguimiento a servicios contratados y cumplir obligaciones legales o contractuales relacionadas.</p></div></article>
+            <article id="autorizacion"><span>04</span><div><h2>Autorización del titular</h2><p>La autorización se obtiene mediante una acción afirmativa, libre, previa, expresa e informada al enviar una solicitud o entregar información por los canales dispuestos. Antes de tratar datos sensibles o de niñas, niños y adolescentes se aplicarán las reglas y salvaguardas reforzadas exigidas por la ley. No se condicionará un servicio al suministro de datos sensibles cuando no sean necesarios.</p></div></article>
+            <article><span>05</span><div><h2>Encargados, transferencias y confidencialidad</h2><p>No se comercializan datos personales. Cuando sea necesario usar proveedores tecnológicos para alojar información, enviar comunicaciones o gestionar canales de atención, se exigirá que actúen bajo instrucciones apropiadas y medidas de confidencialidad. Cualquier transferencia internacional se realizará conforme a las garantías y requisitos aplicables.</p></div></article>
+            <article id="procedimiento"><span>06</span><div><h2>Procedimiento para ejercer tus derechos</h2><p>Envía tu consulta o reclamo a <a href="mailto:Josemarrugo@hotmail.com">Josemarrugo@hotmail.com</a> con el asunto <strong>“Protección de datos”</strong>, tu identificación, datos de contacto y una descripción precisa de la petición. Las consultas se atenderán, por regla general, en máximo diez (10) días hábiles y los reclamos en máximo quince (15) días hábiles, con las prórrogas permitidas por la ley cuando sea necesario informar la demora.</p></div></article>
+            <article><span>07</span><div><h2>Seguridad y confidencialidad</h2><p>La información es accesible únicamente para las personas que necesitan conocerla para la finalidad informada. Se adoptan medidas administrativas, técnicas y físicas razonables para reducir el riesgo de pérdida, alteración, acceso no autorizado o divulgación. Ningún sistema es completamente invulnerable, por lo que también invitamos a usar los canales con responsabilidad.</p></div></article>
+            <article id="vigencia"><span>08</span><div><h2>Vigencia y cambios</h2><p>Esta política rige desde el 12 de septiembre de 2026 y permanecerá vigente mientras se realice tratamiento de datos personales. Cualquier cambio sustancial será publicado en esta página antes o al momento de su entrada en vigor. La versión disponible aquí será la referencia aplicable para el tratamiento realizado desde su fecha de actualización.</p></div></article>
         </div>
-    </section>
-
-    <section class="legal-warning">
-        <div class="public-container legal-warning-inner">
-            <strong>Pendiente antes de producción</strong>
-            <p>
-                Deben completarse la identificación del responsable del tratamiento, datos de contacto formales,
-                procedimiento definitivo de consultas y reclamos y la aprobación jurídica del documento.
-            </p>
-        </div>
-    </section>
+    </div></section>
+{% endif %}
+    <section class="legal-help"><div class="public-container legal-help-inner"><div><p class="public-eyebrow">¿Necesitas ayuda?</p><h2>Tu información merece una respuesta clara.</h2></div><p>Para ejercer tus derechos o resolver una inquietud sobre estos documentos, escríbenos indicando que se trata de una solicitud de protección de datos.</p><a class="public-button public-button-primary" href="mailto:Josemarrugo@hotmail.com?subject=Protecci%C3%B3n%20de%20datos">Escribir un correo</a></div></section>
 </main>
-
-<footer class="public-footer">
-    <div class="public-container public-footer-inner">
-        <div class="public-footer-copy">
-            <p>© 2026 José A. Marrugo Roa — Coaching &amp; Consultoría Organizacional. Todos los derechos reservados.</p>
-        </div>
-        <div class="public-footer-links legal-footer-links">
-            <a href="{% url 'portfolio:privacy' %}">Privacidad</a>
-            <a href="{% url 'portfolio:data-treatment' %}">Tratamiento de datos</a>
-        </div>
-    </div>
-</footer>
+<footer class="public-footer"><div class="public-container public-footer-inner"><div class="public-footer-copy"><p>© 2026 José A. Marrugo Roa — Coaching &amp; Consultoría Organizacional. Todos los derechos reservados.</p></div><div class="public-footer-links legal-footer-links"><a href="{% url 'portfolio:privacy' %}">Privacidad</a><a href="{% url 'portfolio:data-treatment' %}">Tratamiento de datos</a></div></div></footer>
 {% endblock %}
