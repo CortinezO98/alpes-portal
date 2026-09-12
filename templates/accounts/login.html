@@ -1,91 +1,67 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block title %}Iniciar sesión | ALPES{% endblock %}
+{% block title %}Ingresar a la plataforma | ALPES{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/portfolio.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/auth.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/auth-public.css' %}?v=platform-login-1">
 {% endblock %}
 
 {% block body %}
-<main class="auth-shell">
-    <section class="auth-brand" aria-label="Identidad ALPES">
+<header class="public-header auth-public-header">
+    <div class="public-container public-header-inner">
+        <a class="public-brand" href="{% url 'portfolio:home' %}" aria-label="José A. Marrugo Roa, volver al portafolio">
+            <img class="public-brand-mark" src="{% static 'img/alpes-mountain-mark.svg' %}" alt="ALPES">
+            <span><strong>José A. Marrugo Roa</strong><small>Coaching · Liderazgo · Transformación</small></span>
+        </a>
+        <nav class="public-nav auth-public-nav" aria-label="Navegación de acceso"><a href="{% url 'portfolio:home' %}">Volver al sitio</a></nav>
+    </div>
+</header>
+
+<main class="auth-shell auth-login-page">
+    <section class="auth-brand" aria-label="Plataforma ALPES">
         <div class="auth-brand-content">
-            <p class="auth-brand-mark">ALPES</p>
-
             <div>
-                <p class="auth-brand-kicker">Liderazgo · Propósito · Bienestar</p>
-                <h1 class="auth-brand-title">Transformar con sentido.</h1>
-                <p class="auth-brand-copy">
-                    Un espacio para acompañar procesos de liderazgo, desarrollo humano
-                    y bienestar con una mirada integral, consciente y estratégica.
-                </p>
+                <img class="auth-platform-mark" src="{% static 'img/alpes-mountain-mark.svg' %}" alt="ALPES">
+                <p class="auth-brand-kicker">Plataforma ALPES</p>
+                <h1 class="auth-brand-title">Un espacio para avanzar con claridad.</h1>
+                <p class="auth-brand-copy">Accede a tus procesos, herramientas y acompañamientos en un entorno privado, claro y seguro.</p>
             </div>
-
-            <p class="auth-brand-copy">
-                Plataforma privada de acompañamiento y evaluación ALPES.
-            </p>
+            <p class="auth-brand-note">Cada paso cuenta cuando está conectado con tu propósito.</p>
         </div>
     </section>
 
     <section class="auth-panel">
         <div class="auth-card">
-            <p class="auth-mobile-brand">ALPES</p>
+            <div class="auth-card-brand"><img src="{% static 'img/alpes-mountain-mark.svg' %}" alt="ALPES"><span>Plataforma ALPES</span></div>
             <p class="auth-kicker">Acceso privado</p>
-            <h2 class="auth-title">Bienvenido de nuevo.</h2>
-            <p class="auth-description">
-                Ingresa con el correo asociado a tu cuenta para continuar.
-            </p>
+            <h2 class="auth-title">Bienvenido.</h2>
+            <p class="auth-description">Ingresa con tu correo electrónico y contraseña para continuar tu proceso.</p>
 
             {% if form.non_field_errors %}
-                <div class="alert-error" role="alert">
-                    {% for error in form.non_field_errors %}
-                        {{ error }}
-                    {% endfor %}
-                </div>
+                <div class="alert-error" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
             {% endif %}
 
             <form method="post" class="auth-form" novalidate>
                 {% csrf_token %}
-
                 <div class="form-field">
-                    <label class="form-label" for="{{ form.username.id_for_label }}">
-                        {{ form.username.label }}
-                    </label>
+                    <label class="form-label" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
                     {{ form.username }}
-                    {% for error in form.username.errors %}
-                        <p class="form-error">{{ error }}</p>
-                    {% endfor %}
+                    {% for error in form.username.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
                 </div>
-
                 <div class="form-field">
-                    <label class="form-label" for="{{ form.password.id_for_label }}">
-                        {{ form.password.label }}
-                    </label>
+                    <label class="form-label" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
                     {{ form.password }}
-                    {% for error in form.password.errors %}
-                        <p class="form-error">{{ error }}</p>
-                    {% endfor %}
+                    {% for error in form.password.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
                 </div>
-
-                {% if next %}
-                    <input type="hidden" name="next" value="{{ next }}">
-                {% endif %}
-
-                <div class="auth-actions">
-                    <a class="auth-link" href="{% url 'accounts:password-reset' %}">
-                        ¿Olvidaste tu contraseña?
-                    </a>
-                </div>
-
-                <button class="button button-primary button-block" type="submit">
-                    Ingresar
-                </button>
+                {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+                <div class="auth-actions"><a class="auth-link" href="{% url 'accounts:password-reset' %}">¿Olvidaste tu contraseña?</a></div>
+                <button class="button button-primary button-block" type="submit">Ingresar <span aria-hidden="true">→</span></button>
             </form>
 
-            <footer class="auth-footer">
-                Acceso protegido. Si necesitas soporte, contacta al administrador de la plataforma.
-            </footer>
+            <footer class="auth-footer">Acceso protegido. Si necesitas ayuda, contacta al administrador de la plataforma.</footer>
         </div>
     </section>
 </main>
