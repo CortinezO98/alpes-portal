@@ -5,9 +5,9 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/portfolio.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/portfolio-home-polish.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/portfolio-home-polish.css' %}?v=ux-refinement-1">
 <link rel="stylesheet" href="{% static 'css/pages/public-footer.css' %}?v=footer-offset-1">
-<link rel="stylesheet" href="{% static 'css/components/public-enhancements.css' %}?v=footer-links-2">
+<link rel="stylesheet" href="{% static 'css/components/public-enhancements.css' %}?v=ux-refinement-1">
 {% endblock %}
 
 {% block body %}
@@ -32,7 +32,6 @@
             <a href="#experiencia">Experiencia</a>
             <a href="#faq">FAQ</a>
             <a href="#contacto">Contacto</a>
-            <a class="public-nav-login" href="{% url 'accounts:login' %}">Iniciar sesión</a>
         </nav>
     </div>
 </header>
@@ -242,7 +241,7 @@
                     </div>
                 </div>
                 <button class="public-contact-submit" type="submit">Enviar mensaje <span aria-hidden="true">↗</span></button>
-                <p class="public-contact-form-note" data-contact-status aria-live="polite">Tu información se utilizará únicamente para atender tu consulta.</p>
+                <p class="public-contact-form-note" data-contact-status aria-live="polite">Al enviar, se abrirá tu aplicación de correo con el mensaje preparado. Tu información se utilizará únicamente para atender tu consulta.</p>
             </form>
         </div>
     </section>
@@ -262,6 +261,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pages/portfolio.js' %}" defer></script>
+<script src="{% static 'js/pages/portfolio.js' %}?v=ux-refinement-1" defer></script>
 <script src="{% static 'js/pages/contact-mailto.js' %}" defer></script>
 {% endblock %}

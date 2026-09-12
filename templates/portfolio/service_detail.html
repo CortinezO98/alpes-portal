@@ -5,8 +5,8 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/portfolio.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/service-detail.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/service-detail-polish.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/service-detail.css' %}?v=ux-refinement-1">
+<link rel="stylesheet" href="{% static 'css/pages/service-detail-polish.css' %}?v=ux-refinement-1">
 <link rel="stylesheet" href="{% static 'css/pages/public-footer.css' %}?v=footer-offset-1">
 <style>
     @media (min-width: 37rem) {
@@ -37,8 +37,8 @@
             <a href="{% url 'portfolio:home' %}#perfil">Perfil</a>
             <a href="{% url 'portfolio:home' %}#servicios">Servicios</a>
             <a href="{% url 'portfolio:home' %}#experiencia">Experiencia</a>
+            <a href="{% url 'portfolio:home' %}#faq">FAQ</a>
             <a href="{% url 'portfolio:home' %}#contacto">Contacto</a>
-            <a class="public-nav-login" href="{% url 'accounts:login' %}">Iniciar sesión</a>
         </nav>
     </div>
 </header>
@@ -50,7 +50,7 @@
                 <a class="service-back-link" href="{% url 'portfolio:home' %}#servicios">← Portafolio de servicios</a>
                 <p class="public-eyebrow">{{ service.eyebrow }} · {{ service.number }}</p>
                 <h1>{{ service.title }}</h1>
-                <p class="service-hero-lead">{{ service.lead }}</p>
+                <p class="service-hero-lead">{% if service.number == "04" %}Un acompañamiento personal para comprender tus áreas de vida, definir retos y sueños, y convertirlos en caminos concretos de acción.{% else %}{{ service.lead }}{% endif %}</p>
                 <div class="public-hero-actions">
                     <a
                         class="public-button public-button-primary"
@@ -95,7 +95,7 @@
                 <p>{{ service.description }}</p>
                 <div class="service-audience">
                     <span>¿Para quién?</span>
-                    <p>{{ service.audience }}</p>
+                    <p>{% if service.number == "04" %}Para personas que desean comprender su momento actual, definir un futuro deseado y convertirlo en acciones concretas.{% else %}{{ service.audience }}{% endif %}</p>
                 </div>
                 {% if service.number == "01" %}
                     <section class="service-leadership-outcomes" aria-labelledby="leadership-outcomes-title">
@@ -258,7 +258,7 @@
         <div class="public-container service-cta-grid">
             <div>
                 <p class="public-eyebrow public-eyebrow-light">Conversemos</p>
-                <h2>¿Quieres explorar este proceso para tu organización o para ti?</h2>
+                <h2>{% if service.number == "01" %}¿Qué transformación necesita hoy tu liderazgo o tu organización?{% elif service.number == "02" %}¿Quieres prepararte para una nueva etapa?{% elif service.number == "03" %}¿Qué necesita hoy tu organización para avanzar?{% else %}¿Quieres explorar este proceso para ti?{% endif %}</h2>
             </div>
             <div>
                 <p>Podemos partir de una conversación para comprender el contexto y revisar si este acompañamiento responde al reto actual.</p>
@@ -290,5 +290,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pages/portfolio.js' %}" defer></script>
+<script src="{% static 'js/pages/portfolio.js' %}?v=ux-refinement-1" defer></script>
 {% endblock %}

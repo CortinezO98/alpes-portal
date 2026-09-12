@@ -146,7 +146,7 @@
 
 .public-contact-field label {
     color: var(--color-text);
-    font-size: .8rem;
+    font-size: .875rem;
     font-weight: 750;
 }
 
@@ -164,7 +164,7 @@
     background: var(--color-surface);
     color: var(--color-text);
     font: inherit;
-    font-size: .9rem;
+    font-size: .94rem;
     line-height: 1.4;
     padding: .7rem .8rem;
 }
@@ -194,10 +194,10 @@
     align-items: center;
     justify-content: center;
     margin-top: 1.1rem;
-    border: 1px solid var(--color-accent);
+    border: 1px solid var(--color-primary-700);
     border-radius: .18rem;
-    background: var(--color-accent);
-    color: var(--color-text);
+    background: var(--color-primary-700);
+    color: var(--color-bg);
     cursor: pointer;
     font: inherit;
     font-size: .86rem;
@@ -206,7 +206,7 @@
 }
 
 .public-contact-submit:hover {
-    opacity: .88;
+    background: var(--color-primary-800);
 }
 
 .public-contact-submit:focus-visible {
@@ -217,7 +217,7 @@
 .public-contact-form-note {
     margin: .75rem 0 0;
     color: var(--color-text-muted);
-    font-size: .78rem;
+    font-size: .82rem;
     line-height: 1.5;
 }
 
@@ -251,9 +251,17 @@
 }
 
 @media (min-width: 72rem) {
-    .public-service-card {
-        min-height: 31rem;
+    .public-services-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    .public-service-card {
+        min-height: 28rem;
+    }
+}
+
+.public-section-dark .public-experience-list span {
+    color: rgba(247, 244, 236, .8);
 }
 
 @media (max-width: 36rem) {

@@ -18,8 +18,8 @@
 }
 
 .service-page--leadership .service-intro {
-    padding-top: clamp(4.5rem, 7vw, 6.5rem);
-    padding-bottom: clamp(3.25rem, 5vw, 4.5rem);
+    padding-top: clamp(3.75rem, 5.5vw, 5rem);
+    padding-bottom: clamp(3rem, 4.5vw, 4rem);
 }
 
 .service-page--leadership .service-intro-copy {
@@ -79,16 +79,16 @@
 .service-page--retirement .service-includes,
 .service-page--consulting .service-includes,
 .service-page--alpes .service-includes {
-    padding-top: clamp(3.25rem, 5vw, 4.75rem);
+    padding-top: clamp(3rem, 4.5vw, 4rem);
 }
 
 .service-page--alpes .service-includes {
-    padding-bottom: clamp(2.75rem, 4.5vw, 4.75rem);
+    padding-bottom: clamp(2.5rem, 4vw, 3.75rem);
 }
 
 .service-page--alpes .service-process {
-    padding-top: clamp(3.25rem, 5vw, 4.75rem);
-    padding-bottom: clamp(3.5rem, 5.5vw, 5.5rem);
+    padding-top: clamp(3rem, 4.5vw, 4rem);
+    padding-bottom: clamp(3.25rem, 5vw, 4.75rem);
 }
 
 @media (min-width: 48rem) {
@@ -98,17 +98,17 @@
 }
 
 .service-page--consulting .service-includes {
-    padding-bottom: clamp(2.75rem, 4.5vw, 4.75rem);
+    padding-bottom: clamp(2.5rem, 4vw, 3.75rem);
 }
 
 .service-page--consulting .service-process {
-    padding-top: clamp(3.25rem, 5vw, 4.75rem);
-    padding-bottom: clamp(3.5rem, 5.5vw, 5.5rem);
+    padding-top: clamp(3rem, 4.5vw, 4rem);
+    padding-bottom: clamp(3.25rem, 5vw, 4.75rem);
 }
 
 .service-page--leadership .service-includes,
 .service-page--leadership .service-process {
-    padding-block: clamp(4.5rem, 7vw, 7rem);
+    padding-block: clamp(3.5rem, 5vw, 4.75rem);
 }
 
 @media (max-width: 47.99rem) {

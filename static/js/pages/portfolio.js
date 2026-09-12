@@ -16,12 +16,14 @@
         }
         navigation.classList.remove("is-open");
         menuButton.setAttribute("aria-expanded", "false");
+        menuButton.querySelector(".sr-only").textContent = "Abrir navegación";
     };
 
     if (menuButton && navigation) {
         menuButton.addEventListener("click", () => {
             const isOpen = navigation.classList.toggle("is-open");
             menuButton.setAttribute("aria-expanded", String(isOpen));
+            menuButton.querySelector(".sr-only").textContent = isOpen ? "Cerrar navegación" : "Abrir navegación";
         });
 
         navigation.querySelectorAll("a").forEach((link) => {
@@ -79,6 +81,14 @@
             </svg>
         `;
         document.body.appendChild(whatsappButton);
+
+        const hero = document.querySelector(".public-hero, .service-hero");
+        if (hero && "IntersectionObserver" in window) {
+            const heroObserver = new IntersectionObserver(([entry]) => {
+                whatsappButton.classList.toggle("is-hero-visible", entry.isIntersecting);
+            }, { threshold: .18 });
+            heroObserver.observe(hero);
+        }
     }
 
     syncHeader();
