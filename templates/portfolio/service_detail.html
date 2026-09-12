@@ -43,7 +43,7 @@
     </div>
 </header>
 
-<main id="inicio"{% if service.number == "01" %} class="service-page--leadership"{% elif service.number == "02" %} class="service-page--retirement"{% elif service.number == "03" %} class="service-page--consulting"{% endif %}>
+<main id="inicio"{% if service.number == "01" %} class="service-page--leadership"{% elif service.number == "02" %} class="service-page--retirement"{% elif service.number == "03" %} class="service-page--consulting"{% elif service.number == "04" %} class="service-page--alpes"{% endif %}>
     <section class="service-hero">
         <div class="public-container service-hero-grid">
             <div class="animate__animated animate__fadeInUp motion-soft">
@@ -85,9 +85,13 @@
                     <figure class="service-consulting-figure">
                         <img src="{% static 'img/organizational-consulting-detail.png' %}" alt="Equipo directivo trabajando en una sesión de consultoría organizacional">
                     </figure>
+                {% elif service.number == "04" %}
+                    <figure class="service-alpes-figure">
+                        <img src="{% static 'img/alpes-purpose-detail.png' %}" alt="Persona contemplando un camino de montaña al amanecer">
+                    </figure>
                 {% endif %}
             </div>
-            <div class="service-intro-copy{% if service.number == "02" %} service-intro-copy--retirement{% elif service.number == "03" %} service-intro-copy--consulting{% endif %}">
+            <div class="service-intro-copy{% if service.number == "02" %} service-intro-copy--retirement{% elif service.number == "03" %} service-intro-copy--consulting{% elif service.number == "04" %} service-intro-copy--alpes{% endif %}">
                 <p>{{ service.description }}</p>
                 <div class="service-audience">
                     <span>¿Para quién?</span>
@@ -132,6 +136,19 @@
                             </ul>
                         </div>
                     </section>
+                {% elif service.number == "04" %}
+                    <section class="service-alpes-outcomes" aria-labelledby="alpes-outcomes-title">
+                        <img class="service-alpes-roadmap" src="{% static 'img/leadership-roadmap.png' %}" alt="Ruta visual para avanzar con propósito, bienestar y equilibrio">
+                        <div class="service-alpes-outcomes-content">
+                            <p class="public-eyebrow">Resultados del proceso</p>
+                            <h3 id="alpes-outcomes-title">Claridad para avanzar con propósito.</h3>
+                            <ul>
+                                <li>Mayor comprensión del momento actual y de las áreas prioritarias de la vida.</li>
+                                <li>Retos y sueños convertidos en metas y acciones alcanzables.</li>
+                                <li>Un camino personal hacia mayor propósito, bienestar y equilibrio.</li>
+                            </ul>
+                        </div>
+                    </section>
                 {% endif %}
             </div>
         </div>
@@ -157,6 +174,12 @@
                     <article><span>07</span><p>Favorece la retención y el desarrollo del talento.</p></article>
                     <article><span>08</span><p>Genera procesos de transformación sostenible.</p></article>
                 </div>
+            {% elif service.number == "04" %}
+                <div class="service-includes-grid">
+                    <article><span>01</span><p>Análisis de las áreas de la vida.</p></article>
+                    <article><span>02</span><p>Mapa de retos y sueños.</p></article>
+                    <article><span>03</span><p>Camino al éxito.</p></article>
+                </div>
             {% else %}
                 <div class="service-includes-grid">
                     {% for item in service.includes %}
@@ -174,7 +197,7 @@
         <div class="public-container service-process-grid">
             <div>
                 <p class="public-eyebrow">Proceso</p>
-                <h2 class="public-section-title">{% if service.number == "01" %}Fases del programa.{% elif service.number == "02" %}Proceso de acompañamiento.{% elif service.number == "03" %}Procesos de mentoría y consultoría.{% else %}Un camino estructurado, humano y accionable.{% endif %}</h2>
+                <h2 class="public-section-title">{% if service.number == "01" %}Fases del programa.{% elif service.number == "02" %}Proceso de acompañamiento.{% elif service.number == "03" %}Procesos de mentoría y consultoría.{% elif service.number == "04" %}Etapas del Modelo ALPES.{% else %}Un camino estructurado, humano y accionable.{% endif %}</h2>
             </div>
             {% if service.number == "01" %}
                 <ol class="service-process-list">
@@ -206,6 +229,14 @@
                     <li><span>5</span><div><h3>Gestión del cambio</h3><p>Acompañamiento para movilizar a las personas durante procesos de transformación.</p></div></li>
                     <li><span>6</span><div><h3>Planeación estratégica de Talento Humano</h3><p>Diseño de prioridades de talento alineadas con los retos estratégicos de la organización.</p></div></li>
                     <li><span>7</span><div><h3>Relaciones laborales y sindicales</h3><p>Orientación para fortalecer relaciones laborales constructivas y sostenibles.</p></div></li>
+                </ol>
+            {% elif service.number == "04" %}
+                <ol class="service-process-list">
+                    <li><span>A</span><div><h3>Autoconocimiento</h3><p>Reconocemos el punto de partida, fortalezas, patrones y áreas de desarrollo que orientan el camino.</p></div></li>
+                    <li><span>L</span><div><h3>Liderazgo consciente</h3><p>Fortalecemos la presencia, la comunicación y la influencia personal para avanzar con mayor conciencia.</p></div></li>
+                    <li><span>P</span><div><h3>Propósito</h3><p>Definimos un propósito claro que orienta las decisiones y la dirección de vida.</p></div></li>
+                    <li><span>E</span><div><h3>Ejecución y equipos</h3><p>Convertimos el propósito en metas, conversaciones y acciones concretas que favorecen el avance propio y la relación con los demás.</p></div></li>
+                    <li><span>S</span><div><h3>Sostenibilidad</h3><p>Consolidamos los avances con seguimiento, hábitos y prácticas que ayudan a sostener el proceso.</p></div></li>
                 </ol>
             {% else %}
                 <ol class="service-process-list">
