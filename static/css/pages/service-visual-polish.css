@@ -1,0 +1,130 @@
+/* Textura, fotografía y resultados: misma familia visual para los cuatro servicios. */
+.service-hero { position: relative; overflow: hidden; }
+.service-hero::before {
+    position: absolute;
+    right: -2rem;
+    bottom: -4rem;
+    width: min(42vw, 34rem);
+    height: min(42vw, 34rem);
+    content: "";
+    background: url("../../img/alpes-mountain-mark.svg") right bottom / contain no-repeat;
+    opacity: .07;
+    pointer-events: none;
+}
+.service-hero::after {
+    position: absolute;
+    right: 0;
+    bottom: 14%;
+    width: min(38vw, 34rem);
+    height: 5rem;
+    border-top: 1px solid rgba(23, 107, 104, .2);
+    border-radius: 50% 0 0 0;
+    content: "";
+    transform: rotate(-7deg);
+    pointer-events: none;
+}
+.service-hero-grid { position: relative; z-index: 1; }
+.service-back-link,
+.service-home-link {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 0 1px;
+    transition: background-size var(--transition-fast), color var(--transition-fast);
+}
+.service-back-link:hover,
+.service-home-link:hover { background-size: 100% 1px; text-decoration: none; }
+
+.service-leadership-figure,
+.service-retirement-figure,
+.service-consulting-figure,
+.service-alpes-figure {
+    position: relative;
+    border-color: rgba(23, 107, 104, .2);
+    box-shadow: 0 1.7rem 3.6rem rgba(11, 79, 74, .14);
+}
+.service-leadership-figure::after,
+.service-retirement-figure::after,
+.service-consulting-figure::after,
+.service-alpes-figure::after {
+    position: absolute;
+    inset: auto 0 0;
+    height: 34%;
+    content: "";
+    background: linear-gradient(180deg, transparent, rgba(11, 79, 74, .24));
+    pointer-events: none;
+}
+.service-leadership-figure img,
+.service-retirement-figure img,
+.service-consulting-figure img,
+.service-alpes-figure img { aspect-ratio: 4 / 3; transition: transform .6s ease; }
+.service-leadership-figure:hover img,
+.service-retirement-figure:hover img,
+.service-consulting-figure:hover img,
+.service-alpes-figure:hover img { transform: scale(1.025); }
+
+.service-leadership-outcomes,
+.service-retirement-outcomes,
+.service-consulting-outcomes,
+.service-alpes-outcomes {
+    min-height: 26rem;
+    border: 1px solid rgba(23, 107, 104, .16);
+    border-radius: 1.1rem;
+    box-shadow: 0 1.7rem 3.8rem rgba(11, 79, 74, .09);
+}
+.service-leadership-outcomes::after,
+.service-retirement-outcomes::after,
+.service-consulting-outcomes::after,
+.service-alpes-outcomes::after {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    content: "";
+    background: linear-gradient(90deg, rgba(247, 244, 236, .24), transparent 60%);
+    pointer-events: none;
+}
+.service-leadership-outcomes-content,
+.service-retirement-outcomes-content,
+.service-consulting-outcomes-content,
+.service-alpes-outcomes-content {
+    width: min(100%, 23rem);
+    min-height: 26rem;
+    padding: clamp(1.6rem, 3vw, 2.3rem);
+    background: linear-gradient(90deg, rgba(247, 244, 236, .99) 70%, rgba(247, 244, 236, .48));
+}
+.service-leadership-outcomes h3,
+.service-retirement-outcomes h3,
+.service-consulting-outcomes h3,
+.service-alpes-outcomes h3 { font-size: clamp(1.85rem, 2.7vw, 2.6rem); }
+.service-leadership-outcomes li,
+.service-retirement-outcomes li,
+.service-consulting-outcomes li,
+.service-alpes-outcomes li { font-size: 1rem; }
+
+[data-reveal] { transition: opacity .55s ease, transform .55s ease; }
+.reveal-enabled [data-reveal] { opacity: 0; transform: translateY(1rem); }
+.reveal-enabled [data-reveal].is-visible { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 47.99rem) {
+    .service-hero::after { width: 18rem; bottom: 7%; }
+    .service-leadership-outcomes,
+    .service-retirement-outcomes,
+    .service-consulting-outcomes,
+    .service-alpes-outcomes,
+    .service-leadership-outcomes-content,
+    .service-retirement-outcomes-content,
+    .service-consulting-outcomes-content,
+    .service-alpes-outcomes-content { min-height: 24rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .service-leadership-figure img,
+    .service-retirement-figure img,
+    .service-consulting-figure img,
+    .service-alpes-figure img { transition: none; }
+    .service-leadership-figure:hover img,
+    .service-retirement-figure:hover img,
+    .service-consulting-figure:hover img,
+    .service-alpes-figure:hover img { transform: none; }
+    [data-reveal] { transition: none !important; }
+    .reveal-enabled [data-reveal] { opacity: 1; transform: none; }
+}

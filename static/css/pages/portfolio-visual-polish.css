@@ -1,0 +1,142 @@
+/* Capa visual ligera: acompaña el recorrido sin competir con el contenido. */
+.public-hero::before {
+    content: "";
+    right: -3rem;
+    top: auto;
+    bottom: -4rem;
+    width: min(50vw, 44rem);
+    height: min(50vw, 44rem);
+    transform: none;
+    background: url("../../img/alpes-mountain-mark.svg") right bottom / contain no-repeat;
+    opacity: .08;
+}
+
+.public-hero::after,
+#servicios::after {
+    position: absolute;
+    z-index: 0;
+    content: "";
+    pointer-events: none;
+}
+
+.public-hero::after {
+    right: 0;
+    bottom: 13%;
+    width: min(46vw, 42rem);
+    height: 8rem;
+    border-top: 1px solid rgba(23, 107, 104, .2);
+    border-radius: 50% 0 0 0;
+    transform: rotate(-7deg);
+}
+
+.public-reflection {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(2.75rem, 5vw, 4.25rem);
+    background: linear-gradient(105deg, rgba(23, 107, 104, .07), rgba(247, 244, 236, .65));
+    border-block: 1px solid rgba(23, 107, 104, .11);
+}
+
+.public-reflection::after {
+    position: absolute;
+    right: max(3vw, 2rem);
+    bottom: -4.5rem;
+    width: 17rem;
+    height: 17rem;
+    content: "";
+    background: url("../../img/alpes-mountain-mark.svg") center / contain no-repeat;
+    opacity: .08;
+    pointer-events: none;
+}
+
+.public-reflection-inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 46rem);
+    gap: 1.3rem;
+    align-items: start;
+}
+
+.public-reflection-inner > span {
+    color: var(--color-accent);
+    font-family: var(--font-serif);
+    font-size: clamp(3.5rem, 6vw, 5.5rem);
+    line-height: .72;
+}
+
+.public-reflection p {
+    margin: 0;
+    color: var(--color-primary-900);
+    font-family: var(--font-serif);
+    font-size: clamp(1.75rem, 3.1vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -.03em;
+}
+
+#servicios { position: relative; overflow: hidden; }
+#servicios > .public-container { position: relative; z-index: 1; }
+#servicios::after {
+    right: -8rem;
+    bottom: -7rem;
+    width: 27rem;
+    height: 27rem;
+    background: url("../../img/alpes-mountain-mark.svg") center / contain no-repeat;
+    opacity: .045;
+}
+
+.public-service-card { position: relative; overflow: hidden; }
+.public-service-card::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: .28rem;
+    content: "";
+    background: var(--service-accent, var(--color-primary-500));
+}
+.public-service-card:nth-child(1) { --service-accent: var(--color-primary-600); }
+.public-service-card:nth-child(2) { --service-accent: var(--color-accent); }
+.public-service-card:nth-child(3) { --service-accent: var(--color-secondary-700); }
+.public-service-card:nth-child(4) { --service-accent: #6c8d3f; }
+.public-service-card .public-service-number {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--service-accent) 40%, transparent);
+    border-radius: 50%;
+    color: var(--service-accent);
+    transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+.public-service-card:hover .public-service-number {
+    background: var(--service-accent);
+    color: #f7f4ec;
+    transform: rotate(-8deg);
+}
+.public-service-card .public-service-detail-link,
+.public-nav a,
+.public-footer-links a {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 0 1px;
+    transition: background-size var(--transition-fast), color var(--transition-fast);
+}
+.public-service-card .public-service-detail-link:hover,
+.public-nav a:hover,
+.public-footer-links a:hover { background-size: 100% 1px; text-decoration: none; }
+
+[data-reveal] { transition: opacity .55s ease, transform .55s ease; }
+.reveal-enabled [data-reveal] { opacity: 0; transform: translateY(1rem); }
+.reveal-enabled [data-reveal].is-visible { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 47.99rem) {
+    .public-hero::after { width: 19rem; bottom: 7%; }
+    .public-reflection::after { right: -4rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    [data-reveal], .public-service-card .public-service-number, .public-service-card .public-service-detail-link, .public-nav a, .public-footer-links a { transition: none !important; }
+    .reveal-enabled [data-reveal] { opacity: 1; transform: none; }
+    .public-service-card:hover .public-service-number { transform: none; }
+}

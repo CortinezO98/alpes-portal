@@ -91,6 +91,30 @@
         }
     }
 
+    if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        const revealTargets = document.querySelectorAll(
+            ".public-section, .public-reflection, .public-cta, .service-intro, .service-includes, .service-process, .service-cta"
+        );
+
+        if (revealTargets.length) {
+            document.documentElement.classList.add("reveal-enabled");
+            const revealObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) {
+                        return;
+                    }
+                    entry.target.classList.add("is-visible");
+                    observer.unobserve(entry.target);
+                });
+            }, { threshold: .1, rootMargin: "0px 0px -5%" });
+
+            revealTargets.forEach((target) => {
+                target.setAttribute("data-reveal", "");
+                revealObserver.observe(target);
+            });
+        }
+    }
+
     syncHeader();
     window.addEventListener("scroll", syncHeader, { passive: true });
 })();

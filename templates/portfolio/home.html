@@ -6,6 +6,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/portfolio.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/portfolio-home-polish.css' %}?v=ux-refinement-1">
+<link rel="stylesheet" href="{% static 'css/pages/portfolio-visual-polish.css' %}?v=visual-layer-1">
 <link rel="stylesheet" href="{% static 'css/pages/public-footer.css' %}?v=footer-offset-1">
 <link rel="stylesheet" href="{% static 'css/components/public-enhancements.css' %}?v=ux-refinement-1">
 {% endblock %}
@@ -89,6 +90,13 @@
             <article><span>01</span><h3>Propósito</h3><p>Acompañar procesos que conecten resultados, bienestar y sentido.</p></article>
             <article><span>02</span><h3>Personas</h3><p>Fortalecer seres humanos integralmente buenos y líderes conscientes.</p></article>
             <article><span>03</span><h3>Organización</h3><p>Construir culturas saludables, relaciones sólidas y resultados sostenibles.</p></article>
+        </div>
+    </section>
+
+    <section class="public-reflection" aria-label="Una idea para acompañar el proceso">
+        <div class="public-container public-reflection-inner">
+            <span aria-hidden="true">“</span>
+            <p>El crecimiento cobra sentido cuando se traduce en bienestar, relaciones más conscientes y decisiones que permanecen.</p>
         </div>
     </section>
 
@@ -261,6 +269,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pages/portfolio.js' %}?v=ux-refinement-1" defer></script>
+<script src="{% static 'js/pages/portfolio.js' %}?v=visual-layer-1" defer></script>
 <script src="{% static 'js/pages/contact-mailto.js' %}" defer></script>
 {% endblock %}
