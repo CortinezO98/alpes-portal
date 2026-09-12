@@ -31,10 +31,46 @@
         });
 
         window.addEventListener("resize", () => {
-            if (window.innerWidth > 992) {
+            if (window.innerWidth > 1120) {
                 closeMenu();
             }
         });
+    }
+
+    if (navigation && "IntersectionObserver" in window) {
+        const sectionLinks = Array.from(navigation.querySelectorAll('a[href^="#"]'));
+        const sections = sectionLinks
+            .map((link) => ({ link, section: document.querySelector(link.getAttribute("href")) }))
+            .filter(({ section }) => section);
+
+        if (sections.length) {
+            const setActiveLink = (activeLink) => {
+                sectionLinks.forEach((link) => {
+                    const isActive = link === activeLink;
+                    link.classList.toggle("is-active", isActive);
+                    if (isActive) {
+                        link.setAttribute("aria-current", "location");
+                    } else {
+                        link.removeAttribute("aria-current");
+                    }
+                });
+            };
+
+            const sectionObserver = new IntersectionObserver((entries) => {
+                const visibleEntry = entries
+                    .filter((entry) => entry.isIntersecting)
+                    .sort((first, second) => second.intersectionRatio - first.intersectionRatio)[0];
+                if (!visibleEntry) {
+                    return;
+                }
+                const match = sections.find(({ section }) => section === visibleEntry.target);
+                if (match) {
+                    setActiveLink(match.link);
+                }
+            }, { rootMargin: "-25% 0px -62%", threshold: [0.05, 0.25, 0.6] });
+
+            sections.forEach(({ section }) => sectionObserver.observe(section));
+        }
     }
 
     const serviceRoutes = [
