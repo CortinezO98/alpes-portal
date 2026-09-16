@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from apps.assessments.models import AssessmentTemplate, Dimension, Question
+from apps.assessments.services.template_versioning import publish_template
 
 
 DIMENSIONS = (
@@ -95,17 +96,30 @@ GENERAL_QUESTIONS = (
 
 
 class Command(BaseCommand):
-    help = "Crea o actualiza la plantilla ALPES - Jubilación Plena de forma idempotente."
+    help = "Crea y publica la versión inicial de ALPES - Jubilación Plena de forma segura."
 
     @transaction.atomic
     def handle(self, *args, **options):
-        template, _ = AssessmentTemplate.objects.update_or_create(
+        template, created = AssessmentTemplate.objects.get_or_create(
             slug="alpes-jubilacion-plena",
             defaults={
                 "name": "ALPES - Jubilación Plena",
                 "is_active": True,
             },
         )
+
+        if not created and not template.is_editable:
+            self.stdout.write(
+                self.style.WARNING(
+                    "La plantilla ya está publicada y no se modificó. "
+                    "Para cambiar preguntas o dimensiones, crea una nueva versión."
+                )
+            )
+            return
+
+        template.name = "ALPES - Jubilación Plena"
+        template.is_active = True
+        template.save(update_fields=("name", "is_active", "updated_at"))
 
         for dimension_order, (slug, name, statements) in enumerate(DIMENSIONS, start=1):
             dimension, _ = Dimension.objects.update_or_create(
@@ -141,9 +155,10 @@ class Command(BaseCommand):
                 },
             )
 
+        publish_template(template)
         self.stdout.write(
             self.style.SUCCESS(
-                "Plantilla ALPES - Jubilación Plena sincronizada: "
+                "Plantilla ALPES - Jubilación Plena publicada: "
                 "8 dimensiones, 32 preguntas de escala y 3 preguntas abiertas."
             )
         )
