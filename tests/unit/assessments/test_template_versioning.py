@@ -1,4 +1,5 @@
 import pytest
+from django.core.exceptions import ValidationError
 
 from apps.assessments.models import AssessmentTemplate, Dimension, Question
 from apps.assessments.services.template_versioning import (
@@ -50,3 +51,31 @@ def test_create_next_template_version_clones_structure_without_mutating_source()
     cloned_question.save(update_fields=("text",))
 
     assert template.dimensions.get().questions.get().text == "Pregunta original"
+
+
+@pytest.mark.django_db
+def test_published_template_questions_cannot_be_changed_in_place():
+    template = AssessmentTemplate.objects.create(
+        name="Plantilla protegida",
+        slug="plantilla-protegida",
+    )
+    dimension = Dimension.objects.create(
+        template=template,
+        name="Dimensión",
+        slug="dimension",
+        order=1,
+    )
+    question = Question.objects.create(
+        dimension=dimension,
+        text="Texto original",
+        order=1,
+    )
+    publish_template(template)
+
+    question.text = "Cambio destructivo"
+    with pytest.raises(ValidationError):
+        question.save()
+
+    dimension.name = "Cambio destructivo"
+    with pytest.raises(ValidationError):
+        dimension.save()
