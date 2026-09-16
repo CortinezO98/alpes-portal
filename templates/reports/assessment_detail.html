@@ -9,15 +9,21 @@
 {% endblock %}
 
 {% block dashboard_content %}
-<section class="dashboard-header animate__animated animate__fadeInUp motion-soft">
-    <p class="dashboard-eyebrow">Reporte individual</p>
-    <h1 class="dashboard-title">Resultado de {{ assessment.participant.email }}.</h1>
-    <p class="dashboard-description">
-        {{ assessment.template.name }} · {{ assessment.get_status_display }} · asignada el {{ assessment.created_at|date:"d/m/Y" }}.
-    </p>
+<section class="report-hero animate__animated animate__fadeInUp motion-soft">
+    <div class="report-hero-main">
+        <p class="dashboard-eyebrow">Reporte individual</p>
+        <h1 class="report-hero-title">{{ assessment.template.name }}</h1>
+        <p class="report-hero-description">
+            {{ assessment.get_status_display }} · asignada el {{ assessment.created_at|date:"d/m/Y" }} · versión {{ template_version }}.
+        </p>
+    </div>
+    <aside class="report-hero-result" aria-label="Participante del reporte">
+        <span>Resultado de</span>
+        <strong>{{ assessment.participant.email }}</strong>
+    </aside>
 </section>
 
-<section class="report-detail-meta">
+<section class="report-detail-meta" aria-label="Metadatos de la evaluación">
     <article><span>Participante</span><strong>{{ assessment.participant.email }}</strong></article>
     <article><span>Estado</span><strong>{{ assessment.get_status_display }}</strong></article>
     <article><span>Inicio</span><strong>{{ assessment.started_at|date:"d/m/Y H:i"|default:"Sin iniciar" }}</strong></article>
@@ -29,45 +35,103 @@
     <div class="result-overview-copy">
         <p class="dashboard-eyebrow">Vista integral</p>
         <h2 id="report-radar-title" class="result-overview-title">Rueda de la Vida.</h2>
-        <p>Esta visualización resume los promedios obtenidos por el participante en las ocho dimensiones evaluadas.</p>
+        <p>La visualización se adapta automáticamente a las dimensiones vigentes de esta versión de la evaluación.</p>
+        <ul class="traffic-legend" aria-label="Semaforización de resultados">
+            <li><span class="traffic-dot traffic-dot-red"></span><strong>Rojo</strong><small>0 a 5.9</small></li>
+            <li><span class="traffic-dot traffic-dot-yellow"></span><strong>Amarillo</strong><small>6 a 7.9</small></li>
+            <li><span class="traffic-dot traffic-dot-green"></span><strong>Verde</strong><small>8 a 10</small></li>
+        </ul>
     </div>
     <div class="result-chart-wrap">
-        <canvas id="alpes-radar-chart" role="img" aria-label="Gráfico radar del resultado individual ALPES"></canvas>
+        <canvas id="alpes-radar-chart" role="img" aria-label="Gráfico radar del resultado individual ALPES con semaforización por dimensión"></canvas>
         <p id="radar-fallback" class="result-chart-fallback" hidden>No fue posible cargar la visualización.</p>
     </div>
 </section>
 
-<section class="result-section">
-    <div class="result-section-head"><div><p class="dashboard-eyebrow">Detalle</p><h2 class="result-section-title">Promedios por dimensión.</h2></div></div>
-    <div class="result-grid">
-        {% for dimension in dimensions %}
-            <article class="result-card">
-                <span class="result-order">{{ forloop.counter|stringformat:"02d" }}</span>
-                <h3>{{ dimension.name }}</h3>
-                <strong class="result-score">{{ dimension.average_score|floatformat:1 }}<span>/10</span></strong>
-            </article>
+<section class="result-section" aria-labelledby="dimension-detail-title">
+    <div class="result-section-head">
+        <div>
+            <p class="dashboard-eyebrow">Detalle</p>
+            <h2 id="dimension-detail-title" class="result-section-title">Promedios por dimensión.</h2>
+            <p class="result-section-description">Selecciona una dimensión para consultar las respuestas que componen su promedio.</p>
+        </div>
+    </div>
+
+    <div class="dimension-grid">
+        {% for dimension in report_dimensions %}
+            <details class="dimension-card dimension-card-{{ dimension.band }}">
+                <summary class="dimension-summary">
+                    <div class="dimension-summary-top">
+                        <span class="result-order">{{ dimension.order|stringformat:"02d" }}</span>
+                        <span class="traffic-badge traffic-badge-{{ dimension.band }}">{{ dimension.band_label }}</span>
+                    </div>
+                    <h3>{{ dimension.name }}</h3>
+                    <div class="dimension-score-row">
+                        <strong class="result-score">
+                            {% if dimension.average is not None %}{{ dimension.average|floatformat:1 }}{% else %}—{% endif %}
+                            <span>/10</span>
+                        </strong>
+                        <span class="dimension-toggle" aria-hidden="true">+</span>
+                    </div>
+                </summary>
+
+                <div class="dimension-body">
+                    {% if dimension.questions %}
+                        <div class="question-list">
+                            {% for question in dimension.questions %}
+                                <article class="question-result question-result-{{ question.band }}">
+                                    <div class="question-copy">
+                                        <span>{{ question.order|stringformat:"02d" }}</span>
+                                        <p>{{ question.text }}</p>
+                                    </div>
+                                    <div class="question-score-block">
+                                        <div class="question-score-meta">
+                                            <span class="traffic-badge traffic-badge-{{ question.band }}">{{ question.band_label }}</span>
+                                            <strong>{% if question.score is not None %}{{ question.score }}/10{% else %}—{% endif %}</strong>
+                                        </div>
+                                        <div class="question-bar" aria-hidden="true">
+                                            <span class="question-bar-fill question-bar-fill-{{ question.band }}" style="width: {{ question.percentage }}%"></span>
+                                        </div>
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="dimension-empty">Esta dimensión no tiene respuestas de escala para mostrar.</p>
+                    {% endif %}
+                </div>
+            </details>
         {% endfor %}
     </div>
 </section>
 
 {% if general_answers %}
 <section class="report-open-answers">
-    <div class="report-card-head"><div><p class="dashboard-eyebrow">Respuestas abiertas</p><h2>Lectura cualitativa.</h2></div></div>
+    <div class="report-card-head">
+        <div>
+            <p class="dashboard-eyebrow">Respuestas abiertas</p>
+            <h2>Lectura cualitativa.</h2>
+        </div>
+    </div>
     <div class="report-answer-list">
         {% for answer in general_answers %}
-            <article class="report-answer"><h3>{{ answer.question.text }}</h3><p>{{ answer.text|default:"Sin respuesta" }}</p></article>
+            <article class="report-answer">
+                <h3>{{ answer.question }}</h3>
+                <p>{{ answer.answer|default:"Sin respuesta" }}</p>
+            </article>
         {% endfor %}
     </div>
 </section>
 {% endif %}
 
-{{ radar_labels|json_script:"alpes-radar-labels" }}
-{{ radar_scores|json_script:"alpes-radar-scores" }}
+{{ radar_dimensions|json_script:"alpes-radar-dimensions" }}
 {% else %}
 <div class="report-empty">Esta evaluación todavía no está completada. El resultado individual estará disponible al finalizar el proceso.</div>
 {% endif %}
 
-<div class="assessment-runner-actions"><a class="button button-secondary" href="{% url 'reports:dashboard' %}">Volver a reportes</a></div>
+<div class="assessment-runner-actions">
+    <a class="button button-secondary" href="{% url 'reports:dashboard' %}">Volver a reportes</a>
+</div>
 {% endblock %}
 
 {% block dashboard_extra_js %}
