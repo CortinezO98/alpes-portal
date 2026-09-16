@@ -1,8 +1,9 @@
 from django import forms
+from django.utils.text import slugify
 
 from apps.accounts.models import User
 
-from .models import Answer, Assessment, AssessmentTemplate, Question
+from .models import Answer, Assessment, AssessmentTemplate, Dimension, Question
 
 
 class AssessmentAssignForm(forms.ModelForm):
@@ -47,6 +48,135 @@ class AssessmentAssignForm(forms.ModelForm):
                     "El participante ya tiene una evaluación pendiente de esta plantilla."
                 )
         return cleaned
+
+
+class DimensionConfigForm(forms.ModelForm):
+    class Meta:
+        model = Dimension
+        fields = ("name", "description", "order")
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "order": forms.NumberInput(attrs={"class": "form-control", "min": 1}),
+        }
+        labels = {
+            "name": "Nombre de la dimensión",
+            "description": "Descripción",
+            "order": "Orden",
+        }
+
+    def __init__(self, *args, template, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.template = template
+
+    def clean(self):
+        cleaned = super().clean()
+        name = cleaned.get("name")
+        order = cleaned.get("order")
+        if name:
+            candidate_slug = slugify(name)
+            duplicate_slug = Dimension.objects.filter(
+                template=self.template,
+                slug=candidate_slug,
+            ).exclude(pk=self.instance.pk)
+            if duplicate_slug.exists():
+                self.add_error("name", "Ya existe una dimensión con este nombre.")
+        if order:
+            duplicate_order = Dimension.objects.filter(
+                template=self.template,
+                order=order,
+            ).exclude(pk=self.instance.pk)
+            if duplicate_order.exists():
+                self.add_error("order", "Ya existe una dimensión con este orden.")
+        return cleaned
+
+    def save(self, commit=True):
+        dimension = super().save(commit=False)
+        dimension.template = self.template
+        if not dimension.slug or "name" in self.changed_data:
+            dimension.slug = slugify(dimension.name)
+        if commit:
+            dimension.save()
+        return dimension
+
+
+class ScaleQuestionConfigForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ("text", "order", "is_required")
+        widgets = {
+            "text": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "order": forms.NumberInput(attrs={"class": "form-control", "min": 1}),
+            "is_required": forms.CheckboxInput(),
+        }
+        labels = {
+            "text": "Pregunta / ítem",
+            "order": "Orden",
+            "is_required": "Respuesta obligatoria",
+        }
+
+    def __init__(self, *args, dimension, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dimension = dimension
+
+    def clean_order(self):
+        order = self.cleaned_data["order"]
+        duplicate = Question.objects.filter(
+            dimension=self.dimension,
+            order=order,
+        ).exclude(pk=self.instance.pk)
+        if duplicate.exists():
+            raise forms.ValidationError("Ya existe una pregunta con este orden.")
+        return order
+
+    def save(self, commit=True):
+        question = super().save(commit=False)
+        question.dimension = self.dimension
+        question.template = None
+        question.question_type = Question.Type.SCALE
+        if commit:
+            question.save()
+        return question
+
+
+class GeneralQuestionConfigForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ("text", "order", "is_required")
+        widgets = {
+            "text": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "order": forms.NumberInput(attrs={"class": "form-control", "min": 1}),
+            "is_required": forms.CheckboxInput(),
+        }
+        labels = {
+            "text": "Pregunta abierta",
+            "order": "Orden",
+            "is_required": "Respuesta obligatoria",
+        }
+
+    def __init__(self, *args, template, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.template = template
+
+    def clean_order(self):
+        order = self.cleaned_data["order"]
+        duplicate = Question.objects.filter(
+            template=self.template,
+            dimension__isnull=True,
+            order=order,
+        ).exclude(pk=self.instance.pk)
+        if duplicate.exists():
+            raise forms.ValidationError("Ya existe una pregunta abierta con este orden.")
+        return order
+
+    def save(self, commit=True):
+        question = super().save(commit=False)
+        question.template = self.template
+        question.dimension = None
+        question.question_type = Question.Type.TEXT
+        if commit:
+            question.save()
+        return question
 
 
 class DimensionAnswerForm(forms.Form):
