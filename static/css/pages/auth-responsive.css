@@ -1,0 +1,183 @@
+/* Proporciones específicas para la pantalla de acceso de ALPES. */
+
+@media (min-width: 56rem) {
+    html:has(.auth-login-page),
+    body:has(.auth-login-page) {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .auth-login-page {
+        height: calc(100dvh - 5rem);
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .auth-public-header .public-header-inner {
+        min-height: 5rem;
+    }
+
+    .auth-login-page {
+        grid-template-columns: minmax(24rem, 0.92fr) minmax(34rem, 1.08fr);
+    }
+
+    .auth-login-page .auth-brand {
+        min-height: 100%;
+        padding: clamp(2rem, 4vw, 4rem);
+    }
+
+    .auth-login-page .auth-brand-content {
+        min-height: 0;
+        height: 100%;
+        gap: 1.25rem;
+    }
+
+    .auth-platform-mark {
+        width: 3.9rem;
+        height: 3rem;
+        margin-bottom: clamp(1.8rem, 4.5vh, 3.5rem);
+    }
+
+    .auth-login-page .auth-brand-title {
+        max-width: 9.5ch;
+        font-size: clamp(2.9rem, 4.25vw, 4.6rem);
+    }
+
+    .auth-login-page .auth-panel {
+        min-height: 100%;
+        padding: clamp(1rem, 3vw, 3rem);
+    }
+
+    .auth-login-page .auth-card {
+        width: min(100%, 27.5rem);
+        padding: clamp(1rem, 2vw, 1.55rem);
+    }
+
+    .auth-card-brand {
+        margin-bottom: clamp(0.75rem, 2vh, 1.25rem);
+        font-size: 0.68rem;
+    }
+
+    .auth-card-brand img {
+        width: 2.3rem;
+        height: 1.7rem;
+    }
+
+    .auth-login-page .auth-title {
+        font-size: clamp(2.3rem, 3.45vw, 3.1rem);
+        line-height: 0.95;
+    }
+
+    .auth-login-page .auth-description {
+        font-size: 0.94rem;
+        line-height: 1.55;
+    }
+
+    .auth-login-page .auth-form {
+        gap: 0.65rem;
+        margin-top: 0.95rem;
+    }
+
+    .auth-login-page .form-label {
+        font-size: 0.78rem;
+    }
+
+    .auth-login-page .form-control,
+    .auth-login-page .auth-form input[type="email"],
+    .auth-login-page .auth-form input[type="password"],
+    .auth-login-page .button-block {
+        min-height: 2.65rem;
+    }
+
+    .auth-login-page .auth-footer {
+        margin-top: 0.7rem;
+        padding-top: 0.65rem;
+        font-size: 0.75rem;
+        line-height: 1.45;
+    }
+}
+
+/* Portátiles con poca altura: se preserva la tarjeta completa sin scroll innecesario. */
+@media (min-width: 56rem) and (max-height: 48rem) {
+    .auth-public-header .public-header-inner { min-height: 4.75rem; }
+    .auth-login-page { height: calc(100dvh - 4.75rem); }
+    .auth-login-page .auth-brand { padding: 1.5rem 3.25rem; }
+    .auth-login-page .auth-panel { padding-block: 0.75rem; }
+    .auth-login-page .auth-card { padding: 0.75rem 1.2rem; }
+    .auth-login-page .auth-brand-content { gap: 0.85rem; }
+    .auth-platform-mark,
+    .auth-login-page .auth-brand-copy { display: none; }
+    .auth-login-page .auth-brand-title { font-size: clamp(2.65rem, 4vw, 3.7rem); }
+    .auth-login-page .auth-brand-note { font-size: 1.2rem; line-height: 1.1; }
+    .auth-card-brand { margin-bottom: 0.65rem; }
+    .auth-login-page .auth-description { margin-top: 0.65rem; }
+    .auth-login-page .auth-form { margin-top: 0.75rem; }
+    .auth-login-page .auth-footer { margin-top: 0.55rem; }
+}
+
+@media (max-width: 55.9375rem) {
+    .auth-public-header .public-header-inner {
+        min-height: 5.15rem;
+        gap: 1rem;
+    }
+
+    .auth-public-header .public-brand small {
+        display: block;
+        margin-top: 0.08rem;
+        font-size: 0.6rem;
+        letter-spacing: 0;
+    }
+
+    .auth-login-page {
+        min-height: calc(100svh - 5.15rem);
+    }
+
+    .auth-login-page .auth-panel {
+        min-height: calc(100svh - 5.15rem);
+        align-items: flex-start;
+        padding: clamp(1rem, 4vw, 1.6rem);
+    }
+
+    .auth-login-page .auth-card {
+        width: min(100%, 32rem);
+        margin-inline: auto;
+        padding: clamp(1rem, 4vw, 1.3rem);
+    }
+
+    .auth-card-brand { margin-bottom: 0.9rem; }
+    .auth-login-page .auth-title { font-size: clamp(2.25rem, 10vw, 2.85rem); }
+    .auth-login-page .auth-form { gap: 0.65rem; margin-top: 1rem; }
+    .auth-login-page .auth-footer { margin-top: 0.75rem; padding-top: 0.65rem; }
+
+    .auth-login-page .form-control,
+    .auth-login-page .auth-form input[type="email"],
+    .auth-login-page .auth-form input[type="password"],
+    .auth-login-page .button-block { min-height: 2.65rem; }
+}
+
+/* En móviles de altura estándar, el acceso se resuelve en una sola pantalla. */
+@media (max-width: 55.9375rem) and (min-height: 44rem) {
+    html:has(.auth-login-page),
+    body:has(.auth-login-page) {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .auth-login-page,
+    .auth-login-page .auth-panel {
+        height: calc(100dvh - 5.15rem);
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .auth-login-page .auth-panel {
+        align-items: center;
+    }
+}
+
+@media (max-width: 23rem) {
+    .auth-public-header .public-brand-mark { width: 2.35rem; }
+    .auth-public-header .public-brand strong { font-size: 0.73rem; }
+    .auth-public-header .public-brand small { font-size: 0.54rem; }
+    .auth-public-nav a { font-size: 0.72rem; }
+}

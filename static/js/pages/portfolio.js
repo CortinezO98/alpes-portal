@@ -2,7 +2,6 @@
     const header = document.querySelector("[data-public-header]");
     const menuButton = document.querySelector("[data-menu-button]");
     const navigation = document.querySelector("[data-public-nav]");
-    const menuLabel = menuButton?.querySelector(".sr-only");
 
     const syncHeader = () => {
         if (!header) {
@@ -11,40 +10,67 @@
         header.classList.toggle("is-scrolled", window.scrollY > 8);
     };
 
-    const syncMenuState = (isOpen) => {
+    const closeMenu = () => {
         if (!menuButton || !navigation) {
             return;
         }
-        navigation.classList.toggle("is-open", isOpen);
-        menuButton.setAttribute("aria-expanded", String(isOpen));
-        if (menuLabel) {
-            menuLabel.textContent = isOpen ? "Cerrar navegación" : "Abrir navegación";
-        }
+        navigation.classList.remove("is-open");
+        menuButton.setAttribute("aria-expanded", "false");
+        menuButton.querySelector(".sr-only").textContent = "Abrir navegación";
     };
-
-    const closeMenu = () => syncMenuState(false);
 
     if (menuButton && navigation) {
         menuButton.addEventListener("click", () => {
-            syncMenuState(!navigation.classList.contains("is-open"));
+            const isOpen = navigation.classList.toggle("is-open");
+            menuButton.setAttribute("aria-expanded", String(isOpen));
+            menuButton.querySelector(".sr-only").textContent = isOpen ? "Cerrar navegación" : "Abrir navegación";
         });
 
         navigation.querySelectorAll("a").forEach((link) => {
             link.addEventListener("click", closeMenu);
         });
 
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape" && navigation.classList.contains("is-open")) {
-                closeMenu();
-                menuButton.focus();
-            }
-        });
-
         window.addEventListener("resize", () => {
-            if (window.innerWidth > 992) {
+            if (window.innerWidth > 1120) {
                 closeMenu();
             }
         });
+    }
+
+    if (navigation && "IntersectionObserver" in window) {
+        const sectionLinks = Array.from(navigation.querySelectorAll('a[href^="#"]'));
+        const sections = sectionLinks
+            .map((link) => ({ link, section: document.querySelector(link.getAttribute("href")) }))
+            .filter(({ section }) => section);
+
+        if (sections.length) {
+            const setActiveLink = (activeLink) => {
+                sectionLinks.forEach((link) => {
+                    const isActive = link === activeLink;
+                    link.classList.toggle("is-active", isActive);
+                    if (isActive) {
+                        link.setAttribute("aria-current", "location");
+                    } else {
+                        link.removeAttribute("aria-current");
+                    }
+                });
+            };
+
+            const sectionObserver = new IntersectionObserver((entries) => {
+                const visibleEntry = entries
+                    .filter((entry) => entry.isIntersecting)
+                    .sort((first, second) => second.intersectionRatio - first.intersectionRatio)[0];
+                if (!visibleEntry) {
+                    return;
+                }
+                const match = sections.find(({ section }) => section === visibleEntry.target);
+                if (match) {
+                    setActiveLink(match.link);
+                }
+            }, { rootMargin: "-25% 0px -62%", threshold: [0.05, 0.25, 0.6] });
+
+            sections.forEach(({ section }) => sectionObserver.observe(section));
+        }
     }
 
     const serviceRoutes = [
@@ -73,18 +99,6 @@
         }
     });
 
-    const footerInner = document.querySelector(".public-footer-inner");
-    if (footerInner && !footerInner.querySelector("[data-legal-links]")) {
-        const legalLinks = document.createElement("div");
-        legalLinks.className = "public-legal-links";
-        legalLinks.setAttribute("data-legal-links", "");
-        legalLinks.innerHTML = `
-            <a href="/privacidad/">Privacidad</a>
-            <a href="/tratamiento-de-datos/">Tratamiento de datos</a>
-        `;
-        footerInner.appendChild(legalLinks);
-    }
-
     const whatsappHref =
         "https://wa.me/573107426028?text=Hola%2C%20quisiera%20conocer%20m%C3%A1s%20sobre%20los%20servicios%20ALPES.";
 
@@ -103,6 +117,38 @@
             </svg>
         `;
         document.body.appendChild(whatsappButton);
+
+        const hero = document.querySelector(".public-hero, .service-hero");
+        if (hero && "IntersectionObserver" in window) {
+            const heroObserver = new IntersectionObserver(([entry]) => {
+                whatsappButton.classList.toggle("is-hero-visible", entry.isIntersecting);
+            }, { threshold: .18 });
+            heroObserver.observe(hero);
+        }
+    }
+
+    if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        const revealTargets = document.querySelectorAll(
+            ".public-section, .public-reflection, .public-cta, .service-intro, .service-includes, .service-process, .service-cta"
+        );
+
+        if (revealTargets.length) {
+            document.documentElement.classList.add("reveal-enabled");
+            const revealObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) {
+                        return;
+                    }
+                    entry.target.classList.add("is-visible");
+                    observer.unobserve(entry.target);
+                });
+            }, { threshold: .1, rootMargin: "0px 0px -5%" });
+
+            revealTargets.forEach((target) => {
+                target.setAttribute("data-reveal", "");
+                revealObserver.observe(target);
+            });
+        }
     }
 
     syncHeader();
