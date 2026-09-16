@@ -5,20 +5,51 @@ from django.db.models import Q
 
 
 class AssessmentTemplate(models.Model):
+    class PublicationStatus(models.TextChoices):
+        DRAFT = "DRAFT", "Borrador"
+        PUBLISHED = "PUBLISHED", "Publicada"
+        RETIRED = "RETIRED", "Retirada"
+
     name = models.CharField(max_length=160)
     slug = models.SlugField(max_length=180, unique=True)
     description = models.TextField(blank=True)
+    version = models.PositiveSmallIntegerField(default=1)
+    publication_status = models.CharField(
+        max_length=12,
+        choices=PublicationStatus.choices,
+        default=PublicationStatus.DRAFT,
+        db_index=True,
+    )
+    supersedes = models.ForeignKey(
+        "self",
+        on_delete=models.PROTECT,
+        related_name="successor_versions",
+        null=True,
+        blank=True,
+    )
+    published_at = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ("name",)
+        ordering = ("name", "-version")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("supersedes", "version"),
+                condition=Q(supersedes__isnull=False),
+                name="assess_tpl_supersedes_version_uniq",
+            )
+        ]
         verbose_name = "plantilla de evaluación"
         verbose_name_plural = "plantillas de evaluación"
 
+    @property
+    def is_editable(self):
+        return self.publication_status == self.PublicationStatus.DRAFT
+
     def __str__(self):
-        return self.name
+        return f"{self.name} · v{self.version}"
 
 
 class Dimension(models.Model):
