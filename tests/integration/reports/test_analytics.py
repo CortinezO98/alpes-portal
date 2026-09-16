@@ -95,7 +95,7 @@ def test_analytics_status_filter_limits_metrics(client, report_setup):
 
 
 @pytest.mark.django_db
-def test_admin_can_open_individual_assessment_report(client, report_setup):
+def test_admin_can_open_dynamic_individual_assessment_report(client, report_setup):
     _, admin, _, completed = report_setup
     client.force_login(admin)
 
@@ -105,5 +105,75 @@ def test_admin_can_open_individual_assessment_report(client, report_setup):
 
     assert response.status_code == 200
     assert response.context["assessment"] == completed
-    assert len(response.context["radar_labels"]) == 8
-    assert response.context["radar_scores"] == [8.0] * 8
+    assert len(response.context["report_dimensions"]) == 8
+    assert len(response.context["radar_dimensions"]) == 8
+    assert all(item["score"] == 8.0 for item in response.context["radar_dimensions"])
+    assert all(item["band"] == "green" for item in response.context["radar_dimensions"])
+    assert all(item["band_label"] == "Verde" for item in response.context["radar_dimensions"])
+    assert all(len(item["questions"]) == 4 for item in response.context["report_dimensions"])
+
+
+@pytest.mark.django_db
+def test_report_semaforizes_dimension_and_questions_from_database(client, report_setup):
+    _, admin, _, completed = report_setup
+    first_dimension = completed.template.dimensions.order_by("order", "id").first()
+    answers = list(
+        Answer.objects.filter(
+            assessment=completed,
+            question__dimension=first_dimension,
+        ).order_by("question__order", "question__id")
+    )
+    for answer, score in zip(answers, (5, 6, 8, 10), strict=True):
+        answer.score = score
+        answer.save(update_fields=("score", "updated_at"))
+
+    client.force_login(admin)
+    response = client.get(
+        reverse("reports:assessment-detail", kwargs={"pk": completed.pk})
+    )
+
+    dimension = response.context["report_dimensions"][0]
+    radar_dimension = response.context["radar_dimensions"][0]
+    assert dimension["average"] == 7.25
+    assert dimension["band"] == "yellow"
+    assert dimension["band_label"] == "Amarillo"
+    assert radar_dimension["band_label"] == "Amarillo"
+    assert [item["band"] for item in dimension["questions"]] == [
+        "red",
+        "yellow",
+        "green",
+        "green",
+    ]
+    assert [item["band_label"] for item in dimension["questions"]] == [
+        "Rojo",
+        "Amarillo",
+        "Verde",
+        "Verde",
+    ]
+
+
+@pytest.mark.django_db
+def test_qualitative_answers_are_preserved_but_not_rendered_in_results(client, report_setup):
+    _, admin, _, completed = report_setup
+    open_question = Question.objects.filter(
+        template=completed.template,
+        dimension__isnull=True,
+        question_type=Question.Type.TEXT,
+    ).order_by("order", "id").first()
+    assert open_question is not None
+
+    Answer.objects.create(
+        assessment=completed,
+        question=open_question,
+        text="Libertad financiera",
+    )
+
+    client.force_login(admin)
+    response = client.get(
+        reverse("reports:assessment-detail", kwargs={"pk": completed.pk})
+    )
+
+    assert response.status_code == 200
+    assert response.context["general_answers"][0]["answer"] == "Libertad financiera"
+    assert b"Lectura cualitativa" not in response.content
+    assert b"Libertad financiera" not in response.content

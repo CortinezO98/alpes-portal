@@ -2,6 +2,9 @@ from django.apps import AppConfig
 
 
 class AccountsConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
+    default_auto_field = "django.db.models.BigAutoField"
     name = "apps.accounts"
     verbose_name = "Usuarios y autenticación"
+
+    def ready(self):
+        from . import signals  # noqa: F401

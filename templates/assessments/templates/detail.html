@@ -1,0 +1,199 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ template_object.name }} v{{ template_object.version }} | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/assessments.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/template-management.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="template-version-banner animate__animated animate__fadeInUp motion-soft">
+    <div>
+        <p class="dashboard-eyebrow">Plantilla · versión {{ template_object.version }}</p>
+        <h1>{{ template_object.name }}</h1>
+        <p>
+            <span class="template-status template-status-{{ template_object.publication_status|lower }}">{{ template_object.get_publication_status_display }}</span>
+            {% if template_object.supersedes %} · deriva de v{{ template_object.supersedes.version }}{% endif %}
+            {% if template_object.published_at %} · publicada {{ template_object.published_at|date:"d/m/Y H:i" }}{% endif %}
+        </p>
+    </div>
+    <div class="template-toolbar-actions">
+        <a class="button button-secondary" href="{% url 'assessments:template-list' %}">Volver</a>
+        {% if template_object.is_editable %}
+            <form method="post" action="{% url 'assessments:template-publish' template_object.pk %}">
+                {% csrf_token %}
+                <button class="button button-primary" type="submit">Publicar versión</button>
+            </form>
+        {% else %}
+            <form method="post" action="{% url 'assessments:template-new-version' template_object.pk %}">
+                {% csrf_token %}
+                <button class="button button-primary" type="submit">Crear nueva versión</button>
+            </form>
+        {% endif %}
+    </div>
+</section>
+
+{% if template_object.is_editable %}
+<div class="template-editing-note" role="note">
+    <strong>Edición de borrador activa.</strong>
+    Puedes editar o agregar ítems directamente en esta pantalla. Los cambios solo afectan esta versión y no modifican evaluaciones históricas.
+</div>
+{% endif %}
+
+<section class="template-panel">
+    <div class="template-section-head">
+        <div>
+            <p class="dashboard-eyebrow">Estructura</p>
+            <h2>Dimensiones e ítems.</h2>
+            <p class="template-muted">El reporte y la evaluación consumen esta estructura dinámicamente. No existe un número fijo de dimensiones ni preguntas.</p>
+        </div>
+        {% if template_object.is_editable %}
+        <a class="button button-secondary" href="{% url 'assessments:dimension-create' template_object.pk %}">Agregar dimensión</a>
+        {% endif %}
+    </div>
+
+    {% if dimensions %}
+    <div class="template-dimensions">
+        {% for dimension in dimensions %}
+        <article class="template-dimension" id="dimension-{{ dimension.pk }}">
+            <div class="template-dimension-summary">
+                <div class="template-dimension-title">
+                    <span class="template-order">{{ dimension.order|stringformat:"02d" }}</span>
+                    <div>
+                        <h3>{{ dimension.name }}</h3>
+                        {% if dimension.description %}<p>{{ dimension.description }}</p>{% endif %}
+                    </div>
+                </div>
+                {% if template_object.is_editable %}
+                <div class="template-inline-actions">
+                    <a class="template-mini-action" href="{% url 'assessments:dimension-edit' dimension.pk %}">Editar dimensión</a>
+                    <form method="post" action="{% url 'assessments:dimension-delete' dimension.pk %}" onsubmit="return confirm('¿Eliminar esta dimensión y sus ítems del borrador?');">
+                        {% csrf_token %}
+                        <button class="template-mini-action template-mini-action-danger" type="submit">Eliminar</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="template-question-list">
+                {% for question in dimension.questions.all %}
+                <div class="template-question template-question-editable" id="question-{{ question.pk }}">
+                    <span class="template-question-index">{{ question.order|stringformat:"02d" }}</span>
+                    <div class="template-question-copy">
+                        <p>{{ question.text }}</p>
+                        <small>{% if question.is_required %}Obligatoria{% else %}Opcional{% endif %} · Escala 1 a 10</small>
+                    </div>
+                    {% if template_object.is_editable %}
+                    <div class="template-inline-actions">
+                        <details class="template-inline-editor">
+                            <summary class="template-mini-action">Editar</summary>
+                            <form method="post" class="template-inline-form" action="{% url 'assessments:template-detail' template_object.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="update-scale-question">
+                                <input type="hidden" name="question_id" value="{{ question.pk }}">
+
+                                <div class="template-inline-field template-inline-field-wide">
+                                    <label for="question-text-{{ question.pk }}">Pregunta / ítem</label>
+                                    <textarea id="question-text-{{ question.pk }}" name="text" rows="3" required>{{ question.text }}</textarea>
+                                </div>
+                                <div class="template-inline-field">
+                                    <label for="question-order-{{ question.pk }}">Orden</label>
+                                    <input id="question-order-{{ question.pk }}" name="order" type="number" min="1" value="{{ question.order }}" required>
+                                </div>
+                                <label class="template-inline-check">
+                                    <input name="is_required" type="checkbox" {% if question.is_required %}checked{% endif %}>
+                                    <span>Respuesta obligatoria</span>
+                                </label>
+                                <div class="template-inline-form-actions">
+                                    <button class="button button-primary" type="submit">Guardar cambios</button>
+                                </div>
+                            </form>
+                        </details>
+                        <form method="post" action="{% url 'assessments:question-delete' question.pk %}" onsubmit="return confirm('¿Eliminar este ítem del borrador?');">
+                            {% csrf_token %}
+                            <button class="template-mini-action template-mini-action-danger" type="submit">Eliminar</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="template-empty">Esta dimensión todavía no tiene ítems.</div>
+                {% endfor %}
+            </div>
+
+            {% if template_object.is_editable %}
+            <details class="template-add-item">
+                <summary>+ Agregar ítem en {{ dimension.name }}</summary>
+                <form method="post" class="template-inline-form template-inline-form-create" action="{% url 'assessments:template-detail' template_object.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="create-scale-question">
+                    <input type="hidden" name="dimension_id" value="{{ dimension.pk }}">
+                    <div class="template-inline-field template-inline-field-wide">
+                        <label for="new-question-text-{{ dimension.pk }}">Pregunta / ítem</label>
+                        <textarea id="new-question-text-{{ dimension.pk }}" name="text" rows="3" placeholder="Escribe el nuevo ítem..." required></textarea>
+                    </div>
+                    <div class="template-inline-field">
+                        <label for="new-question-order-{{ dimension.pk }}">Orden</label>
+                        <input id="new-question-order-{{ dimension.pk }}" name="order" type="number" min="1" placeholder="Ej. 5" required>
+                    </div>
+                    <label class="template-inline-check">
+                        <input name="is_required" type="checkbox" checked>
+                        <span>Respuesta obligatoria</span>
+                    </label>
+                    <div class="template-inline-form-actions">
+                        <button class="button button-primary" type="submit">Agregar ítem</button>
+                    </div>
+                </form>
+            </details>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="template-empty">Esta versión todavía no tiene dimensiones. Debes configurar al menos una dimensión antes de publicarla.</div>
+    {% endif %}
+</section>
+
+<section class="template-panel">
+    <div class="template-section-head">
+        <div>
+            <p class="dashboard-eyebrow">Cierre cualitativo</p>
+            <h2>Preguntas abiertas.</h2>
+            <p class="template-muted">Estas respuestas no participan en el promedio ni en la semaforización y se reservan como insumo cualitativo para el Plan de acción.</p>
+        </div>
+        {% if template_object.is_editable %}
+        <a class="button button-secondary" href="{% url 'assessments:general-question-create' template_object.pk %}">Agregar pregunta abierta</a>
+        {% endif %}
+    </div>
+    {% if general_questions %}
+    <div class="template-question-list">
+        {% for question in general_questions %}
+        <div class="template-question">
+            <span class="template-question-index">{{ question.order|stringformat:"02d" }}</span>
+            <div>
+                <p>{{ question.text }}</p>
+                <small>{% if question.is_required %}Obligatoria{% else %}Opcional{% endif %} · Respuesta abierta</small>
+            </div>
+            {% if template_object.is_editable %}
+            <div class="template-inline-actions">
+                <a class="template-mini-action" href="{% url 'assessments:general-question-edit' question.pk %}">Editar</a>
+                <form method="post" action="{% url 'assessments:question-delete' question.pk %}" onsubmit="return confirm('¿Eliminar esta pregunta abierta del borrador?');">
+                    {% csrf_token %}
+                    <button class="template-mini-action template-mini-action-danger" type="submit">Eliminar</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="template-empty">No hay preguntas abiertas configuradas.</div>
+    {% endif %}
+</section>
+
+{% if not template_object.is_editable %}
+<p class="template-danger-note">Esta versión es histórica y de solo lectura. Para cambiar dimensiones o preguntas, crea una nueva versión. La nueva versión podrá editarse directamente desde esta misma pantalla.</p>
+{% endif %}
+{% endblock %}

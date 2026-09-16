@@ -1,0 +1,43 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Plantillas de evaluación | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/assessments.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/template-management.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="template-toolbar animate__animated animate__fadeInUp motion-soft">
+    <div class="template-toolbar-copy">
+        <p class="dashboard-eyebrow">Configuración</p>
+        <h1 class="dashboard-title">Plantillas de evaluación.</h1>
+        <p class="dashboard-description">Administra versiones sin modificar evaluaciones históricas. Las versiones publicadas son de solo lectura; los cambios se realizan sobre un nuevo borrador.</p>
+    </div>
+</section>
+
+{% if templates %}
+<div class="template-grid">
+    {% for item in templates %}
+    <article class="template-card">
+        <div class="template-card-head">
+            <div>
+                <p class="dashboard-eyebrow">Versión {{ item.version }}</p>
+                <h2>{{ item.name }}</h2>
+            </div>
+            <span class="template-status template-status-{{ item.publication_status|lower }}">{{ item.get_publication_status_display }}</span>
+        </div>
+        <p>{{ item.description|default:"Sin descripción configurada." }}</p>
+        <div class="template-meta">
+            <div><span>Dimensiones</span><strong>{{ item.dimensions.count }}</strong></div>
+            <div><span>Estado</span><strong>{% if item.is_active %}Activa{% else %}No activa{% endif %}</strong></div>
+        </div>
+        <a class="template-link" href="{% url 'assessments:template-detail' item.pk %}">Ver configuración →</a>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="template-empty">No hay plantillas configuradas.</div>
+{% endif %}
+{% endblock %}

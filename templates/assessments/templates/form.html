@@ -1,0 +1,55 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/assessments.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/template-management.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<section class="template-toolbar animate__animated animate__fadeInUp motion-soft">
+    <div class="template-toolbar-copy">
+        <p class="dashboard-eyebrow">Plantilla · versión {{ template_object.version }}</p>
+        <h1 class="dashboard-title">{{ page_title }}.</h1>
+        <p class="dashboard-description">Los cambios se aplican únicamente a esta versión en borrador y no alteran evaluaciones históricas.</p>
+    </div>
+    <div class="template-toolbar-actions">
+        <a class="button button-secondary" href="{% url 'assessments:template-detail' template_object.pk %}">Cancelar</a>
+    </div>
+</section>
+
+<div class="template-form-card">
+    <form method="post" class="template-form-grid" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="alert-error" role="alert">
+            {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+            {% if field.field.widget.input_type == 'checkbox' %}
+            <div class="template-form-field">
+                <label class="template-checkbox" for="{{ field.id_for_label }}">{{ field }} <span>{{ field.label }}</span></label>
+                {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                {{ field.errors }}
+            </div>
+            {% else %}
+            <div class="template-form-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                {{ field.errors }}
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        <div class="template-toolbar-actions">
+            <button class="button button-primary" type="submit">Guardar cambios</button>
+            <a class="button button-secondary" href="{% url 'assessments:template-detail' template_object.pk %}">Volver sin guardar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

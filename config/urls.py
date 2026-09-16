@@ -10,6 +10,10 @@ urlpatterns = [
         include("apps.accounts.urls"),
     ),
     path(
+        "cuenta/auth/",
+        include("allauth.urls"),
+    ),
+    path(
         "evaluaciones/",
         include("apps.assessments.urls"),
     ),

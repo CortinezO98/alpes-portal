@@ -1,0 +1,303 @@
+/* Refinamiento visual del reporte individual.
+   Mantiene la paleta y la semaforización existentes; ajusta únicamente jerarquía,
+   densidad, espaciado y proporciones para una lectura más ejecutiva. */
+
+.report-hero {
+    grid-template-columns: minmax(0, 1.5fr) minmax(18rem, .5fr);
+    gap: clamp(1.25rem, 2.4vw, 2.5rem);
+    margin-bottom: clamp(1.35rem, 2.2vw, 2rem);
+}
+
+.report-hero-main {
+    padding-block: .2rem;
+}
+
+.report-hero-title {
+    max-width: 18ch;
+    margin: .3rem 0 .7rem;
+    font-size: clamp(2.15rem, 3.35vw, 3.7rem);
+    line-height: .98;
+    letter-spacing: -.035em;
+}
+
+.report-hero-meta {
+    gap: .45rem .9rem;
+    font-size: .82rem;
+}
+
+.report-status-chip {
+    min-height: 1.65rem;
+    padding: .28rem .58rem;
+    font-size: .64rem;
+}
+
+.report-participant-card {
+    border-radius: 1.05rem;
+    padding: 1rem 1.1rem;
+    box-shadow: 0 .7rem 1.8rem rgba(11, 79, 74, .045);
+}
+
+.report-participant-label {
+    margin-bottom: .28rem;
+    font-size: .62rem;
+}
+
+.report-participant-email {
+    font-size: clamp(1.15rem, 1.65vw, 1.55rem);
+    line-height: 1.12;
+}
+
+.report-participant-stats {
+    gap: .45rem;
+    margin-top: .8rem;
+}
+
+.report-participant-stats > div {
+    grid-template-columns: 5.8rem minmax(0, 1fr);
+    gap: .6rem;
+    padding-top: .5rem;
+}
+
+.report-participant-stats dt {
+    font-size: .6rem;
+}
+
+.report-participant-stats dd {
+    font-size: .76rem;
+}
+
+.result-overview {
+    grid-template-columns: minmax(15rem, .66fr) minmax(24rem, 1.34fr);
+    gap: clamp(1.25rem, 2.5vw, 2.35rem);
+    margin-bottom: clamp(2rem, 3.5vw, 3rem);
+    border-radius: 1.15rem;
+    padding: clamp(1.2rem, 2.5vw, 2rem);
+    box-shadow: 0 1rem 2.6rem rgba(11, 79, 74, .045);
+}
+
+.result-overview-title,
+.result-section-title {
+    margin: .3rem 0 .7rem;
+    font-size: clamp(1.8rem, 2.6vw, 2.7rem);
+    line-height: 1.02;
+}
+
+.result-overview-copy > p:last-of-type,
+.result-section-description {
+    font-size: .88rem;
+    line-height: 1.6;
+}
+
+.result-chart-wrap {
+    min-height: 26rem;
+}
+
+.traffic-legend {
+    gap: .55rem .85rem;
+    margin-top: 1rem;
+}
+
+.traffic-legend li {
+    font-size: .7rem;
+}
+
+.traffic-dot {
+    width: .55rem;
+    height: .55rem;
+}
+
+.result-section {
+    margin-bottom: 2.25rem;
+}
+
+.result-section-head {
+    margin-bottom: 1.15rem;
+}
+
+.dimension-grid {
+    gap: .85rem;
+}
+
+.dimension-card {
+    border-radius: 1rem;
+}
+
+.dimension-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 .7rem 1.6rem rgba(11, 79, 74, .055);
+}
+
+.dimension-card[open] {
+    box-shadow: 0 1rem 2.2rem rgba(11, 79, 74, .07);
+}
+
+.dimension-summary {
+    min-height: 8rem;
+    gap: .5rem;
+    padding: .95rem 1.05rem;
+}
+
+.dimension-summary h3 {
+    font-size: .98rem;
+    line-height: 1.32;
+}
+
+.result-order {
+    font-size: .64rem;
+}
+
+.result-score {
+    font-size: 2rem;
+}
+
+.result-score span {
+    font-size: .64rem;
+}
+
+.dimension-toggle {
+    width: 1.8rem;
+    height: 1.8rem;
+    font-size: 1rem;
+}
+
+.traffic-badge {
+    padding: .26rem .52rem;
+    font-size: .6rem;
+}
+
+.dimension-body {
+    padding: 0 1.05rem 1rem;
+}
+
+.dimension-body-head {
+    padding: .8rem 0 .65rem;
+}
+
+.dimension-body-head > div > strong {
+    font-size: .9rem;
+}
+
+.dimension-body-kicker {
+    font-size: .58rem;
+}
+
+.question-result {
+    grid-template-columns: minmax(0, 1.45fr) minmax(13rem, .55fr);
+    gap: 1.15rem;
+    padding: .85rem .8rem .85rem 1rem;
+}
+
+.question-result::before {
+    top: .6rem;
+    bottom: .6rem;
+    width: .18rem;
+}
+
+.question-copy {
+    grid-template-columns: 1.55rem minmax(0, 1fr);
+    gap: .5rem;
+}
+
+.question-copy > span {
+    font-size: .62rem;
+}
+
+.question-copy p {
+    font-size: .84rem;
+    line-height: 1.45;
+}
+
+.question-score-block {
+    gap: .4rem;
+}
+
+.question-score-meta strong {
+    font-size: .75rem;
+}
+
+.question-bar {
+    height: .48rem;
+}
+
+.report-open-answers {
+    border-radius: 1.1rem;
+}
+
+.report-open-answers .report-card-head h2 {
+    font-size: clamp(1.8rem, 2.6vw, 2.65rem);
+}
+
+.report-answer h3 {
+    font-size: .88rem;
+    line-height: 1.45;
+}
+
+.report-answer p {
+    font-size: .84rem;
+    line-height: 1.55;
+}
+
+@media (max-width: 70rem) {
+    .report-hero,
+    .result-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .report-participant-card {
+        max-width: 42rem;
+    }
+
+    .result-chart-wrap {
+        min-height: 24rem;
+    }
+}
+
+@media (max-width: 48rem) {
+    .report-hero-title {
+        font-size: clamp(2rem, 8vw, 2.75rem);
+    }
+
+    .report-participant-card {
+        max-width: none;
+    }
+
+    .result-overview-title,
+    .result-section-title {
+        font-size: clamp(1.75rem, 7vw, 2.3rem);
+    }
+
+    .result-chart-wrap {
+        min-height: 21rem;
+    }
+
+    .question-result {
+        grid-template-columns: 1fr;
+        gap: .65rem;
+    }
+}
+
+@media (max-width: 34rem) {
+    .report-hero-meta {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: .35rem;
+    }
+
+    .report-hero-meta > span:not(.report-status-chip)::before {
+        display: none;
+    }
+
+    .report-participant-stats > div {
+        grid-template-columns: 1fr;
+        gap: .15rem;
+    }
+
+    .report-participant-stats dd {
+        text-align: left;
+    }
+
+    .dimension-summary {
+        min-height: 7.5rem;
+        padding: .85rem;
+    }
+}

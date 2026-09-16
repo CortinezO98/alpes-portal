@@ -211,7 +211,6 @@
                     <summary>¿Para quién está pensado el Modelo ALPES?</summary>
                     <p>Para personas que desean construir una vida con mayor propósito, bienestar y equilibrio. Es un acompañamiento individual para comprender el momento actual, definir retos y sueños y convertirlos en caminos concretos de acción.</p>
                 </details>
-
             </div>
         </div>
     </section>
@@ -226,43 +225,17 @@
                     <span class="public-cta-contact-icon" aria-hidden="true">↗</span>
                     <div>
                         <strong>¿Prefieres conversar?</strong>
-                        <a
-                            href="https://wa.me/573107426028?text=Hola%2C%20quisiera%20conocer%20m%C3%A1s%20sobre%20los%20servicios%20de%20Jos%C3%A9%20A.%20Marrugo%20Roa."
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="Iniciar conversación por WhatsApp con José A. Marrugo Roa"
-                        >Escríbeme por WhatsApp</a>
+                        <a href="https://wa.me/573107426028?text=Hola%2C%20quisiera%20conocer%20m%C3%A1s%20sobre%20los%20servicios%20de%20Jos%C3%A9%20A.%20Marrugo%20Roa." target="_blank" rel="noopener noreferrer" aria-label="Iniciar conversación por WhatsApp con José A. Marrugo Roa">Escríbeme por WhatsApp</a>
                     </div>
                 </div>
             </div>
             <form class="public-contact-form" data-contact-form aria-label="Formulario de contacto">
                 <div class="public-contact-form-fields">
-                    <div class="public-contact-field">
-                        <label for="contact-name">Nombre completo</label>
-                        <input id="contact-name" name="name" type="text" autocomplete="name" placeholder="Tu nombre" required>
-                    </div>
-                    <div class="public-contact-field">
-                        <label for="contact-email">Correo electrónico</label>
-                        <input id="contact-email" name="email" type="email" autocomplete="email" placeholder="tu@correo.com" required>
-                    </div>
-                    <div class="public-contact-field">
-                        <label for="contact-company">Empresa <span>(opcional)</span></label>
-                        <input id="contact-company" name="company" type="text" autocomplete="organization" placeholder="Nombre de tu organización">
-                    </div>
-                    <div class="public-contact-field">
-                        <label for="contact-interest">Me interesa</label>
-                        <select id="contact-interest" name="interest" required>
-                            <option value="" selected disabled>Selecciona una opción</option>
-                            <option>Acompañamiento al Liderazgo</option>
-                            <option>Jubilación Plena</option>
-                            <option>Desarrollo Organizacional</option>
-                            <option>Modelo ALPES</option>
-                        </select>
-                    </div>
-                    <div class="public-contact-field public-contact-field-message">
-                        <label for="contact-message">Mensaje</label>
-                        <textarea id="contact-message" name="message" rows="5" placeholder="Cuéntame brevemente tu situación o el objetivo que quieres alcanzar…" required></textarea>
-                    </div>
+                    <div class="public-contact-field"><label for="contact-name">Nombre completo</label><input id="contact-name" name="name" type="text" autocomplete="name" placeholder="Tu nombre" required></div>
+                    <div class="public-contact-field"><label for="contact-email">Correo electrónico</label><input id="contact-email" name="email" type="email" autocomplete="email" placeholder="tu@correo.com" required></div>
+                    <div class="public-contact-field"><label for="contact-company">Empresa <span>(opcional)</span></label><input id="contact-company" name="company" type="text" autocomplete="organization" placeholder="Nombre de tu organización"></div>
+                    <div class="public-contact-field"><label for="contact-interest">Me interesa</label><select id="contact-interest" name="interest" required><option value="" selected disabled>Selecciona una opción</option><option>Acompañamiento al Liderazgo</option><option>Jubilación Plena</option><option>Desarrollo Organizacional</option><option>Modelo ALPES</option></select></div>
+                    <div class="public-contact-field public-contact-field-message"><label for="contact-message">Mensaje</label><textarea id="contact-message" name="message" rows="5" placeholder="Cuéntame brevemente tu situación o el objetivo que quieres alcanzar…" required></textarea></div>
                 </div>
                 <button class="public-contact-submit" type="submit">Enviar mensaje <span aria-hidden="true">↗</span></button>
                 <p class="public-contact-form-note" data-contact-status aria-live="polite">Al enviar, se abrirá tu aplicación de correo con el mensaje preparado. Tu información se utilizará únicamente para atender tu consulta.</p>
@@ -273,13 +246,8 @@
 
 <footer class="public-footer">
     <div class="public-container public-footer-inner">
-        <div class="public-footer-copy">
-            <p>© 2026 José A. Marrugo Roa — Coaching &amp; Consultoría Organizacional. Todos los derechos reservados.</p>
-        </div>
-        <div class="public-footer-links">
-            <a href="{% url 'portfolio:privacy' %}">Privacidad</a>
-            <a href="{% url 'portfolio:data-treatment' %}">Tratamiento de datos</a>
-        </div>
+        <div class="public-footer-copy"><p>© 2026 José A. Marrugo Roa — Coaching &amp; Consultoría Organizacional. Todos los derechos reservados.</p></div>
+        <div class="public-footer-links"><a href="{% url 'portfolio:privacy' %}">Privacidad</a><a href="{% url 'portfolio:data-treatment' %}">Tratamiento de datos</a></div>
     </div>
 </footer>
 {% endblock %}

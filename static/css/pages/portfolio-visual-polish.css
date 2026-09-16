@@ -141,7 +141,6 @@
     .public-service-card:hover .public-service-number { transform: none; }
 }
 
-/* Contacto: una tarjeta clara que acompaña, en lugar de dividir la pantalla. */
 .public-cta {
     position: relative;
     overflow: hidden;
