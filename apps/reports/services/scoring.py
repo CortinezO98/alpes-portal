@@ -22,12 +22,10 @@ def get_score_band(score: float | int | None) -> ScoreBand | None:
         return None
 
     value = float(score)
-    for band in SCORE_BANDS:
-        if band.minimum <= value <= band.maximum:
-            return band
-
-    if 5.9 < value < 6.0:
+    if not 0 <= value <= 10:
+        raise ValueError("El puntaje debe estar entre 0 y 10.")
+    if value < 6:
         return SCORE_BANDS[0]
-    if 7.9 < value < 8.0:
+    if value < 8:
         return SCORE_BANDS[1]
-    raise ValueError("El puntaje debe estar entre 0 y 10.")
+    return SCORE_BANDS[2]
