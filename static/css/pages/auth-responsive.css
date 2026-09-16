@@ -8,9 +8,13 @@
     }
 
     .auth-login-page {
-        height: calc(100dvh - 5.75rem);
+        height: calc(100dvh - 5rem);
         min-height: 0;
         overflow: hidden;
+    }
+
+    .auth-public-header .public-header-inner {
+        min-height: 5rem;
     }
 
     .auth-login-page {
@@ -20,6 +24,12 @@
     .auth-login-page .auth-brand {
         min-height: 100%;
         padding: clamp(2rem, 4vw, 4rem);
+    }
+
+    .auth-login-page .auth-brand-content {
+        min-height: 0;
+        height: 100%;
+        gap: 1.25rem;
     }
 
     .auth-platform-mark {
@@ -89,12 +99,20 @@
 
 /* Portátiles con poca altura: se preserva la tarjeta completa sin scroll innecesario. */
 @media (min-width: 56rem) and (max-height: 48rem) {
-    .auth-login-page .auth-panel { padding-block: 1.25rem; }
-    .auth-login-page .auth-card { padding: 0.9rem 1.2rem; }
-    .auth-platform-mark { margin-bottom: 1.4rem; }
-    .auth-card-brand { margin-bottom: 0.9rem; }
-    .auth-login-page .auth-form { margin-top: 1rem; }
-    .auth-login-page .auth-footer { margin-top: 0.75rem; }
+    .auth-public-header .public-header-inner { min-height: 4.75rem; }
+    .auth-login-page { height: calc(100dvh - 4.75rem); }
+    .auth-login-page .auth-brand { padding: 1.5rem 3.25rem; }
+    .auth-login-page .auth-panel { padding-block: 0.75rem; }
+    .auth-login-page .auth-card { padding: 0.75rem 1.2rem; }
+    .auth-login-page .auth-brand-content { gap: 0.85rem; }
+    .auth-platform-mark,
+    .auth-login-page .auth-brand-copy { display: none; }
+    .auth-login-page .auth-brand-title { font-size: clamp(2.65rem, 4vw, 3.7rem); }
+    .auth-login-page .auth-brand-note { font-size: 1.2rem; line-height: 1.1; }
+    .auth-card-brand { margin-bottom: 0.65rem; }
+    .auth-login-page .auth-description { margin-top: 0.65rem; }
+    .auth-login-page .auth-form { margin-top: 0.75rem; }
+    .auth-login-page .auth-footer { margin-top: 0.55rem; }
 }
 
 @media (max-width: 55.9375rem) {
