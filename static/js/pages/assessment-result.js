@@ -9,6 +9,7 @@
             if (!detail.open) {
                 return;
             }
+
             details.forEach((other) => {
                 if (other !== detail) {
                     other.open = false;
@@ -39,7 +40,7 @@
         const scores = dimensions.map((dimension) => dimension.score);
         const colors = dimensions.map((dimension) => dimension.color);
         const rootStyles = getComputedStyle(document.documentElement);
-        const text = rootStyles.getPropertyValue("--color-text").trim() || "#29332d";
+        const text = rootStyles.getPropertyValue("--color-text").trim() || "#333333";
         const muted = rootStyles.getPropertyValue("--color-text-muted").trim() || "#66736b";
         const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -89,7 +90,7 @@
 
                 meta.data.forEach((point, index) => {
                     ctx.beginPath();
-                    ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+                    ctx.arc(point.x, point.y, 5.5, 0, Math.PI * 2);
                     ctx.fillStyle = colors[index];
                     ctx.fill();
                     ctx.lineWidth = 2;
@@ -109,11 +110,12 @@
                         label: "Valoración ALPES",
                         data: scores,
                         borderColor: "rgba(0, 0, 0, 0)",
-                        backgroundColor: "rgba(88, 104, 47, 0.12)",
+                        backgroundColor: "rgba(23, 107, 104, 0.10)",
                         pointRadius: 0,
-                        pointHoverRadius: 7,
+                        pointHoverRadius: 8,
                         pointHoverBackgroundColor: colors,
                         pointHoverBorderColor: "#ffffff",
+                        pointHoverBorderWidth: 2,
                         borderWidth: 0,
                     },
                 ],
@@ -130,10 +132,26 @@
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        displayColors: true,
+                        backgroundColor: "rgba(32, 38, 36, 0.96)",
+                        titleColor: "#ffffff",
+                        bodyColor: "#ffffff",
+                        borderColor: "rgba(255, 255, 255, 0.14)",
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 8,
                         callbacks: {
+                            labelColor: (context) => ({
+                                borderColor: colors[context.dataIndex],
+                                backgroundColor: colors[context.dataIndex],
+                            }),
                             label: (context) => {
                                 const dimension = dimensions[context.dataIndex];
-                                return `${context.formattedValue} / 10 · ${dimension.band}`;
+                                const score = Number(dimension.score || 0).toLocaleString("es-CO", {
+                                    minimumFractionDigits: 1,
+                                    maximumFractionDigits: 2,
+                                });
+                                return `${score} / 10 · ${dimension.band_label}`;
                             },
                         },
                     },
