@@ -169,6 +169,10 @@
         min-height: 0;
         overflow: hidden;
     }
+
+    .auth-login-page .auth-panel {
+        align-items: center;
+    }
 }
 
 @media (max-width: 23rem) {
