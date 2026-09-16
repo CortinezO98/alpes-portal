@@ -2,4 +2,5 @@ from .base import *
 
 DEBUG = True
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+if not EMAIL_HOST:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

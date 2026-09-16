@@ -25,6 +25,7 @@ class User(AbstractUser):
     )
 
     is_email_verified = models.BooleanField(default=False)
+    email_verification_required = models.BooleanField(default=False)
 
     objects = UserManager()
 

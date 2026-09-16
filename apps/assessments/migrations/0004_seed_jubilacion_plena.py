@@ -1,8 +1,5 @@
-from django.core.management.base import BaseCommand
-from django.db import transaction
-
-from apps.assessments.models import AssessmentTemplate, Dimension, Question
-from apps.assessments.services.template_versioning import publish_template
+from django.db import migrations
+from django.utils import timezone
 
 
 DIMENSIONS = (
@@ -95,70 +92,66 @@ GENERAL_QUESTIONS = (
 )
 
 
-class Command(BaseCommand):
-    help = "Crea y publica la versión inicial de ALPES - Jubilación Plena de forma segura."
+def seed_jubilacion_plena(apps, schema_editor):
+    AssessmentTemplate = apps.get_model("assessments", "AssessmentTemplate")
+    Dimension = apps.get_model("assessments", "Dimension")
+    Question = apps.get_model("assessments", "Question")
 
-    @transaction.atomic
-    def handle(self, *args, **options):
-        template, created = AssessmentTemplate.objects.get_or_create(
-            slug="alpes-jubilacion-plena",
+    template, _ = AssessmentTemplate.objects.get_or_create(
+        slug="alpes-jubilacion-plena",
+        defaults={
+            "name": "ALPES - Jubilación Plena",
+            "is_active": True,
+            "version": 1,
+            "publication_status": "PUBLISHED",
+            "published_at": timezone.now(),
+        },
+    )
+
+    AssessmentTemplate.objects.filter(pk=template.pk).update(
+        name="ALPES - Jubilación Plena",
+        is_active=True,
+        publication_status="PUBLISHED",
+        published_at=template.published_at or timezone.now(),
+    )
+
+    for dimension_order, (slug, name, statements) in enumerate(DIMENSIONS, start=1):
+        dimension, _ = Dimension.objects.update_or_create(
+            template=template,
+            slug=slug,
+            defaults={"name": name, "order": dimension_order},
+        )
+
+        for question_order, statement in enumerate(statements, start=1):
+            Question.objects.update_or_create(
+                dimension=dimension,
+                order=question_order,
+                defaults={
+                    "template": None,
+                    "text": statement,
+                    "question_type": "SCALE",
+                    "is_required": True,
+                },
+            )
+
+    for question_order, text in enumerate(GENERAL_QUESTIONS, start=1):
+        Question.objects.update_or_create(
+            template=template,
+            dimension=None,
+            order=question_order,
             defaults={
-                "name": "ALPES - Jubilación Plena",
-                "is_active": True,
+                "text": text,
+                "question_type": "TEXT",
+                "is_required": False,
             },
         )
 
-        if not created and not template.is_editable:
-            self.stdout.write(
-                self.style.WARNING(
-                    "La plantilla ya está publicada y no se modificó. "
-                    "Para cambiar preguntas o dimensiones, crea una nueva versión."
-                )
-            )
-            return
 
-        template.name = "ALPES - Jubilación Plena"
-        template.is_active = True
-        template.save(update_fields=("name", "is_active", "updated_at"))
+class Migration(migrations.Migration):
+    dependencies = [
+        ("assessments", "0003_template_versioning"),
+    ]
 
-        for dimension_order, (slug, name, statements) in enumerate(DIMENSIONS, start=1):
-            dimension, _ = Dimension.objects.update_or_create(
-                template=template,
-                slug=slug,
-                defaults={
-                    "name": name,
-                    "order": dimension_order,
-                },
-            )
-
-            for question_order, statement in enumerate(statements, start=1):
-                Question.objects.update_or_create(
-                    dimension=dimension,
-                    order=question_order,
-                    defaults={
-                        "template": None,
-                        "text": statement,
-                        "question_type": Question.Type.SCALE,
-                        "is_required": True,
-                    },
-                )
-
-        for question_order, text in enumerate(GENERAL_QUESTIONS, start=1):
-            Question.objects.update_or_create(
-                template=template,
-                dimension=None,
-                order=question_order,
-                defaults={
-                    "text": text,
-                    "question_type": Question.Type.TEXT,
-                    "is_required": False,
-                },
-            )
-
-        publish_template(template)
-        self.stdout.write(
-            self.style.SUCCESS(
-                "Plantilla ALPES - Jubilación Plena publicada: "
-                "8 dimensiones, 32 preguntas de escala y 3 preguntas abiertas."
-            )
-        )
+    operations = [
+        migrations.RunPython(seed_jubilacion_plena, migrations.RunPython.noop),
+    ]

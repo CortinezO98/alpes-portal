@@ -8,6 +8,7 @@ from apps.accounts.models import User
 from apps.assessments.models import Assessment, Dimension, Question
 
 from .forms import AnalyticsFilterForm
+from .services.report_builder import build_assessment_report
 
 
 class AnalyticsDashboardView(
@@ -123,32 +124,12 @@ class AssessmentReportDetailView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        dimensions = list(
-            self.assessment.template.dimensions.annotate(
-                average_score=Avg(
-                    "questions__answers__score",
-                    filter=Q(
-                        questions__answers__assessment=self.assessment,
-                        questions__answers__score__isnull=False,
-                    ),
-                )
-            ).order_by("order", "id")
-        )
-        general_answers = self.assessment.answers.filter(
-            question__template=self.assessment.template,
-            question__dimension__isnull=True,
-        ).select_related("question").order_by("question__order", "question__id")
-
+        report = build_assessment_report(self.assessment)
         context.update(
             assessment=self.assessment,
-            dimensions=dimensions,
-            general_answers=general_answers,
-            radar_labels=[dimension.name for dimension in dimensions],
-            radar_scores=[
-                round(float(dimension.average_score), 2)
-                if dimension.average_score is not None
-                else 0
-                for dimension in dimensions
-            ],
+            report_dimensions=report["dimensions"],
+            general_answers=report["general_answers"],
+            radar_dimensions=report["radar"],
+            template_version=self.assessment.template.version,
         )
         return context
