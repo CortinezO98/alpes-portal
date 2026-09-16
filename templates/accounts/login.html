@@ -74,6 +74,7 @@
 
             <form method="post" class="auth-form" novalidate>
                 {% csrf_token %}
+                <p class="auth-email-heading">Iniciar sesión con correo</p>
                 <div class="form-field">
                     <label class="form-label" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
                     {{ form.username }}
@@ -89,6 +90,7 @@
                 <button class="button button-primary button-block" type="submit">Ingresar <span aria-hidden="true">→</span></button>
             </form>
 
+            <p class="auth-account-note">Las cuentas son habilitadas por la administración de ALPES.</p>
             <footer class="auth-footer">Acceso protegido. Si necesitas ayuda, contacta al administrador de la plataforma.</footer>
         </div>
     </section>
