@@ -54,6 +54,56 @@ class TemplateConfigurationDetailView(TemplateSuperAdminMixin, TemplateView):
         )
         return context
 
+    @staticmethod
+    def _form_error_message(form):
+        errors = []
+        for field, field_errors in form.errors.items():
+            label = form.fields[field].label if field in form.fields else "Formulario"
+            errors.extend(f"{label}: {error}" for error in field_errors)
+        return " ".join(errors) or "Revisa los datos ingresados."
+
+    def post(self, request, *args, **kwargs):
+        if not self.template_object.is_editable:
+            raise Http404("La versión publicada es de solo lectura.")
+
+        action = request.POST.get("action")
+
+        if action == "create-scale-question":
+            dimension = get_object_or_404(
+                Dimension,
+                pk=request.POST.get("dimension_id"),
+                template=self.template_object,
+            )
+            form = ScaleQuestionConfigForm(request.POST, dimension=dimension)
+            if form.is_valid():
+                form.save()
+                messages.success(request, f"Se agregó un nuevo ítem a {dimension.name}.")
+            else:
+                messages.error(request, self._form_error_message(form))
+            return redirect("assessments:template-detail", pk=self.template_object.pk)
+
+        if action == "update-scale-question":
+            question = get_object_or_404(
+                Question.objects.select_related("dimension"),
+                pk=request.POST.get("question_id"),
+                dimension__template=self.template_object,
+                dimension__isnull=False,
+                question_type=Question.Type.SCALE,
+            )
+            form = ScaleQuestionConfigForm(
+                request.POST,
+                dimension=question.dimension,
+                instance=question,
+            )
+            if form.is_valid():
+                form.save()
+                messages.success(request, "El ítem fue actualizado correctamente.")
+            else:
+                messages.error(request, self._form_error_message(form))
+            return redirect("assessments:template-detail", pk=self.template_object.pk)
+
+        raise Http404("Acción de configuración no reconocida.")
+
 
 class TemplateCreateVersionView(TemplateSuperAdminMixin, View):
     def post(self, request, pk, *args, **kwargs):
