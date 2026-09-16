@@ -1,6 +1,12 @@
 from .base import *
 
 
+# Producción siempre utiliza PostgreSQL. Esto evita que una variable de
+# entorno ausente haga que el servidor termine usando SQLite por accidente.
+DATABASES = {
+    "default": postgres_database_config(),
+}
+
 DEBUG = False
 
 SECURE_SSL_REDIRECT = True
