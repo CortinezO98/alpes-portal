@@ -153,22 +153,26 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_ADAPTER = "apps.accounts.adapters.AlpesAccountAdapter"
-ACCOUNT_FORMS = {"signup": "apps.accounts.forms.PublicSignupForm"}
+
 SOCIALACCOUNT_ADAPTER = "apps.accounts.adapters.AlpesSocialAccountAdapter"
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = "mandatory"
 SOCIALACCOUNT_LOGIN_ON_GET = False
 SOCIALACCOUNT_STORE_TOKENS = False
 SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
 SOCIALACCOUNT_PROVIDERS = {
     "facebook": {
         "SCOPE": ["email", "public_profile"],
         "FIELDS": ["id", "email", "name", "first_name", "last_name"],
+        "EMAIL_AUTHENTICATION": True,
     },
     "google": {
         "SCOPE": ["profile", "email"],
         "AUTH_PARAMS": {"access_type": "online"},
+        "OAUTH_PKCE_ENABLED": True,
+        "EMAIL_AUTHENTICATION": True,
     },
 }
 if FACEBOOK_AUTH_ENABLED:
