@@ -6,9 +6,9 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/portfolio.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/auth.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/auth-public.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/auth-public.css' %}?v=platform-login-1">
 <link rel="stylesheet" href="{% static 'css/components/auth-social.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/auth-responsive.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/auth-responsive.css' %}?v=responsive-login-1">
 {% endblock %}
 
 {% block body %}
@@ -18,15 +18,13 @@
             <img class="public-brand-mark" src="{% static 'img/alpes-mountain-mark.svg' %}" alt="ALPES">
             <span><strong>José A. Marrugo Roa</strong><small>Coaching · Liderazgo · Transformación</small></span>
         </a>
-        <nav class="public-nav auth-public-nav" aria-label="Navegación de acceso">
-            <a href="{% url 'portfolio:home' %}">Volver al sitio</a>
-        </nav>
+        <nav class="public-nav auth-public-nav" aria-label="Navegación de acceso"><a href="{% url 'portfolio:home' %}">Volver al sitio</a></nav>
     </div>
 </header>
 
 <main class="auth-shell auth-login-page">
     <section class="auth-brand" aria-label="Plataforma ALPES">
-        <div class="auth-brand-content animate__animated animate__fadeIn">
+        <div class="auth-brand-content">
             <div>
                 <img class="auth-platform-mark" src="{% static 'img/alpes-mountain-mark.svg' %}" alt="ALPES">
                 <p class="auth-brand-kicker">Plataforma ALPES</p>
@@ -37,18 +35,12 @@
         </div>
     </section>
 
-    <section class="auth-panel" aria-labelledby="login-title">
-        <div class="auth-card animate__animated animate__fadeInUp">
-            <div class="auth-card-brand">
-                <img src="{% static 'img/alpes-mountain-mark.svg' %}" alt="ALPES">
-                <span>Plataforma ALPES</span>
-            </div>
-
+    <section class="auth-panel">
+        <div class="auth-card">
+            <div class="auth-card-brand"><img src="{% static 'img/alpes-mountain-mark.svg' %}" alt="ALPES"><span>Plataforma ALPES</span></div>
             <p class="auth-kicker">Acceso privado</p>
-            <h2 class="auth-title" id="login-title">Bienvenido.</h2>
-            <p class="auth-description">
-                Ingresa con una cuenta previamente habilitada por ALPES.
-            </p>
+            <h2 class="auth-title">Bienvenido.</h2>
+            <p class="auth-description">Ingresa con una cuenta previamente habilitada por ALPES para continuar tu proceso.</p>
 
             {% if social_auth_enabled %}
                 <div class="auth-provider-stack" aria-label="Opciones de inicio de sesión social">
@@ -66,27 +58,18 @@
                             </button>
                         </form>
                     {% endif %}
-
                     {% if facebook_auth_enabled %}
                         <form method="post" action="{% provider_login_url 'facebook' process='login' %}" class="auth-provider-form">
                             {% csrf_token %}
-                            <button class="auth-provider-button" type="submit">
-                                <span class="auth-facebook-icon" aria-hidden="true">f</span>
-                                <span>Continuar con Facebook</span>
-                            </button>
+                            <button class="auth-provider-button" type="submit"><span class="auth-facebook-icon" aria-hidden="true">f</span><span>Continuar con Facebook</span></button>
                         </form>
                     {% endif %}
                 </div>
-
-                <div class="auth-divider" role="separator" aria-label="O continuar con correo">
-                    <span>o continúa con correo</span>
-                </div>
+                <div class="auth-divider" role="separator" aria-label="O continuar con correo"><span>o continúa con correo</span></div>
             {% endif %}
 
             {% if form.non_field_errors %}
-                <div class="alert-error" role="alert">
-                    {% for error in form.non_field_errors %}{{ error }}{% endfor %}
-                </div>
+                <div class="alert-error" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
             {% endif %}
 
             <form method="post" class="auth-form" novalidate>
@@ -102,13 +85,10 @@
                     {% for error in form.password.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
                 </div>
                 {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-                <div class="auth-actions">
-                    <a class="auth-link" href="{% url 'accounts:password-reset' %}">¿Olvidaste tu contraseña?</a>
-                </div>
+                <div class="auth-actions"><a class="auth-link" href="{% url 'accounts:password-reset' %}">¿Olvidaste tu contraseña?</a></div>
                 <button class="button button-primary button-block" type="submit">Ingresar <span aria-hidden="true">→</span></button>
             </form>
 
-            <p class="auth-account-note">Las cuentas son habilitadas por la administración de ALPES.</p>
             <footer class="auth-footer">Acceso protegido. Si necesitas ayuda, contacta al administrador de la plataforma.</footer>
         </div>
     </section>
