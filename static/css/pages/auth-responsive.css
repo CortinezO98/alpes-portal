@@ -1,11 +1,24 @@
 /* Proporciones específicas para la pantalla de acceso de ALPES. */
 
 @media (min-width: 56rem) {
+    html:has(.auth-login-page),
+    body:has(.auth-login-page) {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .auth-login-page {
+        height: calc(100dvh - 5.75rem);
+        min-height: 0;
+        overflow: hidden;
+    }
+
     .auth-login-page {
         grid-template-columns: minmax(24rem, 0.92fr) minmax(34rem, 1.08fr);
     }
 
     .auth-login-page .auth-brand {
+        min-height: 100%;
         padding: clamp(2rem, 4vw, 4rem);
     }
 
@@ -21,6 +34,7 @@
     }
 
     .auth-login-page .auth-panel {
+        min-height: 100%;
         padding: clamp(1rem, 3vw, 3rem);
     }
 
@@ -96,6 +110,22 @@
     .auth-login-page .auth-form input[type="email"],
     .auth-login-page .auth-form input[type="password"],
     .auth-login-page .button-block { min-height: 2.85rem; }
+}
+
+/* En móviles de altura estándar, el acceso se resuelve en una sola pantalla. */
+@media (max-width: 55.9375rem) and (min-height: 44rem) {
+    html:has(.auth-login-page),
+    body:has(.auth-login-page) {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .auth-login-page,
+    .auth-login-page .auth-panel {
+        height: calc(100dvh - 5.15rem);
+        min-height: 0;
+        overflow: hidden;
+    }
 }
 
 @media (max-width: 23rem) {
