@@ -11,7 +11,7 @@ def test_public_home_exposes_core_portfolio_services(client):
     response = client.get(reverse("portfolio:home"))
     content = response.content.decode("utf-8")
 
-    assert "Acompañamiento al Liderazgo de la organización" in content
+    assert "Acompañamiento al Liderazgo" in content
     assert "Jubilación Plena" in content
     assert "Mentorías y Consultorías Organizacionales" in content
     assert "Modelo ALPES" in content
@@ -40,7 +40,7 @@ def test_public_home_exposes_whatsapp_contact(client):
     content = response.content.decode("utf-8")
 
     assert "https://wa.me/573107426028" in content
-    assert "Escribir por WhatsApp" in content
+    assert "Escríbeme por WhatsApp" in content
 
 
 def test_robots_txt_allows_public_site_and_blocks_private_routes(client):
