@@ -1,0 +1,25 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Registro cerrado | ALPES{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}">
+{% endblock %}
+
+{% block body %}
+<main class="auth-centered">
+    <section class="auth-centered-card animate__animated animate__fadeInUp" aria-labelledby="signup-closed-title">
+        <a class="auth-centered-mark" href="{% url 'portfolio:home' %}" aria-label="Volver al portafolio público de ALPES">ALPES</a>
+        <p class="auth-kicker">Acceso administrado</p>
+        <h1 class="auth-title" id="signup-closed-title">El registro público está deshabilitado.</h1>
+        <p class="auth-description">
+            Las cuentas de acceso a la plataforma ALPES son creadas y habilitadas únicamente por la administración.
+        </p>
+        <div class="auth-centered-actions">
+            <a class="button button-primary" href="{% url 'accounts:login' %}">Ir al inicio de sesión</a>
+            <a class="button" href="{% url 'portfolio:home' %}">Volver al portafolio</a>
+        </div>
+    </section>
+</main>
+{% endblock %}
