@@ -38,9 +38,11 @@ def test_create_next_template_version_clones_structure_without_mutating_source()
     new_template = create_next_template_version(template)
 
     template.refresh_from_db()
-    assert template.publication_status == AssessmentTemplate.PublicationStatus.RETIRED
+    assert template.publication_status == AssessmentTemplate.PublicationStatus.PUBLISHED
+    assert template.is_active is True
     assert new_template.version == 2
     assert new_template.publication_status == AssessmentTemplate.PublicationStatus.DRAFT
+    assert new_template.is_active is False
     assert new_template.supersedes == template
     assert new_template.dimensions.count() == 1
     assert new_template.dimensions.get().questions.get().text == "Pregunta original"
@@ -51,6 +53,14 @@ def test_create_next_template_version_clones_structure_without_mutating_source()
     cloned_question.save(update_fields=("text",))
 
     assert template.dimensions.get().questions.get().text == "Pregunta original"
+
+    publish_template(new_template)
+    template.refresh_from_db()
+    new_template.refresh_from_db()
+    assert template.publication_status == AssessmentTemplate.PublicationStatus.RETIRED
+    assert template.is_active is False
+    assert new_template.publication_status == AssessmentTemplate.PublicationStatus.PUBLISHED
+    assert new_template.is_active is True
 
 
 @pytest.mark.django_db
