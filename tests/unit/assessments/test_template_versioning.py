@@ -89,3 +89,56 @@ def test_published_template_questions_cannot_be_changed_in_place():
     dimension.name = "Cambio destructivo"
     with pytest.raises(ValidationError):
         dimension.save()
+
+    with pytest.raises(ValidationError):
+        question.delete()
+
+    with pytest.raises(ValidationError):
+        dimension.delete()
+
+
+@pytest.mark.django_db
+def test_template_cannot_be_published_without_complete_dimension_structure():
+    template = AssessmentTemplate.objects.create(
+        name="Plantilla incompleta",
+        slug="plantilla-incompleta",
+    )
+
+    with pytest.raises(ValidationError):
+        publish_template(template)
+
+    Dimension.objects.create(
+        template=template,
+        name="Dimensión vacía",
+        slug="dimension-vacia",
+        order=1,
+    )
+
+    with pytest.raises(ValidationError):
+        publish_template(template)
+
+
+@pytest.mark.django_db
+def test_repeated_new_version_request_reuses_same_draft():
+    template = AssessmentTemplate.objects.create(
+        name="Plantilla versionable",
+        slug="plantilla-versionable",
+    )
+    dimension = Dimension.objects.create(
+        template=template,
+        name="Dimensión",
+        slug="dimension",
+        order=1,
+    )
+    Question.objects.create(
+        dimension=dimension,
+        text="Pregunta",
+        order=1,
+    )
+    publish_template(template)
+
+    first_draft = create_next_template_version(template)
+    second_draft = create_next_template_version(template)
+
+    assert first_draft.pk == second_draft.pk
+    assert template.successor_versions.filter(version=2).count() == 1
