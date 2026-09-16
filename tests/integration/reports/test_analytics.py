@@ -109,6 +109,7 @@ def test_admin_can_open_dynamic_individual_assessment_report(client, report_setu
     assert len(response.context["radar_dimensions"]) == 8
     assert all(item["score"] == 8.0 for item in response.context["radar_dimensions"])
     assert all(item["band"] == "green" for item in response.context["radar_dimensions"])
+    assert all(item["band_label"] == "Verde" for item in response.context["radar_dimensions"])
     assert all(len(item["questions"]) == 4 for item in response.context["report_dimensions"])
 
 
@@ -132,11 +133,20 @@ def test_report_semaforizes_dimension_and_questions_from_database(client, report
     )
 
     dimension = response.context["report_dimensions"][0]
+    radar_dimension = response.context["radar_dimensions"][0]
     assert dimension["average"] == 7.25
     assert dimension["band"] == "yellow"
+    assert dimension["band_label"] == "Amarillo"
+    assert radar_dimension["band_label"] == "Amarillo"
     assert [item["band"] for item in dimension["questions"]] == [
         "red",
         "yellow",
         "green",
         "green",
+    ]
+    assert [item["band_label"] for item in dimension["questions"]] == [
+        "Rojo",
+        "Amarillo",
+        "Verde",
+        "Verde",
     ]
