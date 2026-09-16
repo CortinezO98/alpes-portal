@@ -150,3 +150,30 @@ def test_report_semaforizes_dimension_and_questions_from_database(client, report
         "Verde",
         "Verde",
     ]
+
+
+@pytest.mark.django_db
+def test_qualitative_answers_are_preserved_but_not_rendered_in_results(client, report_setup):
+    _, admin, _, completed = report_setup
+    open_question = Question.objects.filter(
+        template=completed.template,
+        dimension__isnull=True,
+        question_type=Question.Type.TEXT,
+    ).order_by("order", "id").first()
+    assert open_question is not None
+
+    Answer.objects.create(
+        assessment=completed,
+        question=open_question,
+        text="Libertad financiera",
+    )
+
+    client.force_login(admin)
+    response = client.get(
+        reverse("reports:assessment-detail", kwargs={"pk": completed.pk})
+    )
+
+    assert response.status_code == 200
+    assert response.context["general_answers"][0]["answer"] == "Libertad financiera"
+    assert b"Lectura cualitativa" not in response.content
+    assert b"Libertad financiera" not in response.content
