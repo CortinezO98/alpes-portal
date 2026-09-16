@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from apps.accounts.models import User
 from apps.assessments.forms import AssessmentAssignForm
-from apps.assessments.models import Assessment, AssessmentTemplate
+from apps.assessments.models import Assessment, AssessmentTemplate, Question
 
 
 @pytest.fixture
@@ -114,6 +114,115 @@ def test_draft_dimension_can_be_changed_from_configuration_ui(
     assert dimension.name == "Propósito renovado"
     assert dimension.slug == "proposito-renovado"
     assert version_one.dimensions.order_by("order").first().name == "Propósito y Motivación"
+
+
+@pytest.mark.django_db
+def test_draft_template_renders_inline_item_controls(client, template_management_setup):
+    superadmin, _, _, version_one = template_management_setup
+    client.force_login(superadmin)
+    client.post(reverse("assessments:template-new-version", kwargs={"pk": version_one.pk}))
+    version_two = version_one.successor_versions.get(version=2)
+
+    response = client.get(
+        reverse("assessments:template-detail", kwargs={"pk": version_two.pk})
+    )
+    content = response.content.decode("utf-8")
+
+    assert response.status_code == 200
+    assert 'value="update-scale-question"' in content
+    assert 'value="create-scale-question"' in content
+    assert "+ Agregar ítem en" in content
+    assert "Guardar cambios" in content
+
+
+@pytest.mark.django_db
+def test_draft_template_can_create_item_inline_without_changing_published_version(
+    client,
+    template_management_setup,
+):
+    superadmin, _, _, version_one = template_management_setup
+    client.force_login(superadmin)
+    client.post(reverse("assessments:template-new-version", kwargs={"pk": version_one.pk}))
+    version_two = version_one.successor_versions.get(version=2)
+    draft_dimension = version_two.dimensions.order_by("order").first()
+    original_dimension = version_one.dimensions.get(order=draft_dimension.order)
+    original_count = original_dimension.questions.count()
+    new_order = draft_dimension.questions.count() + 1
+
+    response = client.post(
+        reverse("assessments:template-detail", kwargs={"pk": version_two.pk}),
+        {
+            "action": "create-scale-question",
+            "dimension_id": draft_dimension.pk,
+            "text": "Nuevo ítem configurable desde la misma vista.",
+            "order": new_order,
+            "is_required": "on",
+        },
+    )
+
+    assert response.status_code == 302
+    assert Question.objects.filter(
+        dimension=draft_dimension,
+        text="Nuevo ítem configurable desde la misma vista.",
+        order=new_order,
+        is_required=True,
+    ).exists()
+    assert original_dimension.questions.count() == original_count
+
+
+@pytest.mark.django_db
+def test_draft_template_can_update_item_inline_without_changing_published_version(
+    client,
+    template_management_setup,
+):
+    superadmin, _, _, version_one = template_management_setup
+    client.force_login(superadmin)
+    client.post(reverse("assessments:template-new-version", kwargs={"pk": version_one.pk}))
+    version_two = version_one.successor_versions.get(version=2)
+    draft_dimension = version_two.dimensions.order_by("order").first()
+    draft_question = draft_dimension.questions.order_by("order").first()
+    original_question = version_one.dimensions.get(order=draft_dimension.order).questions.get(
+        order=draft_question.order
+    )
+    original_text = original_question.text
+
+    response = client.post(
+        reverse("assessments:template-detail", kwargs={"pk": version_two.pk}),
+        {
+            "action": "update-scale-question",
+            "question_id": draft_question.pk,
+            "text": "Ítem actualizado inline.",
+            "order": draft_question.order,
+            "is_required": "on",
+        },
+    )
+
+    assert response.status_code == 302
+    draft_question.refresh_from_db()
+    original_question.refresh_from_db()
+    assert draft_question.text == "Ítem actualizado inline."
+    assert original_question.text == original_text
+
+
+@pytest.mark.django_db
+def test_published_version_rejects_inline_item_changes(client, template_management_setup):
+    superadmin, _, _, version_one = template_management_setup
+    dimension = version_one.dimensions.order_by("order").first()
+    client.force_login(superadmin)
+
+    response = client.post(
+        reverse("assessments:template-detail", kwargs={"pk": version_one.pk}),
+        {
+            "action": "create-scale-question",
+            "dimension_id": dimension.pk,
+            "text": "No debe crearse",
+            "order": 99,
+            "is_required": "on",
+        },
+    )
+
+    assert response.status_code == 404
+    assert not Question.objects.filter(text="No debe crearse").exists()
 
 
 @pytest.mark.django_db
