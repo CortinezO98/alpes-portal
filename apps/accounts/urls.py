@@ -1,4 +1,3 @@
-from allauth.account.views import SignupView
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
@@ -25,11 +24,6 @@ urlpatterns = [
         "login/",
         UserLoginView.as_view(),
         name="login",
-    ),
-    path(
-        "registro/",
-        SignupView.as_view(template_name="account/signup.html"),
-        name="signup",
     ),
     path(
         "logout/",
