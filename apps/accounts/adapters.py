@@ -5,15 +5,9 @@ from .models import User
 
 
 class AlpesAccountAdapter(DefaultAccountAdapter):
-    def save_user(self, request, user, form, commit=True):
-        user = super().save_user(request, user, form, commit=False)
-        user.role = User.Role.USER
-        user.is_staff = False
-        user.is_superuser = False
-        user.email_verification_required = True
-        if commit:
-            user.save()
-        return user
+    def is_open_for_signup(self, request):
+        """Las cuentas se crean únicamente desde la administración de ALPES."""
+        return False
 
     def confirm_email(self, request, email_address):
         email_address = super().confirm_email(request, email_address)
@@ -25,11 +19,19 @@ class AlpesAccountAdapter(DefaultAccountAdapter):
 
 
 class AlpesSocialAccountAdapter(DefaultSocialAccountAdapter):
-    def save_user(self, request, sociallogin, form=None):
-        user = sociallogin.user
-        user.role = User.Role.USER
-        user.is_staff = False
-        user.is_superuser = False
-        user.email_verification_required = True
-        user = super().save_user(request, sociallogin, form=form)
-        return user
+    def is_open_for_signup(self, request, sociallogin):
+        """Google/Facebook autentican cuentas existentes, nunca crean cuentas."""
+        return False
+
+    def is_email_verified(self, provider, email):
+        """
+        Google conserva la validación propia del proveedor.
+
+        Facebook solo puede usar autenticación por correo cuando ya existe una
+        cuenta local activa con ese correo. Esto evita que el flujo social abra
+        cuentas nuevas y mantiene el alta bajo control administrativo.
+        """
+        provider_id = getattr(provider, "id", "")
+        if provider_id == "facebook":
+            return User.objects.filter(email__iexact=email, is_active=True).exists()
+        return super().is_email_verified(provider, email)
