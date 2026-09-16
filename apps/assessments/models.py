@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
@@ -78,6 +79,21 @@ class Dimension(models.Model):
         verbose_name = "dimensión"
         verbose_name_plural = "dimensiones"
 
+    def _assert_template_editable(self):
+        if self.template_id and not self.template.is_editable:
+            raise ValidationError(
+                "Las dimensiones de una plantilla publicada no se modifican. "
+                "Crea una nueva versión de la plantilla."
+            )
+
+    def save(self, *args, **kwargs):
+        self._assert_template_editable()
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        self._assert_template_editable()
+        return super().delete(*args, **kwargs)
+
     def __str__(self):
         return f"{self.template.name} · {self.name}"
 
@@ -143,6 +159,22 @@ class Question(models.Model):
         if self.dimension_id:
             return self.dimension.template
         return self.template
+
+    def _assert_template_editable(self):
+        template = self.assessment_template
+        if template and not template.is_editable:
+            raise ValidationError(
+                "Las preguntas de una plantilla publicada no se modifican. "
+                "Crea una nueva versión de la plantilla."
+            )
+
+    def save(self, *args, **kwargs):
+        self._assert_template_editable()
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        self._assert_template_editable()
+        return super().delete(*args, **kwargs)
 
     def __str__(self):
         return self.text[:80]
