@@ -37,6 +37,8 @@ services:
       - .env
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.development
+      DATABASE_ENGINE: postgresql
+      POSTGRES_HOST: db
     depends_on:
       db:
         condition: service_healthy
