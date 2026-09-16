@@ -124,25 +124,6 @@
     </div>
 </section>
 
-{% if general_answers %}
-<section class="report-open-answers">
-    <div class="report-card-head">
-        <div>
-            <p class="dashboard-eyebrow">Respuestas abiertas</p>
-            <h2>Lectura cualitativa.</h2>
-        </div>
-    </div>
-    <div class="report-answer-list">
-        {% for answer in general_answers %}
-            <article class="report-answer">
-                <h3>{{ answer.question }}</h3>
-                <p>{{ answer.answer|default:"Sin respuesta" }}</p>
-            </article>
-        {% endfor %}
-    </div>
-</section>
-{% endif %}
-
 {{ radar_dimensions|json_script:"alpes-radar-dimensions" }}
 {% else %}
 <div class="report-empty">Esta evaluación todavía no está completada. El resultado individual estará disponible al finalizar el proceso.</div>
