@@ -79,6 +79,7 @@ def build_assessment_report(assessment):
                 "label": dimension["name"],
                 "score": dimension["average"] or 0,
                 "band": dimension["band"],
+                "band_label": dimension["band_label"],
                 "color": dimension["band_color"],
             }
             for dimension in dimensions
