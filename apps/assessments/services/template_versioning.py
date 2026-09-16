@@ -1,13 +1,33 @@
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 
 from apps.assessments.models import AssessmentTemplate, Dimension, Question
 
 
+def validate_template_ready(template: AssessmentTemplate) -> None:
+    dimensions = list(template.dimensions.prefetch_related("questions").order_by("order", "id"))
+    if not dimensions:
+        raise ValidationError("La plantilla debe tener al menos una dimensión antes de publicarse.")
+
+    empty_dimensions = [
+        dimension.name
+        for dimension in dimensions
+        if not dimension.questions.filter(question_type=Question.Type.SCALE).exists()
+    ]
+    if empty_dimensions:
+        names = ", ".join(empty_dimensions)
+        raise ValidationError(
+            f"Cada dimensión debe tener al menos una pregunta de escala. Revisa: {names}."
+        )
+
+
 @transaction.atomic
 def publish_template(template: AssessmentTemplate) -> AssessmentTemplate:
     if template.publication_status != AssessmentTemplate.PublicationStatus.DRAFT:
         return template
+
+    validate_template_ready(template)
 
     if template.supersedes_id:
         previous = template.supersedes
@@ -27,8 +47,15 @@ def publish_template(template: AssessmentTemplate) -> AssessmentTemplate:
 
 @transaction.atomic
 def create_next_template_version(template: AssessmentTemplate) -> AssessmentTemplate:
-    """Clone a template into a draft without changing the currently published version."""
+    """Clone a published template into a draft without changing the active version."""
+    if template.publication_status != AssessmentTemplate.PublicationStatus.PUBLISHED:
+        raise ValidationError("Solo una plantilla publicada puede originar una nueva versión.")
+
     next_version = template.version + 1
+    existing = template.successor_versions.filter(version=next_version).first()
+    if existing:
+        return existing
+
     base_slug = template.slug.rsplit("-v", 1)[0]
     new_template = AssessmentTemplate.objects.create(
         name=template.name,
