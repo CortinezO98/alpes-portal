@@ -11,6 +11,9 @@ def test_seed_jubilacion_plena_creates_canonical_structure():
     template = AssessmentTemplate.objects.get(slug="alpes-jubilacion-plena")
 
     assert template.name == "ALPES - Jubilación Plena"
+    assert template.publication_status == AssessmentTemplate.PublicationStatus.PUBLISHED
+    assert template.version == 1
+    assert template.published_at is not None
     assert template.dimensions.count() == 8
     assert Question.objects.filter(
         dimension__template=template,
