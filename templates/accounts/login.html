@@ -1,54 +1,54 @@
 {% extends "base/base.html" %}
 {% load static socialaccount %}
 
-{% block title %}Iniciar sesión | ALPES{% endblock %}
+{% block title %}Ingresar a la plataforma | ALPES{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/portfolio.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/auth.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/auth-public.css' %}">
+<link rel="stylesheet" href="{% static 'css/components/auth-social.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/auth-responsive.css' %}">
 {% endblock %}
 
 {% block body %}
-<main class="auth-shell" id="inicio">
-    <section class="auth-brand" aria-label="Identidad ALPES">
+<header class="public-header auth-public-header">
+    <div class="public-container public-header-inner">
+        <a class="public-brand" href="{% url 'portfolio:home' %}" aria-label="José A. Marrugo Roa, volver al portafolio">
+            <img class="public-brand-mark" src="{% static 'img/alpes-mountain-mark.svg' %}" alt="ALPES">
+            <span><strong>José A. Marrugo Roa</strong><small>Coaching · Liderazgo · Transformación</small></span>
+        </a>
+        <nav class="public-nav auth-public-nav" aria-label="Navegación de acceso">
+            <a href="{% url 'portfolio:home' %}">Volver al sitio</a>
+        </nav>
+    </div>
+</header>
+
+<main class="auth-shell auth-login-page">
+    <section class="auth-brand" aria-label="Plataforma ALPES">
         <div class="auth-brand-content animate__animated animate__fadeIn">
-            <a class="auth-brand-home" href="{% url 'portfolio:home' %}" aria-label="Volver al portafolio público de ALPES">
-                <span class="auth-brand-emblem" aria-hidden="true">A</span>
-                <span>
-                    <strong>ALPES</strong>
-                    <small>Volver al portafolio</small>
-                </span>
-            </a>
-
             <div>
-                <p class="auth-brand-kicker">Liderazgo · Propósito · Bienestar</p>
-                <h1 class="auth-brand-title">Transformar con sentido.</h1>
-                <p class="auth-brand-copy">
-                    Un espacio privado para acompañar procesos de liderazgo, desarrollo humano
-                    y bienestar con una mirada integral, consciente y estratégica.
-                </p>
+                <img class="auth-platform-mark" src="{% static 'img/alpes-mountain-mark.svg' %}" alt="ALPES">
+                <p class="auth-brand-kicker">Plataforma ALPES</p>
+                <h1 class="auth-brand-title">Un espacio para avanzar con claridad.</h1>
+                <p class="auth-brand-copy">Accede a tus procesos, herramientas y acompañamientos en un entorno privado, claro y seguro.</p>
             </div>
-
-            <p class="auth-brand-note">
-                Acceso seguro a evaluaciones, resultados y procesos asignados en ALPES.
-            </p>
+            <p class="auth-brand-note">Cada paso cuenta cuando está conectado con tu propósito.</p>
         </div>
     </section>
 
     <section class="auth-panel" aria-labelledby="login-title">
         <div class="auth-card animate__animated animate__fadeInUp">
-            <a class="auth-mobile-brand" href="{% url 'portfolio:home' %}" aria-label="Volver al portafolio público de ALPES">
-                <span class="auth-brand-emblem" aria-hidden="true">A</span>
-                <span>ALPES</span>
-                <span class="auth-home-arrow" aria-hidden="true">↗</span>
-            </a>
-
-            <div class="auth-heading">
-                <p class="auth-kicker">Acceso privado</p>
-                <h2 class="auth-title" id="login-title">Bienvenido de nuevo.</h2>
-                <p class="auth-description">
-                    Ingresa con Google, Facebook o con el correo asociado a una cuenta previamente habilitada por ALPES.
-                </p>
+            <div class="auth-card-brand">
+                <img src="{% static 'img/alpes-mountain-mark.svg' %}" alt="ALPES">
+                <span>Plataforma ALPES</span>
             </div>
+
+            <p class="auth-kicker">Acceso privado</p>
+            <h2 class="auth-title" id="login-title">Bienvenido.</h2>
+            <p class="auth-description">
+                Ingresa con una cuenta previamente habilitada por ALPES.
+            </p>
 
             {% if social_auth_enabled %}
                 <div class="auth-provider-stack" aria-label="Opciones de inicio de sesión social">
@@ -81,69 +81,35 @@
                 <div class="auth-divider" role="separator" aria-label="O continuar con correo">
                     <span>o continúa con correo</span>
                 </div>
-            {% else %}
-                <div class="auth-method-label">
-                    <span class="auth-mail-icon" aria-hidden="true">@</span>
-                    <span>Iniciar sesión con correo</span>
-                </div>
             {% endif %}
 
             {% if form.non_field_errors %}
                 <div class="alert-error" role="alert">
-                    {% for error in form.non_field_errors %}
-                        {{ error }}
-                    {% endfor %}
+                    {% for error in form.non_field_errors %}{{ error }}{% endfor %}
                 </div>
             {% endif %}
 
             <form method="post" class="auth-form" novalidate>
                 {% csrf_token %}
-
                 <div class="form-field">
-                    <label class="form-label" for="{{ form.username.id_for_label }}">
-                        {{ form.username.label }}
-                    </label>
+                    <label class="form-label" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
                     {{ form.username }}
-                    {% for error in form.username.errors %}
-                        <p class="form-error">{{ error }}</p>
-                    {% endfor %}
+                    {% for error in form.username.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
                 </div>
-
                 <div class="form-field">
-                    <div class="auth-label-row">
-                        <label class="form-label" for="{{ form.password.id_for_label }}">
-                            {{ form.password.label }}
-                        </label>
-                        <a class="auth-link auth-link-subtle" href="{% url 'accounts:password-reset' %}">
-                            ¿Olvidaste tu contraseña?
-                        </a>
-                    </div>
+                    <label class="form-label" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
                     {{ form.password }}
-                    {% for error in form.password.errors %}
-                        <p class="form-error">{{ error }}</p>
-                    {% endfor %}
+                    {% for error in form.password.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
                 </div>
-
-                {% if next %}
-                    <input type="hidden" name="next" value="{{ next }}">
-                {% endif %}
-
-                <button class="button button-primary button-block auth-submit" type="submit">
-                    Iniciar sesión con correo
-                </button>
+                {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+                <div class="auth-actions">
+                    <a class="auth-link" href="{% url 'accounts:password-reset' %}">¿Olvidaste tu contraseña?</a>
+                </div>
+                <button class="button button-primary button-block" type="submit">Ingresar <span aria-hidden="true">→</span></button>
             </form>
 
-            <div class="auth-account-switch">
-                <div>
-                    <strong>¿No tienes acceso?</strong>
-                    <p>Las cuentas son habilitadas por la administración de ALPES.</p>
-                </div>
-            </div>
-
-            <footer class="auth-footer">
-                <span>Acceso protegido por controles de seguridad ALPES.</span>
-                <a class="auth-link" href="{% url 'portfolio:home' %}">Ir al portafolio público</a>
-            </footer>
+            <p class="auth-account-note">Las cuentas son habilitadas por la administración de ALPES.</p>
+            <footer class="auth-footer">Acceso protegido. Si necesitas ayuda, contacta al administrador de la plataforma.</footer>
         </div>
     </section>
 </main>
