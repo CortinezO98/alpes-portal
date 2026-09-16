@@ -97,6 +97,7 @@
     }
 }
 
+/* Portátiles con poca altura: se preserva la tarjeta completa sin scroll innecesario. */
 @media (min-width: 56rem) and (max-height: 48rem) {
     .auth-public-header .public-header-inner { min-height: 4.75rem; }
     .auth-login-page { height: calc(100dvh - 4.75rem); }
@@ -154,6 +155,7 @@
     .auth-login-page .button-block { min-height: 2.65rem; }
 }
 
+/* En móviles de altura estándar, el acceso se resuelve en una sola pantalla. */
 @media (max-width: 55.9375rem) and (min-height: 44rem) {
     html:has(.auth-login-page),
     body:has(.auth-login-page) {
