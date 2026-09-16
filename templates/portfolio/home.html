@@ -6,6 +6,20 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/portfolio.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/navigation-polish.css' %}?v=navigation-active-1">
+<style>
+    @media (max-width: 62rem) {
+        .public-brand small {
+            display: block;
+            margin-top: .08rem;
+            font-size: .6rem;
+            letter-spacing: 0;
+        }
+    }
+
+    @media (max-width: 36rem) {
+        .public-header-inner { min-height: 5.15rem; }
+    }
+</style>
 <link rel="stylesheet" href="{% static 'css/pages/portfolio-home-polish.css' %}?v=ux-refinement-1">
 <link rel="stylesheet" href="{% static 'css/pages/portfolio-visual-polish.css' %}?v=visual-layer-1">
 <link rel="stylesheet" href="{% static 'css/pages/public-footer.css' %}?v=footer-offset-1">
