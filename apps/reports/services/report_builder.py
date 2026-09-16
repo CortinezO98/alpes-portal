@@ -1,4 +1,3 @@
-from collections import defaultdict
 from statistics import mean
 
 from apps.assessments.models import Answer, Question
