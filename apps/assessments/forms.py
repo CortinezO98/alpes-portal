@@ -21,8 +21,9 @@ class AssessmentAssignForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["template"].queryset = AssessmentTemplate.objects.filter(
-            is_active=True
-        ).order_by("name")
+            is_active=True,
+            publication_status=AssessmentTemplate.PublicationStatus.PUBLISHED,
+        ).order_by("name", "-version")
         self.fields["participant"].queryset = User.objects.filter(
             role=User.Role.USER,
             is_active=True,
