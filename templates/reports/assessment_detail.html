@@ -10,25 +10,35 @@
 {% endblock %}
 
 {% block dashboard_content %}
-<section class="report-hero animate__animated animate__fadeInUp motion-soft">
+<section class="report-hero animate__animated animate__fadeInUp motion-soft" aria-labelledby="report-title">
     <div class="report-hero-main">
         <p class="dashboard-eyebrow">Reporte individual</p>
-        <h1 class="report-hero-title">{{ assessment.template.name }}</h1>
-        <p class="report-hero-description">
-            {{ assessment.get_status_display }} · asignada el {{ assessment.created_at|date:"d/m/Y" }} · versión {{ template_version }}.
-        </p>
+        <h1 id="report-title" class="report-hero-title">{{ assessment.template.name }}</h1>
+        <div class="report-hero-meta" aria-label="Resumen de la evaluación">
+            <span class="report-status-chip">{{ assessment.get_status_display }}</span>
+            <span>Asignada el {{ assessment.created_at|date:"d/m/Y" }}</span>
+            <span>Versión {{ template_version }}</span>
+        </div>
     </div>
-    <aside class="report-hero-result" aria-label="Participante del reporte">
-        <span>Resultado de</span>
-        <strong>{{ assessment.participant.email }}</strong>
-    </aside>
-</section>
 
-<section class="report-detail-meta" aria-label="Metadatos de la evaluación">
-    <article><span>Participante</span><strong>{{ assessment.participant.email }}</strong></article>
-    <article><span>Estado</span><strong>{{ assessment.get_status_display }}</strong></article>
-    <article><span>Inicio</span><strong>{{ assessment.started_at|date:"d/m/Y H:i"|default:"Sin iniciar" }}</strong></article>
-    <article><span>Finalización</span><strong>{{ assessment.completed_at|date:"d/m/Y H:i"|default:"Pendiente" }}</strong></article>
+    <aside class="report-participant-card" aria-label="Participante del reporte">
+        <span class="report-participant-label">Participante</span>
+        <strong class="report-participant-email">{{ assessment.participant.email }}</strong>
+        <dl class="report-participant-stats">
+            <div>
+                <dt>Estado</dt>
+                <dd>{{ assessment.get_status_display }}</dd>
+            </div>
+            <div>
+                <dt>Inicio</dt>
+                <dd>{{ assessment.started_at|date:"d/m/Y H:i"|default:"Sin iniciar" }}</dd>
+            </div>
+            <div>
+                <dt>Finalización</dt>
+                <dd>{{ assessment.completed_at|date:"d/m/Y H:i"|default:"Pendiente" }}</dd>
+            </div>
+        </dl>
+    </aside>
 </section>
 
 {% if assessment.status == 'COMPLETED' %}
@@ -54,7 +64,7 @@
         <div>
             <p class="dashboard-eyebrow">Detalle</p>
             <h2 id="dimension-detail-title" class="result-section-title">Promedios por dimensión.</h2>
-            <p class="result-section-description">Selecciona una dimensión para consultar las respuestas que componen su promedio.</p>
+            <p class="result-section-description">Selecciona una dimensión para consultar los ítems que componen su promedio y su semaforización individual.</p>
         </div>
     </div>
 
@@ -77,6 +87,13 @@
                 </summary>
 
                 <div class="dimension-body">
+                    <div class="dimension-body-head">
+                        <div>
+                            <span class="dimension-body-kicker">Detalle de respuestas</span>
+                            <strong>{{ dimension.name }}</strong>
+                        </div>
+                        <span class="traffic-badge traffic-badge-{{ dimension.band }}">{{ dimension.band_label }}</span>
+                    </div>
                     {% if dimension.questions %}
                         <div class="question-list">
                             {% for question in dimension.questions %}
