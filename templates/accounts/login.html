@@ -46,7 +46,7 @@
                 <p class="auth-kicker">Acceso privado</p>
                 <h2 class="auth-title" id="login-title">Bienvenido de nuevo.</h2>
                 <p class="auth-description">
-                    Ingresa con Google, Facebook o con el correo asociado a tu cuenta.
+                    Ingresa con Google, Facebook o con el correo asociado a una cuenta previamente habilitada por ALPES.
                 </p>
             </div>
 
@@ -134,8 +134,10 @@
             </form>
 
             <div class="auth-account-switch">
-                <p>¿Aún no tienes una cuenta?</p>
-                <a class="auth-secondary-action" href="{% url 'accounts:signup' %}">Crear cuenta</a>
+                <div>
+                    <strong>¿No tienes acceso?</strong>
+                    <p>Las cuentas son habilitadas por la administración de ALPES.</p>
+                </div>
             </div>
 
             <footer class="auth-footer">
