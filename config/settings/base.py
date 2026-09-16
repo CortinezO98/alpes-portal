@@ -81,17 +81,36 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 
-DATABASES = {
-    "default": {
+def postgres_database_config():
+    return {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": env("POSTGRES_DB"),
         "USER": env("POSTGRES_USER"),
         "PASSWORD": env("POSTGRES_PASSWORD"),
-        "HOST": env("POSTGRES_HOST"),
+        "HOST": env("POSTGRES_HOST", default="db"),
         "PORT": env("POSTGRES_PORT", default="5432"),
         "CONN_MAX_AGE": 60,
     }
-}
+
+
+DATABASE_ENGINE = env("DATABASE_ENGINE", default="sqlite").strip().lower()
+
+if DATABASE_ENGINE in {"postgres", "postgresql"}:
+    DATABASES = {
+        "default": postgres_database_config(),
+    }
+elif DATABASE_ENGINE in {"sqlite", "sqlite3"}:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
+    raise ValueError(
+        "DATABASE_ENGINE debe ser 'sqlite' o 'postgresql'. "
+        f"Valor recibido: {DATABASE_ENGINE!r}"
+    )
 
 
 AUTH_PASSWORD_VALIDATORS = [
