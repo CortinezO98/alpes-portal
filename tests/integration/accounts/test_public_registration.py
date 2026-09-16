@@ -1,109 +1,37 @@
+from types import SimpleNamespace
+
 import pytest
-from allauth.account.models import EmailAddress
-from django.core import mail
+from django.conf import settings
 from django.test import override_settings
 from django.urls import reverse
 
+from apps.accounts.adapters import AlpesAccountAdapter, AlpesSocialAccountAdapter
 from apps.accounts.models import User
-from apps.audit.models import AuditEvent
 
 
 @pytest.mark.django_db
-def test_public_signup_page_is_available(client):
-    response = client.get(reverse("accounts:signup"))
+def test_public_signup_is_closed(client):
+    response = client.get(reverse("account_signup"))
 
     assert response.status_code == 200
-    assert b"Crear cuenta" in response.content
+    assert b"registro p\xc3\xbablico est\xc3\xa1 deshabilitado" in response.content.lower()
+    assert b"administraci\xc3\xb3n" in response.content.lower()
+
+
+def test_account_adapter_disables_public_signup():
+    adapter = AlpesAccountAdapter()
+
+    assert adapter.is_open_for_signup(request=None) is False
+
+
+def test_social_adapter_disables_new_social_accounts():
+    adapter = AlpesSocialAccountAdapter()
+
+    assert adapter.is_open_for_signup(request=None, sociallogin=None) is False
 
 
 @pytest.mark.django_db
-def test_public_signup_creates_only_user_role_and_requires_verification(client):
-    response = client.post(
-        reverse("accounts:signup"),
-        {
-            "email": "public@example.com",
-            "password1": "StrongPass123!",
-            "password2": "StrongPass123!",
-            "role": User.Role.SUPERADMIN,
-            "is_staff": "on",
-            "is_superuser": "on",
-        },
-    )
-
-    assert response.status_code == 302
-    user = User.objects.get(email="public@example.com")
-    assert user.role == User.Role.USER
-    assert user.is_staff is False
-    assert user.is_superuser is False
-    assert user.email_verification_required is True
-    assert user.is_email_verified is False
-
-    email_address = EmailAddress.objects.get(user=user, email=user.email)
-    assert email_address.verified is False
-
-
-@pytest.mark.django_db
-def test_public_signup_is_audited(client):
-    client.post(
-        reverse("accounts:signup"),
-        {
-            "email": "audit-signup@example.com",
-            "password1": "StrongPass123!",
-            "password2": "StrongPass123!",
-        },
-    )
-
-    user = User.objects.get(email="audit-signup@example.com")
-    event = AuditEvent.objects.filter(
-        action=AuditEvent.Action.USER_CREATED,
-        target_id=str(user.pk),
-    ).latest("created_at")
-
-    assert event.metadata["source"] == "public_signup"
-    assert event.metadata["role"] == User.Role.USER
-
-
-@pytest.mark.django_db
-def test_unverified_public_user_cannot_use_primary_login(client):
-    user = User.objects.create_user(
-        email="pending@example.com",
-        password="StrongPass123!",
-        role=User.Role.USER,
-        email_verification_required=True,
-        is_email_verified=False,
-    )
-
-    response = client.post(
-        reverse("accounts:login"),
-        {"username": user.email, "password": "StrongPass123!"},
-    )
-
-    assert response.status_code == 200
-    assert b"Confirma tu correo" in response.content
-    assert "_auth_user_id" not in client.session
-
-
-@pytest.mark.django_db
-def test_verified_public_user_can_use_primary_login(client):
-    user = User.objects.create_user(
-        email="verified@example.com",
-        password="StrongPass123!",
-        role=User.Role.USER,
-        email_verification_required=True,
-        is_email_verified=True,
-    )
-
-    response = client.post(
-        reverse("accounts:login"),
-        {"username": user.email, "password": "StrongPass123!"},
-    )
-
-    assert response.status_code == 302
-    assert response.url == reverse("accounts:dashboard")
-
-
-@pytest.mark.django_db
-def test_admin_created_account_keeps_existing_login_behavior(client):
+def test_admin_created_account_can_use_primary_login(client):
     user = User.objects.create_user(
         email="managed@example.com",
         password="StrongPass123!",
@@ -119,6 +47,17 @@ def test_admin_created_account_keeps_existing_login_behavior(client):
 
     assert response.status_code == 302
     assert response.url == reverse("accounts:dashboard")
+
+
+@pytest.mark.django_db
+def test_login_explains_managed_access_and_has_no_signup_link(client):
+    response = client.get(reverse("accounts:login"))
+    content = response.content.decode("utf-8")
+
+    assert response.status_code == 200
+    assert "Las cuentas son habilitadas por la administración de ALPES." in content
+    assert "Crear cuenta" not in content
+    assert f'href="{reverse("portfolio:home")}"' in content
 
 
 @pytest.mark.django_db
@@ -141,37 +80,27 @@ def test_google_button_is_hidden_without_credentials(client):
     assert b"Iniciar sesi\xc3\xb3n con correo" in response.content
 
 
-@pytest.mark.django_db
-@override_settings(FACEBOOK_AUTH_ENABLED=False, GOOGLE_AUTH_ENABLED=False)
-def test_auth_pages_link_back_to_public_portfolio(client):
-    public_url = reverse("portfolio:home")
-
-    login_response = client.get(reverse("accounts:login"))
-    signup_response = client.get(reverse("accounts:signup"))
-
-    assert login_response.status_code == 200
-    assert signup_response.status_code == 200
-    assert f'href="{public_url}"'.encode() in login_response.content
-    assert f'href="{public_url}"'.encode() in signup_response.content
-    assert b"portafolio p\xc3\xbablico" in login_response.content.lower()
-    assert b"portafolio p\xc3\xbablico" in signup_response.content.lower()
+def test_social_email_authentication_is_enabled_for_managed_providers():
+    assert settings.SOCIALACCOUNT_PROVIDERS["google"]["EMAIL_AUTHENTICATION"] is True
+    assert settings.SOCIALACCOUNT_PROVIDERS["facebook"]["EMAIL_AUTHENTICATION"] is True
+    assert settings.SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT is True
 
 
 @pytest.mark.django_db
-@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
-def test_public_signup_sends_branded_verification_email(client):
-    client.post(
-        reverse("accounts:signup"),
-        {
-            "email": "mail-check@example.com",
-            "password1": "StrongPass123!",
-            "password2": "StrongPass123!",
-        },
+def test_facebook_email_is_trusted_only_for_existing_active_local_account():
+    adapter = AlpesSocialAccountAdapter()
+    provider = SimpleNamespace(id="facebook")
+
+    assert adapter.is_email_verified(provider, "missing@example.com") is False
+
+    user = User.objects.create_user(
+        email="existing@example.com",
+        password="StrongPass123!",
+        role=User.Role.USER,
+        is_active=True,
     )
+    assert adapter.is_email_verified(provider, user.email) is True
 
-    assert len(mail.outbox) == 1
-    message = mail.outbox[0]
-    assert message.to == ["mail-check@example.com"]
-    assert "Confirma tu correo" in message.subject
-    assert "ALPES" in message.body
-    assert "/cuenta/auth/confirm-email/" in message.body
+    user.is_active = False
+    user.save(update_fields=("is_active",))
+    assert adapter.is_email_verified(provider, user.email) is False
