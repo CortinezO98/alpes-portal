@@ -124,6 +124,40 @@
     </div>
 </section>
 
+<section class="result-section report-open-answers" aria-labelledby="open-answers-title">
+    <div class="result-section-head report-card-head">
+        <div>
+            <p class="dashboard-eyebrow">Plan de acción</p>
+            <h2 id="open-answers-title" class="result-section-title">Preguntas abiertas</h2>
+            <p class="result-section-description">Este bloque resume las metas, inquietudes y expectativas expresadas por la persona participante como base para su plan de acción.</p>
+        </div>
+    </div>
+
+    {% if general_answers %}
+        <div class="open-answer-list">
+            {% for item in general_answers %}
+                <article class="open-answer-card">
+                    <div class="open-answer-card-head">
+                        <span class="open-answer-number">{{ item.order|stringformat:"02d" }}</span>
+                        <h3>{{ item.question }}</h3>
+                    </div>
+
+                    <div class="open-answer-response">
+                        <span class="open-answer-response-label">Respuesta</span>
+                        {% if item.answer %}
+                            <p>{{ item.answer|linebreaksbr }}</p>
+                        {% else %}
+                            <p class="open-answer-empty">Sin respuesta registrada.</p>
+                        {% endif %}
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="dimension-empty">Esta versión de la evaluación no tiene preguntas abiertas configuradas.</p>
+    {% endif %}
+</section>
+
 {{ radar_dimensions|json_script:"alpes-radar-dimensions" }}
 {% else %}
 <div class="report-empty">Esta evaluación todavía no está completada. El resultado individual estará disponible al finalizar el proceso.</div>
