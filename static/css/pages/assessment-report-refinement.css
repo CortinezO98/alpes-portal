@@ -220,61 +220,21 @@
 }
 
 .report-open-answers {
-    border: 1px solid var(--color-border);
     border-radius: 1.1rem;
-    background: var(--color-surface);
-    padding: clamp(1.1rem, 2.4vw, 1.8rem);
-    box-shadow: 0 .8rem 2rem rgba(11, 79, 74, .045);
 }
 
 .report-open-answers .report-card-head h2 {
     font-size: clamp(1.8rem, 2.6vw, 2.65rem);
 }
 
-.open-answer-grid {
-    display: grid;
-    gap: .8rem;
-}
-
-.report-answer {
-    display: grid;
-    grid-template-columns: 2rem minmax(0, 1fr);
-    gap: .8rem;
-    border-top: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
-    padding: 1rem 0;
-}
-
-.report-answer:first-child {
-    border-top: 0;
-    padding-top: .25rem;
-}
-
-.open-answer-number {
-    color: var(--color-primary-700);
-    font-size: .66rem;
-    font-weight: 900;
-    letter-spacing: .1em;
-}
-
-.open-answer-content {
-    min-width: 0;
-}
-
 .report-answer h3 {
-    margin: 0 0 .45rem;
     font-size: .88rem;
     line-height: 1.45;
 }
 
 .report-answer p {
-    margin: 0;
-    color: var(--color-text-muted);
     font-size: .84rem;
     line-height: 1.55;
-}
-
-.open-answer-empty {
-    font-style: italic;
 }
 
 @media (max-width: 70rem) {
@@ -314,10 +274,6 @@
         grid-template-columns: 1fr;
         gap: .65rem;
     }
-
-    .report-open-answers {
-        padding: 1rem;
-    }
 }
 
 @media (max-width: 34rem) {
@@ -343,10 +299,5 @@
     .dimension-summary {
         min-height: 7.5rem;
         padding: .85rem;
-    }
-
-    .report-answer {
-        grid-template-columns: 1fr;
-        gap: .35rem;
     }
 }
