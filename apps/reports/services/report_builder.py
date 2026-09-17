@@ -59,17 +59,16 @@ def build_assessment_report(assessment):
         )
 
     general_answers = []
-    for answer in answers:
-        question = answer.question
-        if question.dimension_id is None and question.template_id == assessment.template_id:
-            general_answers.append(
-                {
-                    "id": question.pk,
-                    "order": question.order,
-                    "question": question.text,
-                    "answer": answer.text,
-                }
-            )
+    for question in assessment.template.general_questions.order_by("order", "id"):
+        answer = answers_by_question.get(question.pk)
+        general_answers.append(
+            {
+                "id": question.pk,
+                "order": question.order,
+                "question": question.text,
+                "answer": answer.text.strip() if answer and answer.text else "",
+            }
+        )
 
     return {
         "dimensions": dimensions,
