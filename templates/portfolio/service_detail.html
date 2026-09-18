@@ -52,7 +52,7 @@
             <div class="animate__animated animate__fadeInUp motion-soft">
                 <a class="service-back-link" href="{% url 'portfolio:home' %}#servicios">← Portafolio de servicios</a>
                 <h1>{% if service.number == "01" %}Acompañamiento al Liderazgo de la Organización{% else %}{{ service.title }}{% endif %}</h1>
-                <p class="service-hero-lead">{% if service.number == "02" %}Un programa para que las organizaciones acompañen, de manera humana e integral, a las personas pensionadas y próximas a pensionarse en la construcción de una nueva etapa de vida con propósito, bienestar y sentido.{% elif service.number == "04" %}Un acompañamiento personal para comprender tus áreas de vida, definir retos y sueños, y convertirlos en caminos concretos de acción.{% else %}{{ service.lead }}{% endif %}</p>
+                <p class="service-hero-lead">{% if service.number == "02" %}Un programa dirigido a personas pensionadas y próximas a pensionarse, así como a organizaciones que desean acompañar esta transición con una mirada humana e integral, hacia una nueva etapa de vida con propósito, bienestar y sentido.{% elif service.number == "04" %}Un acompañamiento personal para comprender tus áreas de vida, definir retos y sueños, y convertirlos en caminos concretos de acción.{% else %}{{ service.lead }}{% endif %}</p>
                 <div class="public-hero-actions">
                     <a
                         class="public-button public-button-primary"
