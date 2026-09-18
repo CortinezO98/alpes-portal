@@ -97,7 +97,7 @@
                 <p>{{ service.description }}</p>
                 <div class="service-audience">
                     <span>¿Para quién?</span>
-                    <p>{% if service.number == "04" %}Para personas que desean comprender su momento actual, definir un futuro deseado y convertirlo en acciones concretas.{% else %}{{ service.audience }}{% endif %}</p>
+                    <p>{% if service.number == "02" %}Personas pensionadas, próximas a pensionarse y organizaciones que desean acompañar esta transición con una mirada humana e integral.{% elif service.number == "04" %}Para personas que desean comprender su momento actual, definir un futuro deseado y convertirlo en acciones concretas.{% else %}{{ service.audience }}{% endif %}</p>
                 </div>
                 {% if service.number == "01" %}
                     <section class="service-leadership-outcomes" aria-labelledby="leadership-outcomes-title">
