@@ -50,6 +50,40 @@
     gap: 1.65rem;
 }
 
+/* Jerarquía editorial común para los cuatro servicios. */
+.public-service-kicker {
+    margin: 0;
+    color: var(--color-text);
+    font-family: var(--font-serif);
+    font-size: clamp(1.35rem, 1.55vw, 1.65rem);
+    font-weight: 400;
+    letter-spacing: -.025em;
+    line-height: 1.13;
+    text-transform: none;
+}
+
+.public-service-card .public-service-intro {
+    margin-top: .75rem;
+}
+
+.public-service-card .public-service-intro + h3 {
+    margin-top: 1rem;
+}
+
+.public-service-card h3 {
+    font-size: clamp(1.06rem, 1.15vw, 1.2rem);
+    line-height: 1.25;
+}
+
+.public-service-card h3 + p {
+    margin-top: .85rem;
+}
+
+.public-service-card .public-service-duration {
+    margin-top: 1.35rem;
+    padding-top: .9rem;
+}
+
 .public-model-steps li {
     padding-block: 1.5rem;
 }
