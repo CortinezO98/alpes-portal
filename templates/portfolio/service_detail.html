@@ -51,8 +51,7 @@
         <div class="public-container service-hero-grid">
             <div class="animate__animated animate__fadeInUp motion-soft">
                 <a class="service-back-link" href="{% url 'portfolio:home' %}#servicios">← Portafolio de servicios</a>
-                <p class="public-eyebrow">{{ service.eyebrow }} · {{ service.number }}</p>
-                <h1>{{ service.title }}</h1>
+                <h1>{% if service.number == "01" %}Acompañamiento al Liderazgo de la Organización{% else %}{{ service.title }}{% endif %}</h1>
                 <p class="service-hero-lead">{% if service.number == "04" %}Un acompañamiento personal para comprender tus áreas de vida, definir retos y sueños, y convertirlos en caminos concretos de acción.{% else %}{{ service.lead }}{% endif %}</p>
                 <div class="public-hero-actions">
                     <a
@@ -107,9 +106,10 @@
                             <p class="public-eyebrow">Resultados del proceso</p>
                             <h3 id="leadership-outcomes-title">Resultados que se vuelven visibles.</h3>
                             <ul>
-                                <li>Mayor claridad para priorizar y decidir.</li>
+                                <li>Claridad para priorizar y decidir.</li>
                                 <li>Conversaciones más efectivas con el equipo.</li>
                                 <li>Acciones concretas desde la primera sesión.</li>
+                                <li>Mayor bienestar y productividad para la organización.</li>
                             </ul>
                         </div>
                     </section>
@@ -123,6 +123,7 @@
                                 <li>Claridad para reconocer prioridades y proyectar nuevos caminos.</li>
                                 <li>Mayor bienestar y equilibrio en las áreas importantes de la vida.</li>
                                 <li>Acciones concretas para avanzar hacia una jubilación con propósito.</li>
+                                <li>Confianza para tomar decisiones y sostener nuevos proyectos de vida.</li>
                             </ul>
                         </div>
                     </section>
@@ -136,6 +137,7 @@
                                 <li>Prioridades organizacionales claras y una ruta de trabajo definida.</li>
                                 <li>Equipos alineados con los objetivos estratégicos.</li>
                                 <li>Procesos fortalecidos para lograr resultados sostenibles.</li>
+                                <li>Decisiones organizacionales con mayor foco y seguimiento.</li>
                             </ul>
                         </div>
                     </section>
@@ -149,6 +151,7 @@
                                 <li>Mayor comprensión del momento actual y de las áreas prioritarias de la vida.</li>
                                 <li>Retos y sueños convertidos en metas y acciones alcanzables.</li>
                                 <li>Un camino personal hacia mayor propósito, bienestar y equilibrio.</li>
+                                <li>Prácticas que ayudan a sostener el bienestar y los avances alcanzados.</li>
                             </ul>
                         </div>
                     </section>
