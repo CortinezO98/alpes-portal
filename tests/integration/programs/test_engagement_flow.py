@@ -1,0 +1,131 @@
+import pytest
+from django.core.management import call_command
+from django.urls import reverse
+from django.utils import timezone
+
+from apps.accounts.models import User
+from apps.assessments.models import Assessment, AssessmentTemplate
+from apps.programs.models import (
+    Engagement,
+    EngagementParticipant,
+    Organization,
+    ParticipantPhase,
+    ServiceProgram,
+)
+from apps.programs.services import (
+    ensure_participant_phases,
+    mark_assessment_phase_completed,
+)
+
+
+@pytest.fixture
+def program_setup(db):
+    call_command("migrate", verbosity=0)
+    program = ServiceProgram.objects.get(code="jubilacion-plena")
+    superadmin = User.objects.create_superuser(
+        email="superadmin-programs@example.com",
+        password="SecurePass123!",
+    )
+    participant = User.objects.create_user(
+        email="participant-programs@example.com",
+        password="SecurePass123!",
+        role=User.Role.USER,
+    )
+    return program, superadmin, participant
+
+
+@pytest.mark.django_db
+def test_individual_engagement_creates_six_participant_phases(program_setup):
+    program, superadmin, participant = program_setup
+    engagement = Engagement.objects.create(
+        title="Jubilación individual",
+        program=program,
+        mode=Engagement.Mode.INDIVIDUAL,
+        consultant=superadmin,
+        status=Engagement.Status.ACTIVE,
+    )
+    membership = EngagementParticipant.objects.create(
+        engagement=engagement,
+        participant=participant,
+    )
+
+    ensure_participant_phases(membership)
+
+    assert membership.phase_progress.count() == 6
+    assert not membership.phase_progress.filter(
+        phase__code="reporte-organizacional"
+    ).exists()
+
+
+@pytest.mark.django_db
+def test_organizational_engagement_includes_organizational_report(program_setup):
+    program, superadmin, participant = program_setup
+    organization = Organization.objects.create(name="Empresa Demo")
+    engagement = Engagement.objects.create(
+        title="Jubilación Empresa Demo",
+        program=program,
+        mode=Engagement.Mode.ORGANIZATIONAL,
+        organization=organization,
+        consultant=superadmin,
+        status=Engagement.Status.ACTIVE,
+    )
+    membership = EngagementParticipant.objects.create(
+        engagement=engagement,
+        participant=participant,
+    )
+
+    ensure_participant_phases(membership)
+
+    assert membership.phase_progress.count() == 7
+    assert membership.phase_progress.filter(
+        phase__code="reporte-organizacional"
+    ).exists()
+
+
+@pytest.mark.django_db
+def test_completed_assessment_completes_life_wheel_phase(program_setup):
+    program, superadmin, participant = program_setup
+    call_command("seed_jubilacion_plena")
+    template = AssessmentTemplate.objects.filter(
+        slug__startswith="alpes-jubilacion-plena",
+        publication_status=AssessmentTemplate.PublicationStatus.PUBLISHED,
+    ).order_by("-version").first()
+
+    engagement = Engagement.objects.create(
+        title="Seguimiento automático",
+        program=program,
+        mode=Engagement.Mode.INDIVIDUAL,
+        consultant=superadmin,
+        status=Engagement.Status.ACTIVE,
+    )
+    membership = EngagementParticipant.objects.create(
+        engagement=engagement,
+        participant=participant,
+    )
+    ensure_participant_phases(membership)
+
+    assessment = Assessment.objects.create(
+        template=template,
+        participant=participant,
+        created_by=superadmin,
+        engagement_participant=membership,
+        status=Assessment.Status.COMPLETED,
+        started_at=timezone.now(),
+        completed_at=timezone.now(),
+    )
+
+    mark_assessment_phase_completed(assessment, actor=participant)
+
+    progress = membership.phase_progress.get(phase__code="rueda-vida")
+    assert progress.status == ParticipantPhase.Status.COMPLETED
+    assert progress.completed_at is not None
+
+
+@pytest.mark.django_db
+def test_superadmin_can_open_engagement_list(client, program_setup):
+    _, superadmin, _ = program_setup
+    client.force_login(superadmin)
+
+    response = client.get(reverse("programs:engagement-list"))
+
+    assert response.status_code == 200
