@@ -337,6 +337,39 @@ class PhaseComment(models.Model):
 
 
 
+class ConsultantExperienceRecord(models.Model):
+    participant_phase = models.OneToOneField(
+        ParticipantPhase,
+        on_delete=models.CASCADE,
+        related_name="consultant_experience",
+    )
+    session_date = models.DateField()
+    topic = models.CharField(max_length=180)
+    consultant_experience = models.TextField(blank=True)
+    participant_learnings = models.TextField(blank=True)
+    commitments = models.TextField(blank=True)
+    consultant_appreciation = models.TextField(blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="created_consultant_experiences",
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="updated_consultant_experiences",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "registro de charla y experiencia"
+        verbose_name_plural = "registros de charla y experiencia"
+
+    def __str__(self):
+        return f"{self.session_date} · {self.topic}"
+
+
 class TransformationSession(models.Model):
     participant_phase = models.ForeignKey(
         ParticipantPhase,
