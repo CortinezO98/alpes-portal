@@ -47,6 +47,19 @@
                     {% if goal.target_date %}<span class="action-goal-date"><i class="bi bi-calendar3"></i> {{ goal.target_date|date:"d/m/Y" }}</span>{% endif %}
                 </div>
 
+                {% if progress.status != "PENDING" and progress.status != "COMPLETED" and progress.status != "SUBMITTED" and progress.status != "UNDER_REVIEW" %}
+                <details class="action-edit goal-edit">
+                    <summary><i class="bi bi-pencil"></i> Editar meta</summary>
+                    <form method="post" action="{% url 'programs:action-goal-update' progress.pk goal.pk %}" class="special-form special-form-inline">
+                        {% csrf_token %}
+                        <div><label>Meta</label><input class="form-control" name="title" value="{{ goal.title }}" required></div>
+                        <div><label>Fecha objetivo</label><input class="form-control" type="date" name="target_date" value="{{ goal.target_date|date:'Y-m-d' }}"></div>
+                        <div class="special-span-two"><label>Descripción</label><textarea class="form-control" name="description" rows="2">{{ goal.description }}</textarea></div>
+                        <div class="special-span-two special-form-actions"><button class="button button-secondary" type="submit">Guardar meta</button></div>
+                    </form>
+                </details>
+                {% endif %}
+
                 <div class="action-items-table">
                     {% for item in goal.items.all %}
                         <article class="action-item">
