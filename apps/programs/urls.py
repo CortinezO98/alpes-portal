@@ -20,6 +20,7 @@ from .views import (
     ParticipantPhaseSubmitView,
     ParticipantProgressCompleteView,
     ParticipantProgressUpdateView,
+    RoadmapDetailView,
     UnifiedEngagementCreateView,
 )
 
@@ -94,6 +95,11 @@ urlpatterns = [
         "fases/proceso/<int:pk>/revisar/",
         EngagementPhaseReviewView.as_view(),
         name="engagement-phase-review",
+    ),
+    path(
+        "hoja-ruta/<int:pk>/",
+        RoadmapDetailView.as_view(),
+        name="roadmap-detail",
     ),
     path("mis-procesos/", MyEngagementListView.as_view(), name="my-engagements"),
     path(
