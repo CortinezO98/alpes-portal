@@ -20,7 +20,6 @@ from apps.programs.services import (
 
 @pytest.fixture
 def program_setup(db):
-    call_command("migrate", verbosity=0)
     program = ServiceProgram.objects.get(code="jubilacion-plena")
     superadmin = User.objects.create_superuser(
         email="superadmin-programs@example.com",
