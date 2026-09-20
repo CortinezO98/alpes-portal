@@ -456,6 +456,13 @@ class ActionPlanGoal(models.Model):
         on_delete=models.CASCADE,
         related_name="action_goals",
     )
+    source_node = models.ForeignKey(
+        DreamChallengeNode,
+        on_delete=models.SET_NULL,
+        related_name="linked_action_goals",
+        null=True,
+        blank=True,
+    )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     target_date = models.DateField(null=True, blank=True)
