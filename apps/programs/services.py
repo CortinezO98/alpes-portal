@@ -310,6 +310,72 @@ def review_engagement_phase(progress, *, actor, approve, note=""):
     return progress
 
 
+def _assessment_template_prefix_for_program(program):
+    if program.code == "jubilacion-plena":
+        return "alpes-jubilacion-plena"
+    return None
+
+
+@transaction.atomic
+def reconcile_participation_assessment(participation, actor=None):
+    """Repair/synchronize the assessment link for a program participation.
+
+    Existing explicit links always win. For legacy Jubilación Plena data, a
+    single completed, unlinked compatible assessment can be attached safely.
+    Ambiguous matches are never linked automatically.
+    """
+    from apps.assessments.models import Assessment
+
+    prefix = _assessment_template_prefix_for_program(participation.engagement.program)
+    if not prefix:
+        return {"status": "unsupported", "assessment": None}
+
+    linked = (
+        participation.assessments.filter(template__slug__startswith=prefix)
+        .order_by("-completed_at", "-updated_at", "-id")
+        .first()
+    )
+    if linked is not None:
+        if linked.status == Assessment.Status.COMPLETED:
+            mark_assessment_phase_completed(
+                linked,
+                actor=actor or linked.participant,
+            )
+            return {"status": "synchronized_completed", "assessment": linked}
+        if linked.status == Assessment.Status.IN_PROGRESS:
+            mark_assessment_phase_started(
+                linked,
+                actor=actor or linked.participant,
+            )
+            return {"status": "synchronized_in_progress", "assessment": linked}
+        return {"status": "linked", "assessment": linked}
+
+    candidates = list(
+        Assessment.objects.filter(
+            participant=participation.participant,
+            engagement_participant__isnull=True,
+            status=Assessment.Status.COMPLETED,
+            template__slug__startswith=prefix,
+        )
+        .select_related("template")
+        .order_by("-completed_at", "-updated_at", "-id")[:2]
+    )
+
+    if not candidates:
+        return {"status": "not_found", "assessment": None}
+    if len(candidates) > 1:
+        return {"status": "ambiguous", "assessment": None}
+
+    assessment = candidates[0]
+    assessment.engagement_participant = participation
+    assessment.save(update_fields=("engagement_participant", "updated_at"))
+    mark_assessment_phase_completed(
+        assessment,
+        actor=actor or assessment.participant,
+    )
+    return {"status": "linked_completed", "assessment": assessment}
+
+
 def _assessment_phase(assessment):
     if not assessment.engagement_participant_id:
         return None
