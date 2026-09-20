@@ -2,49 +2,99 @@
 {% load static %}
 
 {% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'css/layout/dashboard.css' %}">
 {% block dashboard_extra_css %}{% endblock %}
 {% endblock %}
 
 {% block body %}
-<div class="app-shell">
-    <aside class="app-sidebar" aria-label="Navegación principal">
+<div class="app-shell" data-dashboard-shell>
+    <div class="app-sidebar-backdrop" data-sidebar-close></div>
+
+    <aside class="app-sidebar" aria-label="Navegación principal" data-sidebar>
         <div class="app-sidebar-inner">
-            <a class="app-brand" href="{% url 'accounts:dashboard' %}">ALPES</a>
+            <div class="app-sidebar-head">
+                <a class="app-brand" href="{% url 'accounts:dashboard' %}">
+                    <span class="app-brand-mark">A</span>
+                    <span class="app-brand-copy">
+                        <strong>ALPES</strong>
+                        <small>Plataforma de acompañamiento</small>
+                    </span>
+                </a>
+                <button class="app-sidebar-close" type="button" data-sidebar-close aria-label="Cerrar menú">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
 
             <nav class="app-nav">
-                <p class="app-nav-section">Principal</p>
-                <a class="app-nav-link" href="{% url 'accounts:dashboard' %}">
-                    Panel principal
-                </a>
+                <div class="app-nav-group">
+                    <p class="app-nav-section">Principal</p>
+                    <a class="app-nav-link {% if request.path == '/cuenta/dashboard/' or '/cuenta/dashboard/' in request.path %}is-active{% endif %}" href="{% url 'accounts:dashboard' %}">
+                        <i class="bi bi-grid-1x2"></i>
+                        <span>Panel principal</span>
+                    </a>
+                </div>
 
-                <p class="app-nav-section">Plataforma</p>
-                {% if request.user.role == 'ADMIN' or request.user.role == 'SUPERADMIN' or request.user.is_superuser %}
-                    <a class="app-nav-link" href="{% url 'programs:engagement-list' %}">Acompañamientos</a>
-                    <a class="app-nav-link" href="{% url 'assessments:management-list' %}">Evaluaciones</a>
-                    <a class="app-nav-link" href="{% url 'reports:dashboard' %}">Reportes</a>
-                {% else %}
-                    <a class="app-nav-link" href="{% url 'programs:my-engagements' %}">Mi proceso</a>
-                    <a class="app-nav-link" href="{% url 'assessments:my-list' %}">Mis evaluaciones</a>
-                    <span class="app-nav-link">Reportes</span>
-                {% endif %}
+                <div class="app-nav-group">
+                    <p class="app-nav-section">Operación</p>
+                    {% if request.user.role == 'ADMIN' or request.user.role == 'SUPERADMIN' or request.user.is_superuser %}
+                        <a class="app-nav-link {% if '/programas/' in request.path %}is-active{% endif %}" href="{% url 'programs:engagement-list' %}">
+                            <i class="bi bi-diagram-3"></i>
+                            <span>Acompañamientos</span>
+                        </a>
+                        <a class="app-nav-link {% if '/evaluaciones/' in request.path and '/plantillas/' not in request.path %}is-active{% endif %}" href="{% url 'assessments:management-list' %}">
+                            <i class="bi bi-clipboard2-check"></i>
+                            <span>Evaluaciones</span>
+                        </a>
+                        <a class="app-nav-link {% if '/reportes/' in request.path %}is-active{% endif %}" href="{% url 'reports:dashboard' %}">
+                            <i class="bi bi-bar-chart"></i>
+                            <span>Reportes</span>
+                        </a>
+                    {% else %}
+                        <a class="app-nav-link {% if '/programas/mis-procesos/' in request.path %}is-active{% endif %}" href="{% url 'programs:my-engagements' %}">
+                            <i class="bi bi-signpost-split"></i>
+                            <span>Mi proceso</span>
+                        </a>
+                        <a class="app-nav-link {% if '/evaluaciones/' in request.path %}is-active{% endif %}" href="{% url 'assessments:my-list' %}">
+                            <i class="bi bi-clipboard2-check"></i>
+                            <span>Mis evaluaciones</span>
+                        </a>
+                    {% endif %}
+                </div>
+
                 {% if request.user.is_superuser or request.user.role == 'SUPERADMIN' %}
-                    <a class="app-nav-link" href="{% url 'assessments:template-list' %}">
-                        Plantillas
-                    </a>
-                    <a class="app-nav-link" href="{% url 'accounts:user-management-list' %}">
-                        Usuarios
-                    </a>
-                    <a class="app-nav-link" href="{% url 'audit:event-list' %}">
-                        Auditoría
-                    </a>
+                    <div class="app-nav-group">
+                        <p class="app-nav-section">Administración</p>
+                        <a class="app-nav-link {% if '/plantillas/' in request.path %}is-active{% endif %}" href="{% url 'assessments:template-list' %}">
+                            <i class="bi bi-ui-checks-grid"></i>
+                            <span>Plantillas</span>
+                        </a>
+                        <a class="app-nav-link {% if '/cuenta/usuarios/' in request.path %}is-active{% endif %}" href="{% url 'accounts:user-management-list' %}">
+                            <i class="bi bi-people"></i>
+                            <span>Usuarios</span>
+                        </a>
+                        <a class="app-nav-link {% if '/auditoria/' in request.path %}is-active{% endif %}" href="{% url 'audit:event-list' %}">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Auditoría</span>
+                        </a>
+                    </div>
                 {% endif %}
             </nav>
 
             <div class="app-sidebar-footer">
+                <div class="app-sidebar-user">
+                    <span class="app-sidebar-avatar">{{ request.user.email|first|upper }}</span>
+                    <div>
+                        <strong>{{ request.user.get_role_display }}</strong>
+                        <small>{{ request.user.email }}</small>
+                    </div>
+                </div>
                 <form method="post" action="{% url 'accounts:logout' %}">
                     {% csrf_token %}
-                    <button class="app-logout" type="submit">Cerrar sesión</button>
+                    <button class="app-logout" type="submit">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Cerrar sesión</span>
+                    </button>
                 </form>
             </div>
         </div>
@@ -52,10 +102,20 @@
 
     <div class="app-main">
         <header class="app-topbar">
-            <div class="app-topbar-brand">ALPES</div>
-            <div class="app-user">
-                <p class="app-user-role">{{ request.user.get_role_display }}</p>
-                <p class="app-user-email">{{ request.user.email }}</p>
+            <div class="app-topbar-start">
+                <button class="app-menu-toggle" type="button" data-sidebar-open aria-label="Abrir menú">
+                    <i class="bi bi-list"></i>
+                </button>
+                <a class="app-topbar-brand" href="{% url 'accounts:dashboard' %}">ALPES</a>
+            </div>
+            <div class="app-topbar-actions">
+                <div class="app-user">
+                    <span class="app-user-avatar">{{ request.user.email|first|upper }}</span>
+                    <div class="app-user-copy">
+                        <p class="app-user-role">{{ request.user.get_role_display }}</p>
+                        <p class="app-user-email">{{ request.user.email }}</p>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -64,7 +124,8 @@
                 <div class="app-messages" aria-live="polite">
                     {% for message in messages %}
                         <div class="app-message app-message-{{ message.tags|default:'info' }}">
-                            {{ message }}
+                            <i class="bi {% if message.tags == 'success' %}bi-check-circle{% elif message.tags == 'error' %}bi-exclamation-triangle{% else %}bi-info-circle{% endif %}"></i>
+                            <span>{{ message }}</span>
                         </div>
                     {% endfor %}
                 </div>
@@ -76,5 +137,6 @@
 {% endblock %}
 
 {% block extra_js %}
-    {% block dashboard_extra_js %}{% endblock %}
+<script src="{% static 'js/layout/dashboard.js' %}"></script>
+{% block dashboard_extra_js %}{% endblock %}
 {% endblock %}
