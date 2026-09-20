@@ -5,8 +5,10 @@ from .views import (
     AssessmentReportDetailView,
     DimensionAppreciationUpdateView,
     IndividualProgramReportGenerateView,
+    IndividualProgramReportPdfView,
     IndividualProgramReportView,
     OrganizationalProgramReportGenerateView,
+    OrganizationalProgramReportPdfView,
     OrganizationalProgramReportView,
 )
 
@@ -26,6 +28,11 @@ urlpatterns = [
         name="program-individual-generate",
     ),
     path(
+        "programa/participante/<int:pk>/version/<int:version>/pdf/",
+        IndividualProgramReportPdfView.as_view(),
+        name="program-individual-pdf",
+    ),
+    path(
         "programa/proceso/<int:pk>/",
         OrganizationalProgramReportView.as_view(),
         name="program-organizational",
@@ -34,6 +41,11 @@ urlpatterns = [
         "programa/proceso/<int:pk>/generar/",
         OrganizationalProgramReportGenerateView.as_view(),
         name="program-organizational-generate",
+    ),
+    path(
+        "programa/proceso/<int:pk>/version/<int:version>/pdf/",
+        OrganizationalProgramReportPdfView.as_view(),
+        name="program-organizational-pdf",
     ),
     path("", AnalyticsDashboardView.as_view(), name="dashboard"),
     path(
