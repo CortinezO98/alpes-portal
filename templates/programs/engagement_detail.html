@@ -1,0 +1,54 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block title %}{{ engagement.title }} | ALPES{% endblock %}
+{% block dashboard_extra_css %}<link rel="stylesheet" href="{% static 'css/pages/programs.css' %}">{% endblock %}
+{% block dashboard_content %}
+<section class="dashboard-header">
+    <p class="dashboard-eyebrow">{{ engagement.program.name }} · {{ engagement.get_mode_display }}</p>
+    <h1 class="dashboard-title">{{ engagement.title }}</h1>
+    <p class="dashboard-description">
+        {% if engagement.organization %}{{ engagement.organization.name }} · {% endif %}
+        {{ engagement.get_status_display }} · {{ engagement.participants.count }} participante{{ engagement.participants.count|pluralize }}
+    </p>
+</section>
+<div class="program-toolbar">
+    <a class="button button-primary" href="{% url 'programs:participant-add' engagement.pk %}">Agregar participante</a>
+    <a class="button button-secondary" href="{% url 'assessments:assign' %}">Asignar evaluación</a>
+</div>
+<section class="program-detail-layout">
+    <article class="program-panel">
+        <div class="program-panel-head">
+            <div><p class="dashboard-eyebrow">Ruta del programa</p><h2>Fases de Jubilación Plena</h2></div>
+        </div>
+        <ol class="phase-reference">
+            {% for phase in engagement.program.phases.all %}
+                <li>
+                    <span>{{ phase.order|stringformat:"02d" }}</span>
+                    <div><strong>{{ phase.name }}</strong>{% if phase.is_automatic %}<small>Se actualiza automáticamente con la evaluación.</small>{% endif %}</div>
+                </li>
+            {% endfor %}
+        </ol>
+    </article>
+    <article class="program-panel">
+        <div class="program-panel-head">
+            <div><p class="dashboard-eyebrow">Seguimiento</p><h2>Participantes</h2></div>
+        </div>
+        <div class="participant-list">
+            {% for item in engagement.participants.all %}
+                <div class="participant-row">
+                    <div>
+                        <strong>{% if item.participant.get_full_name %}{{ item.participant.get_full_name }}{% else %}{{ item.participant.email }}{% endif %}</strong>
+                        <small>{{ item.participant.email }}</small>
+                    </div>
+                    <div class="participant-progress">
+                        <strong>{{ item.progress_percent }}%</strong>
+                        <div class="progress-track"><span style="width: {{ item.progress_percent }}%"></span></div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="program-empty">Agrega el primer participante para iniciar el acompañamiento.</div>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+{% endblock %}
