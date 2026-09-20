@@ -126,6 +126,9 @@ def _unlock_after_participant_completion(progress):
 
 @transaction.atomic
 def submit_participant_phase(progress, actor):
+    if progress.phase.code == "reporte-individual":
+        raise ValueError("El reporte individual se completa al generar una versión del informe.")
+
     if progress.status in {
         ParticipantPhase.Status.PENDING,
         ParticipantPhase.Status.COMPLETED,
@@ -216,6 +219,9 @@ def review_participant_phase(progress, *, actor, approve, note=""):
 
 @transaction.atomic
 def submit_engagement_phase(progress, actor):
+    if progress.phase.code == "reporte-organizacional":
+        raise ValueError("El reporte organizacional se completa al generar una versión del informe.")
+
     if progress.status in {
         ParticipantPhase.Status.PENDING,
         ParticipantPhase.Status.COMPLETED,
