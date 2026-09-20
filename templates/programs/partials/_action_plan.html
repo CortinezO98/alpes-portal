@@ -10,45 +10,59 @@
 
     {% if progress.status != "PENDING" and progress.status != "COMPLETED" %}
         {% if dream_map_options %}
-        <section class="action-map-source">
-            <div class="action-map-source-head">
+        <details class="action-map-source action-map-picker">
+            <summary class="action-map-picker-summary">
                 <div>
                     <span class="dashboard-eyebrow">Mapa de retos y sueños</span>
-                    <h3>Traer elementos registrados al plan</h3>
-                    <p>Reutiliza lo que ya construiste en la fase anterior. Puedes convertir sueños, retos, metas e hitos en metas accionables.</p>
+                    <strong>Traer elementos registrados al plan</strong>
+                    <small>{{ dream_map_options|length }} elementos · {{ dream_map_pending_count }} pendientes por agregar</small>
+                </div>
+                <span class="action-map-picker-toggle"><i class="bi bi-chevron-down"></i></span>
+            </summary>
+
+            <div class="action-map-picker-body">
+                <p class="action-map-picker-intro">
+                    Selecciona únicamente los elementos que quieras convertir en metas accionables. Se conserva la relación construida en el mapa.
+                </p>
+
+                <div class="action-map-source-list">
+                    {% for option in dream_map_options %}
+                        <article class="action-map-source-row {% if option.already_added %}is-added{% endif %}">
+                            <div class="action-map-source-main">
+                                <div class="action-map-source-meta">
+                                    <span class="dream-node-type">{{ option.node.get_node_type_display }}</span>
+                                    <span class="dream-node-priority dream-priority-{{ option.node.priority|lower }}">{{ option.node.get_priority_display }}</span>
+                                </div>
+                                <h4>{{ option.node.title }}</h4>
+                                <span class="action-map-path"><i class="bi bi-diagram-3"></i> {{ option.path }}</span>
+                                {% if option.node.description %}
+                                    <p>{{ option.node.description }}</p>
+                                {% endif %}
+                            </div>
+
+                            <div class="action-map-source-side">
+                                {% if option.node.target_date %}
+                                    <span><i class="bi bi-calendar3"></i> {{ option.node.target_date|date:"d/m/Y" }}</span>
+                                {% else %}
+                                    <span><i class="bi bi-calendar3"></i> Sin fecha</span>
+                                {% endif %}
+
+                                {% if option.already_added %}
+                                    <span class="action-map-added"><i class="bi bi-check2-circle"></i> Ya agregado</span>
+                                {% else %}
+                                    <form method="post" action="{% url 'programs:action-goal-import-map' progress.pk option.node.pk %}">
+                                        {% csrf_token %}
+                                        <button class="button button-secondary button-compact" type="submit">
+                                            <i class="bi bi-arrow-down-circle"></i> Agregar al plan
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% endfor %}
                 </div>
             </div>
-            <div class="action-map-source-grid">
-                {% for option in dream_map_options %}
-                    <article class="action-map-source-card">
-                        <div class="action-map-source-meta">
-                            <span class="dream-node-type">{{ option.node.get_node_type_display }}</span>
-                            <span class="dream-node-priority dream-priority-{{ option.node.priority|lower }}">{{ option.node.get_priority_display }}</span>
-                        </div>
-                        <h4>{{ option.node.title }}</h4>
-                        {% if option.node.description %}<p>{{ option.node.description }}</p>{% endif %}
-                        <div class="action-map-source-footer">
-                            {% if option.node.target_date %}
-                                <span><i class="bi bi-calendar3"></i> {{ option.node.target_date|date:"d/m/Y" }}</span>
-                            {% else %}
-                                <span><i class="bi bi-calendar3"></i> Sin fecha objetivo</span>
-                            {% endif %}
-
-                            {% if option.already_added %}
-                                <span class="action-map-added"><i class="bi bi-check2-circle"></i> Ya agregado</span>
-                            {% else %}
-                                <form method="post" action="{% url 'programs:action-goal-import-map' progress.pk option.node.pk %}">
-                                    {% csrf_token %}
-                                    <button class="button button-secondary button-compact" type="submit">
-                                        <i class="bi bi-arrow-down-circle"></i> Agregar al plan
-                                    </button>
-                                </form>
-                            {% endif %}
-                        </div>
-                    </article>
-                {% endfor %}
-            </div>
-        </section>
+        </details>
         {% endif %}
 
     <details class="special-create-panel" {% if not action_goals %}open{% endif %}>
@@ -82,8 +96,9 @@
                 <div class="action-goal-head">
                     <div class="action-goal-number">{{ forloop.counter|stringformat:"02d" }}</div>
                     <div class="action-goal-title">
-                        <span>Meta</span>
+                        <span>Meta{% if goal.source_node %} · Desde {{ goal.source_node.get_node_type_display }}{% endif %}</span>
                         <h3>{{ goal.title }}</h3>
+                        {% if goal.source_node %}<small class="action-goal-source"><i class="bi bi-diagram-3"></i> {{ goal.source_node.title }}</small>{% endif %}
                         {% if goal.description %}<p>{{ goal.description }}</p>{% endif %}
                     </div>
                     {% if goal.target_date %}<span class="action-goal-date"><i class="bi bi-calendar3"></i> {{ goal.target_date|date:"d/m/Y" }}</span>{% endif %}
