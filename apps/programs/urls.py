@@ -8,6 +8,8 @@ from .views import (
     MyEngagementDetailView,
     MyEngagementListView,
     OrganizationCreateView,
+    ParticipantProgressCompleteView,
+    ParticipantProgressUpdateView,
     UnifiedEngagementCreateView,
 )
 
@@ -22,6 +24,16 @@ urlpatterns = [
         "procesos/<int:pk>/participantes/agregar/",
         EngagementParticipantCreateView.as_view(),
         name="participant-add",
+    ),
+    path(
+        "procesos/<int:engagement_pk>/participantes/<int:participant_pk>/avance/",
+        ParticipantProgressUpdateView.as_view(),
+        name="participant-progress-update",
+    ),
+    path(
+        "procesos/<int:engagement_pk>/participantes/<int:participant_pk>/completar/",
+        ParticipantProgressCompleteView.as_view(),
+        name="participant-progress-complete",
     ),
     path("mis-procesos/", MyEngagementListView.as_view(), name="my-engagements"),
     path(
