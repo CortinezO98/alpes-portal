@@ -5,7 +5,19 @@ from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.assessments.models import Answer, Assessment, AssessmentTemplate, Question
-from apps.reports.models import DimensionAppreciation
+from apps.programs.models import (
+    Engagement,
+    EngagementParticipant,
+    Organization,
+    ParticipantPhase,
+    ServiceProgram,
+)
+from apps.programs.services import ensure_participant_phases
+from apps.reports.models import (
+    DimensionAppreciation,
+    IndividualReportVersion,
+    OrganizationalReportVersion,
+)
 
 
 @pytest.fixture
@@ -215,3 +227,103 @@ def test_admin_can_save_dimension_appreciation(client, report_setup):
     )
     first_dimension = detail.context["report_dimensions"][0]
     assert first_dimension["appreciation"]["recommendation"] == "Acción recomendada."
+
+
+
+@pytest.mark.django_db
+def test_admin_generates_versioned_individual_program_report(client, report_setup):
+    superadmin, admin, participant, completed = report_setup
+    program = ServiceProgram.objects.get(code="jubilacion-plena")
+    engagement = Engagement.objects.create(
+        title="Jubilación integral",
+        program=program,
+        mode=Engagement.Mode.INDIVIDUAL,
+        consultant=superadmin,
+        status=Engagement.Status.ACTIVE,
+    )
+    participation = EngagementParticipant.objects.create(
+        engagement=engagement,
+        participant=participant,
+    )
+    ensure_participant_phases(participation)
+    completed.engagement_participant = participation
+    completed.save(update_fields=("engagement_participant", "updated_at"))
+
+    report_progress = participation.phase_progress.get(
+        phase__code="reporte-individual"
+    )
+    participation.phase_progress.filter(
+        phase__order__lt=report_progress.phase.order
+    ).update(status=ParticipantPhase.Status.COMPLETED)
+
+    client.force_login(admin)
+    response = client.post(
+        reverse(
+            "reports:program-individual-generate",
+            kwargs={"pk": participation.pk},
+        ),
+        {
+            "executive_summary": "Resumen ejecutivo.",
+            "integral_appreciation": "Lectura integral.",
+            "recommendations": "Recomendaciones.",
+            "conclusions": "Conclusiones.",
+        },
+    )
+
+    assert response.status_code == 302
+    version = IndividualReportVersion.objects.get(
+        engagement_participant=participation,
+        version=1,
+    )
+    assert version.snapshot["participant"]["email"] == participant.email
+    assert version.snapshot["assessment"]["report"]["dimensions"]
+    report_progress.refresh_from_db()
+    assert report_progress.status == ParticipantPhase.Status.COMPLETED
+
+
+@pytest.mark.django_db
+def test_admin_generates_aggregated_organizational_report(client, report_setup):
+    superadmin, admin, participant, completed = report_setup
+    program = ServiceProgram.objects.get(code="jubilacion-plena")
+    organization = Organization.objects.create(name="Organización Reporte")
+    engagement = Engagement.objects.create(
+        title="Jubilación organizacional",
+        program=program,
+        mode=Engagement.Mode.ORGANIZATIONAL,
+        organization=organization,
+        consultant=superadmin,
+        status=Engagement.Status.ACTIVE,
+    )
+    participation = EngagementParticipant.objects.create(
+        engagement=engagement,
+        participant=participant,
+    )
+    ensure_participant_phases(participation)
+    completed.engagement_participant = participation
+    completed.save(update_fields=("engagement_participant", "updated_at"))
+    participation.phase_progress.update(status=ParticipantPhase.Status.COMPLETED)
+
+    client.force_login(admin)
+    response = client.post(
+        reverse(
+            "reports:program-organizational-generate",
+            kwargs={"pk": engagement.pk},
+        ),
+        {
+            "executive_summary": "Resumen organización.",
+            "organizational_appreciation": "Lectura agregada.",
+            "recommendations": "Recomendaciones organizacionales.",
+            "conclusions": "Conclusiones organizacionales.",
+        },
+    )
+
+    assert response.status_code == 302
+    version = OrganizationalReportVersion.objects.get(
+        engagement=engagement,
+        version=1,
+    )
+    assert version.snapshot["participants"]["total"] == 1
+    assert version.snapshot["dimension_averages"]
+    assert "general_answers" not in version.snapshot
+    engagement.refresh_from_db()
+    assert engagement.status == Engagement.Status.COMPLETED
