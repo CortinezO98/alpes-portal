@@ -478,9 +478,12 @@ class DreamChallengeNodeForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["parent"].required = False
         self.fields["parent"].empty_label = "Nodo principal"
-        self.fields["parent"].queryset = DreamChallengeNode.objects.filter(
+        parent_queryset = DreamChallengeNode.objects.filter(
             participant_phase=participant_phase
         ).order_by("order", "id")
+        if self.instance and self.instance.pk:
+            parent_queryset = parent_queryset.exclude(pk=self.instance.pk)
+        self.fields["parent"].queryset = parent_queryset
 
 
 class ActionPlanGoalForm(forms.ModelForm):
