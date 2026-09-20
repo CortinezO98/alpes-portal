@@ -92,6 +92,65 @@
                         <div><dt>Finalización</dt><dd>{{ progress.completed_at|date:"d/m/Y H:i"|default:"Pendiente" }}</dd></div>
                     </dl>
 
+                    {% if progress.phase.code == "conversaciones" and progress.transformation_sessions.all %}
+                        <div class="roadmap-block">
+                            <h3>Conversaciones transformadoras</h3>
+                            <div class="roadmap-structured-list">
+                                {% for session in progress.transformation_sessions.all %}
+                                    <article>
+                                        <div><strong>{{ session.session_date|date:"d/m/Y" }} · {{ session.title }}</strong></div>
+                                        {% if session.topics %}<p><b>Temas:</b> {{ session.topics }}</p>{% endif %}
+                                        {% if session.findings %}<p><b>Hallazgos:</b> {{ session.findings }}</p>{% endif %}
+                                        {% if session.commitments %}<p><b>Compromisos:</b> {{ session.commitments }}</p>{% endif %}
+                                        {% if session.consultant_appreciation and is_program_admin %}<p><b>Apreciación:</b> {{ session.consultant_appreciation }}</p>{% endif %}
+                                    </article>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if progress.phase.code == "mapa-retos-suenos" and progress.dream_map_nodes.all %}
+                        <div class="roadmap-block">
+                            <h3>Mapa de retos y sueños</h3>
+                            <div class="roadmap-structured-grid">
+                                {% for node in progress.dream_map_nodes.all %}
+                                    <article>
+                                        <span>{{ node.get_node_type_display }} · {{ node.get_priority_display }}</span>
+                                        <strong>{{ node.title }}</strong>
+                                        {% if node.description %}<p>{{ node.description }}</p>{% endif %}
+                                        {% if node.parent %}<small>Relacionado con: {{ node.parent.title }}</small>{% endif %}
+                                        {% if node.target_date %}<small>Fecha objetivo: {{ node.target_date|date:"d/m/Y" }}</small>{% endif %}
+                                    </article>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if progress.phase.code == "plan-accion" and progress.action_goals.all %}
+                        <div class="roadmap-block">
+                            <h3>Plan de acción</h3>
+                            <div class="roadmap-structured-list">
+                                {% for goal in progress.action_goals.all %}
+                                    <article>
+                                        <div><strong>{{ goal.title }}</strong>{% if goal.target_date %}<small> · {{ goal.target_date|date:"d/m/Y" }}</small>{% endif %}</div>
+                                        {% if goal.description %}<p>{{ goal.description }}</p>{% endif %}
+                                        <ul>
+                                            {% for item in goal.items.all %}
+                                                <li>
+                                                    <strong>{{ item.action }}</strong>
+                                                    <span>{{ item.get_status_display }}{% if item.responsible %} · {{ item.responsible }}{% endif %}{% if item.due_date %} · {{ item.due_date|date:"d/m/Y" }}{% endif %}</span>
+                                                    {% if item.indicator %}<span>Indicador: {{ item.indicator }}</span>{% endif %}
+                                                </li>
+                                            {% empty %}
+                                                <li>Sin acciones registradas.</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </article>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
                     {% if progress.artifacts.all %}
                         <div class="roadmap-block">
                             <h3>Soportes</h3>
