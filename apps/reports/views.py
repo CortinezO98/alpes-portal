@@ -1,17 +1,33 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Avg, Q
+from django.db import transaction
+from django.db.models import Avg, Max, Q
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.views import View
 from django.views.generic import TemplateView
 
 from apps.accounts.mixins import RoleRequiredMixin
 from apps.accounts.models import User
 from apps.assessments.models import Assessment, Dimension, Question
+from apps.programs.models import Engagement, EngagementParticipant
+from apps.programs.services import (
+    complete_generated_individual_report,
+    complete_generated_organizational_report,
+)
 
-from .forms import AnalyticsFilterForm, DimensionAppreciationForm
-from .models import DimensionAppreciation
+from .forms import (
+    AnalyticsFilterForm,
+    DimensionAppreciationForm,
+    IndividualReportVersionForm,
+    OrganizationalReportVersionForm,
+)
+from .models import DimensionAppreciation, IndividualReportVersion, OrganizationalReportVersion
 from .services.report_builder import build_assessment_report
+from .services.program_report_builder import (
+    build_individual_program_snapshot,
+    build_organizational_program_snapshot,
+)
 
 
 class AnalyticsDashboardView(
@@ -179,3 +195,212 @@ class DimensionAppreciationUpdateView(
             f"La apreciación de “{dimension.name}” fue guardada correctamente.",
         )
         return redirect("reports:assessment-detail", pk=assessment.pk)
+
+
+
+def _is_report_admin(user):
+    return bool(
+        user.is_authenticated
+        and (
+            user.is_superuser
+            or user.role in {User.Role.ADMIN, User.Role.SUPERADMIN}
+        )
+    )
+
+
+class IndividualProgramReportView(LoginRequiredMixin, TemplateView):
+    template_name = "reports/program_individual.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        queryset = EngagementParticipant.objects.select_related(
+            "participant",
+            "engagement__program",
+            "engagement__organization",
+            "engagement__consultant",
+        ).prefetch_related(
+            "individual_report_versions",
+            "phase_progress__phase",
+        )
+        self.participation = get_object_or_404(queryset, pk=kwargs["pk"])
+        if not (
+            _is_report_admin(request.user)
+            or self.participation.participant_id == request.user.id
+        ):
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def _selected_version(self):
+        versions = self.participation.individual_report_versions.all()
+        requested = self.request.GET.get("version")
+        if requested and str(requested).isdigit():
+            return versions.filter(version=int(requested)).first()
+        return versions.first()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        selected = self._selected_version()
+        latest = self.participation.individual_report_versions.first()
+        context.update(
+            participation=self.participation,
+            engagement=self.participation.engagement,
+            report_version=selected,
+            report_versions=self.participation.individual_report_versions.all(),
+            is_report_admin=_is_report_admin(self.request.user),
+            report_form=IndividualReportVersionForm(
+                initial={
+                    "executive_summary": latest.executive_summary if latest else "",
+                    "integral_appreciation": latest.integral_appreciation if latest else "",
+                    "recommendations": latest.recommendations if latest else "",
+                    "conclusions": latest.conclusions if latest else "",
+                }
+            ),
+        )
+        return context
+
+
+class IndividualProgramReportGenerateView(
+    LoginRequiredMixin,
+    RoleRequiredMixin,
+    View,
+):
+    allowed_roles = (User.Role.ADMIN, User.Role.SUPERADMIN)
+
+    @transaction.atomic
+    def post(self, request, pk):
+        participation = get_object_or_404(
+            EngagementParticipant.objects.select_for_update().select_related(
+                "participant",
+                "engagement__program",
+                "engagement__organization",
+                "engagement__consultant",
+            ),
+            pk=pk,
+        )
+        form = IndividualReportVersionForm(request.POST)
+        if not form.is_valid():
+            messages.error(request, "Revisa los campos del reporte antes de generar la versión.")
+            return redirect("reports:program-individual", pk=participation.pk)
+
+        try:
+            complete_generated_individual_report(participation, request.user)
+        except ValueError as exc:
+            messages.error(request, str(exc))
+            return redirect("reports:program-individual", pk=participation.pk)
+
+        snapshot = build_individual_program_snapshot(participation)
+        current = (
+            participation.individual_report_versions.aggregate(max_version=Max("version"))[
+                "max_version"
+            ]
+            or 0
+        )
+        report = form.save(commit=False)
+        report.engagement_participant = participation
+        report.version = current + 1
+        report.snapshot = snapshot
+        report.created_by = request.user
+        report.save()
+
+        messages.success(
+            request,
+            f"Reporte individual v{report.version} generado correctamente.",
+        )
+        return redirect(
+            f"{reverse('reports:program-individual', kwargs={'pk': participation.pk})}?version={report.version}"
+        )
+
+
+class OrganizationalProgramReportView(
+    LoginRequiredMixin,
+    RoleRequiredMixin,
+    TemplateView,
+):
+    template_name = "reports/program_organizational.html"
+    allowed_roles = (User.Role.ADMIN, User.Role.SUPERADMIN)
+
+    def dispatch(self, request, *args, **kwargs):
+        self.engagement = get_object_or_404(
+            Engagement.objects.select_related(
+                "program", "organization", "consultant"
+            ).prefetch_related("organizational_report_versions", "participants"),
+            pk=kwargs["pk"],
+            mode=Engagement.Mode.ORGANIZATIONAL,
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+    def _selected_version(self):
+        versions = self.engagement.organizational_report_versions.all()
+        requested = self.request.GET.get("version")
+        if requested and str(requested).isdigit():
+            return versions.filter(version=int(requested)).first()
+        return versions.first()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        selected = self._selected_version()
+        latest = self.engagement.organizational_report_versions.first()
+        context.update(
+            engagement=self.engagement,
+            report_version=selected,
+            report_versions=self.engagement.organizational_report_versions.all(),
+            report_form=OrganizationalReportVersionForm(
+                initial={
+                    "executive_summary": latest.executive_summary if latest else "",
+                    "organizational_appreciation": latest.organizational_appreciation if latest else "",
+                    "recommendations": latest.recommendations if latest else "",
+                    "conclusions": latest.conclusions if latest else "",
+                }
+            ),
+        )
+        return context
+
+
+class OrganizationalProgramReportGenerateView(
+    LoginRequiredMixin,
+    RoleRequiredMixin,
+    View,
+):
+    allowed_roles = (User.Role.ADMIN, User.Role.SUPERADMIN)
+
+    @transaction.atomic
+    def post(self, request, pk):
+        engagement = get_object_or_404(
+            Engagement.objects.select_for_update().select_related(
+                "program", "organization", "consultant"
+            ),
+            pk=pk,
+            mode=Engagement.Mode.ORGANIZATIONAL,
+        )
+        form = OrganizationalReportVersionForm(request.POST)
+        if not form.is_valid():
+            messages.error(request, "Revisa los campos del reporte organizacional.")
+            return redirect("reports:program-organizational", pk=engagement.pk)
+
+        try:
+            complete_generated_organizational_report(engagement, request.user)
+        except ValueError as exc:
+            messages.error(request, str(exc))
+            return redirect("reports:program-organizational", pk=engagement.pk)
+
+        snapshot = build_organizational_program_snapshot(engagement)
+        current = (
+            engagement.organizational_report_versions.aggregate(max_version=Max("version"))[
+                "max_version"
+            ]
+            or 0
+        )
+        report = form.save(commit=False)
+        report.engagement = engagement
+        report.version = current + 1
+        report.snapshot = snapshot
+        report.created_by = request.user
+        report.save()
+
+        messages.success(
+            request,
+            f"Reporte organizacional v{report.version} generado correctamente.",
+        )
+        return redirect(
+            f"{reverse('reports:program-organizational', kwargs={'pk': engagement.pk})}?version={report.version}"
+        )
