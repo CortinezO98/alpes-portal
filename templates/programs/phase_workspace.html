@@ -231,7 +231,18 @@
                     <p>La hoja de ruta ya registró esta etapa como finalizada.</p>
                 </div>
             {% else %}
-                {% if not is_program_admin or progress.status != "SUBMITTED" %}
+                {% if progress.phase.is_automatic %}
+                    <div class="phase-automatic-box">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                        <strong>Avance automático</strong>
+                        <p>Esta fase se completa desde su actividad principal y no requiere un cierre manual.</p>
+                        {% if workspace_scope == "participant" and not is_program_admin %}
+                            <a class="button button-primary phase-primary-action" href="{% url 'assessments:my-list' %}">
+                                <i class="bi bi-clipboard2-check"></i> Ir a mi evaluación
+                            </a>
+                        {% endif %}
+                    </div>
+                {% elif not is_program_admin or progress.status != "SUBMITTED" %}
                     <form
                         method="post"
                         action="{% if workspace_scope == 'participant' %}{% url 'programs:participant-phase-submit' progress.pk %}{% else %}{% url 'programs:engagement-phase-submit' progress.pk %}{% endif %}"
