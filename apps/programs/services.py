@@ -429,3 +429,80 @@ def create_engagement_bundle(*, cleaned_data, actor):
         "assessments_created": assessments_created,
         "memberships": memberships,
     }
+
+
+
+@transaction.atomic
+def complete_generated_individual_report(participation, actor):
+    progress = participation.phase_progress.select_related("phase").filter(
+        phase__code="reporte-individual"
+    ).first()
+    if progress is None:
+        raise ValueError("El proceso no tiene configurada la fase de reporte individual.")
+
+    blockers = participation.phase_progress.filter(
+        phase__scope=ProgramPhase.Scope.PARTICIPANT,
+        phase__order__lt=progress.phase.order,
+    ).exclude(status=ParticipantPhase.Status.COMPLETED)
+    if blockers.exists():
+        raise ValueError(
+            "No puedes generar el reporte individual hasta completar las fases anteriores."
+        )
+
+    progress.status = ParticipantPhase.Status.COMPLETED
+    progress.started_at = progress.started_at or timezone.now()
+    progress.completed_at = timezone.now()
+    progress.completed_by = actor
+    progress.save(
+        update_fields=(
+            "status",
+            "started_at",
+            "completed_at",
+            "completed_by",
+            "updated_at",
+        )
+    )
+    _unlock_after_participant_completion(progress)
+    return progress
+
+
+@transaction.atomic
+def complete_generated_organizational_report(engagement, actor):
+    if engagement.mode != Engagement.Mode.ORGANIZATIONAL:
+        raise ValueError("El reporte organizacional solo aplica a procesos empresariales.")
+
+    progress = engagement.phase_progress.select_related("phase").filter(
+        phase__code="reporte-organizacional"
+    ).first()
+    if progress is None:
+        raise ValueError("El proceso no tiene configurada la fase de reporte organizacional.")
+
+    pending_individual_reports = ParticipantPhase.objects.filter(
+        engagement_participant__engagement=engagement,
+        engagement_participant__is_active=True,
+        phase__code="reporte-individual",
+    ).exclude(status=ParticipantPhase.Status.COMPLETED)
+
+    if pending_individual_reports.exists():
+        raise ValueError(
+            "Todos los reportes individuales deben estar completados antes del reporte organizacional."
+        )
+
+    progress.status = ParticipantPhase.Status.COMPLETED
+    progress.started_at = progress.started_at or timezone.now()
+    progress.completed_at = timezone.now()
+    progress.completed_by = actor
+    progress.save(
+        update_fields=(
+            "status",
+            "started_at",
+            "completed_at",
+            "completed_by",
+            "updated_at",
+        )
+    )
+
+    engagement.status = Engagement.Status.COMPLETED
+    engagement.end_date = engagement.end_date or timezone.localdate()
+    engagement.save(update_fields=("status", "end_date", "updated_at"))
+    return progress
