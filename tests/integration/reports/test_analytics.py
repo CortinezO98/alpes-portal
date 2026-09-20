@@ -16,6 +16,7 @@ from apps.programs.models import (
 )
 from apps.programs.services import ensure_participant_phases
 from apps.reports.services.pdf_builder import build_individual_report_pdf
+from apps.reports.views import _build_dream_tree
 from apps.reports.models import (
     DimensionAppreciation,
     IndividualReportVersion,
@@ -551,10 +552,32 @@ def test_individual_pdf_renders_complete_roadmap_snapshot():
                     "sessions": [],
                     "nodes": [
                         {
+                            "id": 1,
+                            "parent_id": None,
+                            "type": "DREAM",
                             "type_label": "Sueño",
                             "title": "Viajar",
                             "description": "Conocer nuevos destinos",
-                        }
+                            "priority_label": "Alta",
+                        },
+                        {
+                            "id": 2,
+                            "parent_id": 1,
+                            "type": "CHALLENGE",
+                            "type_label": "Reto",
+                            "title": "Organizar las finanzas",
+                            "description": "Preparar el presupuesto",
+                            "priority_label": "Alta",
+                        },
+                        {
+                            "id": 3,
+                            "parent_id": 2,
+                            "type": "GOAL",
+                            "type_label": "Meta",
+                            "title": "Crear fondo de viajes",
+                            "description": "Ahorrar mensualmente",
+                            "priority_label": "Alta",
+                        },
                     ],
                     "goals": [],
                     "comments": [],
@@ -597,3 +620,24 @@ def test_individual_pdf_renders_complete_roadmap_snapshot():
 
     assert pdf.startswith(b"%PDF")
     assert len(pdf) > 1000
+
+
+
+def test_build_dream_tree_preserves_parent_child_hierarchy():
+    tree = _build_dream_tree(
+        [
+            {"id": 1, "parent_id": None, "title": "Viajar"},
+            {"id": 2, "parent_id": 1, "title": "Organizar finanzas"},
+            {"id": 3, "parent_id": 2, "title": "Crear fondo"},
+            {"id": 4, "parent_id": 3, "title": "Primer viaje"},
+        ]
+    )
+
+    assert len(tree) == 1
+    assert tree[0]["title"] == "Viajar"
+    assert tree[0]["children"][0]["title"] == "Organizar finanzas"
+    assert tree[0]["children"][0]["children"][0]["title"] == "Crear fondo"
+    assert (
+        tree[0]["children"][0]["children"][0]["children"][0]["title"]
+        == "Primer viaje"
+    )
