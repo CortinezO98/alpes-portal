@@ -1,0 +1,251 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Reporte individual | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/reports.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="final-report-page">
+    <div class="final-report-toolbar no-print">
+        {% if is_report_admin %}
+            <a class="page-back-link" href="{% url 'programs:engagement-detail' engagement.pk %}">
+                <i class="bi bi-arrow-left"></i> Volver al acompañamiento
+            </a>
+        {% else %}
+            <a class="page-back-link" href="{% url 'programs:my-engagement-detail' participation.pk %}">
+                <i class="bi bi-arrow-left"></i> Volver a mi proceso
+            </a>
+        {% endif %}
+        <div class="final-report-toolbar-actions">
+            {% if report_version %}
+                <button class="button button-secondary" type="button" onclick="window.print()">
+                    <i class="bi bi-file-earmark-pdf"></i> Imprimir / Guardar PDF
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <section class="final-report-cover">
+        <div class="final-report-cover-brand">ALPES</div>
+        <p class="dashboard-eyebrow">Reporte individual</p>
+        <h1>{{ engagement.program.name }}</h1>
+        <p>{{ participation.participant.get_full_name|default:participation.participant.email }}</p>
+        <dl>
+            <div><dt>Proceso</dt><dd>{{ engagement.title }}</dd></div>
+            <div><dt>Organización</dt><dd>{{ engagement.organization.name|default:"Acompañamiento individual" }}</dd></div>
+            <div><dt>Consultor</dt><dd>{{ engagement.consultant.email }}</dd></div>
+            {% if report_version %}<div><dt>Versión</dt><dd>v{{ report_version.version }} · {{ report_version.created_at|date:"d/m/Y H:i" }}</dd></div>{% endif %}
+        </dl>
+    </section>
+
+    {% if is_report_admin %}
+    <section class="report-editor no-print">
+        <div class="report-editor-head">
+            <div>
+                <p class="dashboard-eyebrow">Edición profesional</p>
+                <h2>{% if report_version %}Generar una nueva versión{% else %}Preparar reporte individual{% endif %}</h2>
+                <p>La nueva versión congela una fotografía del proceso, sus fases, soportes y resultados en el momento de generarla.</p>
+            </div>
+            {% if report_versions %}
+            <div class="report-version-selector">
+                <label for="report-version-select">Historial</label>
+                <select id="report-version-select" onchange="if(this.value){window.location='?version='+this.value}">
+                    {% for version in report_versions %}
+                        <option value="{{ version.version }}" {% if report_version.version == version.version %}selected{% endif %}>
+                            v{{ version.version }} · {{ version.created_at|date:"d/m/Y H:i" }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+        </div>
+        <form method="post" action="{% url 'reports:program-individual-generate' participation.pk %}" class="report-editor-form">
+            {% csrf_token %}
+            <div class="report-editor-grid">
+                <div class="report-editor-field report-editor-span">
+                    <label>{{ report_form.executive_summary.label }}</label>
+                    {{ report_form.executive_summary }}
+                </div>
+                <div class="report-editor-field">
+                    <label>{{ report_form.integral_appreciation.label }}</label>
+                    {{ report_form.integral_appreciation }}
+                </div>
+                <div class="report-editor-field">
+                    <label>{{ report_form.recommendations.label }}</label>
+                    {{ report_form.recommendations }}
+                </div>
+                <div class="report-editor-field report-editor-span">
+                    <label>{{ report_form.conclusions.label }}</label>
+                    {{ report_form.conclusions }}
+                </div>
+            </div>
+            <div class="report-editor-actions">
+                <span><i class="bi bi-shield-check"></i> Las versiones anteriores no se sobrescriben.</span>
+                <button
+                    class="button button-primary"
+                    type="submit"
+                    data-swal-confirm="true"
+                    data-swal-title="¿Generar nueva versión?"
+                    data-swal-text="Se guardará una fotografía inmutable del estado actual del acompañamiento."
+                    data-swal-confirm-text="Sí, generar reporte"
+                    data-swal-icon="question"
+                >
+                    <i class="bi bi-file-earmark-check"></i> Generar versión
+                </button>
+            </div>
+        </form>
+    </section>
+    {% endif %}
+
+    {% if report_version %}
+        <article class="final-report-document">
+            <section class="final-report-section">
+                <span class="final-report-section-number">01</span>
+                <div>
+                    <p class="dashboard-eyebrow">Síntesis</p>
+                    <h2>Resumen ejecutivo</h2>
+                    <p class="final-report-prose">{{ report_version.executive_summary|linebreaksbr|default:"Sin resumen ejecutivo registrado." }}</p>
+                </div>
+            </section>
+
+            {% if report_version.snapshot.assessment %}
+            <section class="final-report-section">
+                <span class="final-report-section-number">02</span>
+                <div>
+                    <p class="dashboard-eyebrow">Rueda de la Vida</p>
+                    <h2>Resultados por dimensión</h2>
+                    <div class="final-dimension-grid">
+                        {% for dimension in report_version.snapshot.assessment.report.dimensions %}
+                            <article class="final-dimension-card">
+                                <div class="final-dimension-score">
+                                    <span>{{ dimension.order|stringformat:"02d" }}</span>
+                                    <strong>{{ dimension.average|default:"—" }}<small>/10</small></strong>
+                                </div>
+                                <h3>{{ dimension.name }}</h3>
+                                {% if dimension.appreciation.interpretation %}
+                                    <p><strong>Lectura profesional.</strong> {{ dimension.appreciation.interpretation }}</p>
+                                {% endif %}
+                                {% if dimension.appreciation.strengths %}
+                                    <p><strong>Fortalezas.</strong> {{ dimension.appreciation.strengths }}</p>
+                                {% endif %}
+                                {% if dimension.appreciation.opportunities %}
+                                    <p><strong>Oportunidades.</strong> {{ dimension.appreciation.opportunities }}</p>
+                                {% endif %}
+                                {% if dimension.appreciation.recommendation %}
+                                    <p><strong>Recomendación.</strong> {{ dimension.appreciation.recommendation }}</p>
+                                {% endif %}
+                            </article>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+            <section class="final-report-section">
+                <span class="final-report-section-number">03</span>
+                <div>
+                    <p class="dashboard-eyebrow">Proceso</p>
+                    <h2>Recorrido por las fases</h2>
+                    <div class="final-phase-list">
+                        {% for phase in report_version.snapshot.phases %}
+                            {% if phase.code != "reporte-individual" %}
+                            <article class="final-phase-card">
+                                <div class="final-phase-head">
+                                    <span>{{ phase.order|stringformat:"02d" }}</span>
+                                    <div><h3>{{ phase.name }}</h3><small>{{ phase.status_label }}</small></div>
+                                </div>
+
+                                {% if phase.sessions %}
+                                    <div class="final-report-subsection">
+                                        <strong>Conversaciones transformadoras</strong>
+                                        {% for session in phase.sessions %}
+                                            <div class="final-session">
+                                                <span>{{ session.date }} · {{ session.title }}</span>
+                                                {% if session.findings %}<p><b>Hallazgos:</b> {{ session.findings }}</p>{% endif %}
+                                                {% if session.commitments %}<p><b>Compromisos:</b> {{ session.commitments }}</p>{% endif %}
+                                                {% if session.consultant_appreciation %}<p><b>Apreciación:</b> {{ session.consultant_appreciation }}</p>{% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                {% if phase.nodes %}
+                                    <div class="final-report-subsection">
+                                        <strong>Mapa de retos y sueños</strong>
+                                        <div class="final-node-grid">
+                                            {% for node in phase.nodes %}
+                                                <div><span>{{ node.type_label }}</span><b>{{ node.title }}</b>{% if node.description %}<p>{{ node.description }}</p>{% endif %}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if phase.goals %}
+                                    <div class="final-report-subsection">
+                                        <strong>Plan de acción</strong>
+                                        {% for goal in phase.goals %}
+                                            <div class="final-goal">
+                                                <b>{{ goal.title }}</b>
+                                                {% if goal.description %}<p>{{ goal.description }}</p>{% endif %}
+                                                <ul>
+                                                    {% for item in goal.items %}
+                                                        <li>{{ item.action }} · {{ item.status_label }}{% if item.indicator %} · Indicador: {{ item.indicator }}{% endif %}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                {% if phase.comments %}
+                                    <div class="final-report-subsection">
+                                        <strong>Apreciaciones registradas</strong>
+                                        {% for comment in phase.comments %}<p>{{ comment.body }}</p>{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </article>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+            <section class="final-report-section final-report-narrative">
+                <span class="final-report-section-number">04</span>
+                <div>
+                    <p class="dashboard-eyebrow">Lectura profesional</p>
+                    <h2>Apreciación integral</h2>
+                    <p class="final-report-prose">{{ report_version.integral_appreciation|linebreaksbr|default:"Sin apreciación integral registrada." }}</p>
+                </div>
+            </section>
+
+            <section class="final-report-section final-report-narrative">
+                <span class="final-report-section-number">05</span>
+                <div>
+                    <p class="dashboard-eyebrow">Orientación</p>
+                    <h2>Recomendaciones</h2>
+                    <p class="final-report-prose">{{ report_version.recommendations|linebreaksbr|default:"Sin recomendaciones registradas." }}</p>
+                </div>
+            </section>
+
+            <section class="final-report-section final-report-narrative">
+                <span class="final-report-section-number">06</span>
+                <div>
+                    <p class="dashboard-eyebrow">Cierre</p>
+                    <h2>Conclusiones</h2>
+                    <p class="final-report-prose">{{ report_version.conclusions|linebreaksbr|default:"Sin conclusiones registradas." }}</p>
+                </div>
+            </section>
+        </article>
+    {% else %}
+        <section class="report-empty report-empty-large">
+            <i class="bi bi-file-earmark-richtext"></i>
+            <h2>El reporte individual aún no ha sido generado</h2>
+            <p>Completa las fases anteriores y genera la primera versión desde el panel superior.</p>
+        </section>
+    {% endif %}
+</div>
+{% endblock %}
