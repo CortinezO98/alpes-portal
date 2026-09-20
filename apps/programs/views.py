@@ -571,3 +571,29 @@ class EngagementPhaseReviewView(ProgramAdminMixin, View):
                 else "La fase organizacional fue reabierta.",
             )
         return redirect("programs:engagement-phase-detail", pk=progress.pk)
+
+
+
+class RoadmapDetailView(LoginRequiredMixin, DetailView):
+    template_name = "programs/roadmap_detail.html"
+    context_object_name = "participation"
+
+    def get_queryset(self):
+        queryset = EngagementParticipant.objects.select_related(
+            "participant",
+            "engagement__program",
+            "engagement__organization",
+            "engagement__consultant",
+        ).prefetch_related(
+            "phase_progress__phase",
+            "phase_progress__artifacts",
+            "phase_progress__comments__author",
+        )
+        if _user_is_program_admin(self.request.user):
+            return queryset
+        return queryset.filter(participant=self.request.user, is_active=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["is_program_admin"] = _user_is_program_admin(self.request.user)
+        return context
