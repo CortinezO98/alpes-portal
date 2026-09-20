@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
+from django.utils import timezone
+from django.views import View
 from django.views.generic import CreateView, DetailView, FormView, ListView
 
 from apps.accounts.mixins import RoleRequiredMixin
@@ -12,7 +14,7 @@ from .forms import (
     OrganizationForm,
     UnifiedEngagementCreateForm,
 )
-from .models import Engagement, EngagementParticipant, Organization
+from .models import Engagement, EngagementParticipant, Organization, ParticipantPhase
 from .services import create_engagement_bundle, ensure_participant_phases
 
 
@@ -161,5 +163,101 @@ class UnifiedEngagementCreateView(ProgramAdminMixin, FormView):
                     else "."
                 )
             ),
+        )
+        return redirect("programs:engagement-detail", pk=engagement.pk)
+
+
+class ParticipantProgressUpdateView(ProgramAdminMixin, View):
+    """Allow an administrator to move a participant to a specific program phase."""
+
+    def post(self, request, engagement_pk, participant_pk):
+        engagement = get_object_or_404(Engagement, pk=engagement_pk)
+        membership = get_object_or_404(
+            EngagementParticipant.objects.select_related("participant", "engagement__program"),
+            pk=participant_pk,
+            engagement=engagement,
+        )
+
+        target_progress = get_object_or_404(
+            ParticipantPhase.objects.select_related("phase"),
+            pk=request.POST.get("phase_progress_id"),
+            engagement_participant=membership,
+        )
+
+        now = timezone.now()
+        progress_items = list(
+            membership.phase_progress.select_related("phase").order_by("phase__order", "id")
+        )
+
+        for progress in progress_items:
+            if progress.phase.order < target_progress.phase.order:
+                progress.status = ParticipantPhase.Status.COMPLETED
+                progress.started_at = progress.started_at or now
+                progress.completed_at = progress.completed_at or now
+                progress.completed_by = request.user
+            elif progress.pk == target_progress.pk:
+                progress.status = ParticipantPhase.Status.IN_PROGRESS
+                progress.started_at = progress.started_at or now
+                progress.completed_at = None
+                progress.completed_by = None
+            else:
+                progress.status = ParticipantPhase.Status.PENDING
+                progress.completed_at = None
+                progress.completed_by = None
+
+            progress.save(
+                update_fields=(
+                    "status",
+                    "started_at",
+                    "completed_at",
+                    "completed_by",
+                    "updated_at",
+                )
+            )
+
+        if engagement.status == Engagement.Status.PLANNING:
+            engagement.status = Engagement.Status.ACTIVE
+            engagement.save(update_fields=("status", "updated_at"))
+
+        messages.success(
+            request,
+            (
+                f"{membership.participant.email} fue movido a "
+                f"“{target_progress.phase.name}”."
+            ),
+        )
+        return redirect("programs:engagement-detail", pk=engagement.pk)
+
+
+class ParticipantProgressCompleteView(ProgramAdminMixin, View):
+    """Mark every phase for a participant as completed."""
+
+    def post(self, request, engagement_pk, participant_pk):
+        engagement = get_object_or_404(Engagement, pk=engagement_pk)
+        membership = get_object_or_404(
+            EngagementParticipant.objects.select_related("participant"),
+            pk=participant_pk,
+            engagement=engagement,
+        )
+
+        now = timezone.now()
+        for progress in membership.phase_progress.select_related("phase").all():
+            progress.status = ParticipantPhase.Status.COMPLETED
+            progress.started_at = progress.started_at or now
+            progress.completed_at = progress.completed_at or now
+            progress.completed_by = request.user
+            progress.save(
+                update_fields=(
+                    "status",
+                    "started_at",
+                    "completed_at",
+                    "completed_by",
+                    "updated_at",
+                )
+            )
+
+        messages.success(
+            request,
+            f"El proceso de {membership.participant.email} quedó marcado como completado.",
         )
         return redirect("programs:engagement-detail", pk=engagement.pk)
