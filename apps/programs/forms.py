@@ -129,7 +129,7 @@ class UnifiedEngagementCreateForm(forms.Form):
     create_organization = forms.BooleanField(
         label="Crear una empresa nueva en este mismo formulario",
         required=False,
-        widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        widget=forms.HiddenInput(),
     )
     organization_name = forms.CharField(
         label="Nombre de la empresa",
