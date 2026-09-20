@@ -257,6 +257,33 @@
                     <i class="bi bi-lock"></i>
                     <strong>Fase bloqueada</strong>
                     <p>Se habilitará automáticamente cuando se complete la fase anterior.</p>
+
+                    {% if is_program_admin and workspace_scope == "participant" %}
+                        <form
+                            method="post"
+                            action="{% url 'programs:participant-progress-update' engagement.pk progress.engagement_participant.pk %}"
+                            class="phase-unlock-form"
+                            data-swal-confirm="true"
+                            data-swal-title="¿Habilitar esta fase?"
+                            data-swal-text="Las fases anteriores se marcarán como completadas y esta quedará disponible para trabajar."
+                            data-swal-confirm-text="Sí, habilitar fase"
+                            data-swal-icon="warning"
+                        >
+                            {% csrf_token %}
+                            <input type="hidden" name="phase_progress_id" value="{{ progress.pk }}">
+                            <input
+                                type="hidden"
+                                name="manual_reason"
+                                value="Habilitación manual desde la fase {{ progress.phase.name }}"
+                            >
+                            <button class="button button-primary phase-primary-action" type="submit">
+                                <i class="bi bi-unlock"></i> Habilitar esta fase
+                            </button>
+                        </form>
+                        <small class="phase-unlock-hint">
+                            Úsalo solo cuando necesites continuar manualmente con esta etapa.
+                        </small>
+                    {% endif %}
                 </div>
             {% elif progress.status == "COMPLETED" %}
                 <div class="phase-completed-box">
