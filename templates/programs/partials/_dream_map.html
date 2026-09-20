@@ -47,6 +47,44 @@
     </details>
     {% endif %}
 
+    {% if dream_nodes %}
+    <section class="dream-mental-panel">
+        <div class="dream-mental-head">
+            <div>
+                <span class="dashboard-eyebrow">Vista relacional</span>
+                <h3>Mapa mental de mi nueva etapa</h3>
+                <p>Selecciona cualquier elemento para consultar su detalle y las acciones relacionadas del Plan de acción.</p>
+            </div>
+            <span class="dream-mental-help"><i class="bi bi-cursor"></i> Haz clic en un nodo</span>
+        </div>
+
+        <div class="dream-mental-layout">
+            <div class="dream-mental-canvas" data-dream-map-visual>
+                <div class="dream-mental-stage">
+                    <svg class="dream-mental-links" aria-hidden="true"></svg>
+                    <div class="dream-mental-nodes"></div>
+                </div>
+            </div>
+
+            <aside class="dream-mental-detail" data-dream-map-detail>
+                <div class="dream-mental-detail-empty">
+                    <i class="bi bi-diagram-3"></i>
+                    <strong>Explora tu mapa</strong>
+                    <p>Selecciona un sueño, reto, meta o hito para ver su información y las acciones que se hayan vinculado desde el Plan de acción.</p>
+                </div>
+            </aside>
+        </div>
+    </section>
+    {{ dream_map_graph|json_script:"dream-map-graph-data" }}
+    {% endif %}
+
+    <div class="dream-map-list-head">
+        <div>
+            <span class="dashboard-eyebrow">Gestión de elementos</span>
+            <h3>Listado y edición del mapa</h3>
+        </div>
+    </div>
+
     <div class="dream-map-canvas">
         <div class="dream-map-center"><i class="bi bi-compass"></i><strong>Mi nueva etapa</strong></div>
         {% for node in dream_nodes %}
