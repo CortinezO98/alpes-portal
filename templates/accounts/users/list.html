@@ -74,7 +74,15 @@
                                 <a class="user-action-icon" href="{% url 'accounts:user-management-edit' user.pk %}" aria-label="Editar {{ user.email }}" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form method="post" action="{% url 'accounts:user-management-toggle-status' user.pk %}">
+                                <form
+                                    method="post"
+                                    action="{% url 'accounts:user-management-toggle-status' user.pk %}"
+                                    data-swal-confirm="true"
+                                    data-swal-title="{% if user.is_active %}¿Desactivar usuario?{% else %}¿Activar usuario?{% endif %}"
+                                    data-swal-text="{% if user.is_active %}{{ user.email }} no podrá acceder a la plataforma hasta que vuelvas a activarlo.{% else %}{{ user.email }} recuperará el acceso a la plataforma.{% endif %}"
+                                    data-swal-confirm-text="{% if user.is_active %}Sí, desactivar{% else %}Sí, activar{% endif %}"
+                                    data-swal-icon="{% if user.is_active %}warning{% else %}question{% endif %}"
+                                >
                                     {% csrf_token %}
                                     <button class="user-action-icon {% if user.is_active %}user-action-danger{% else %}user-action-success{% endif %}" type="submit" aria-label="{% if user.is_active %}Desactivar{% else %}Activar{% endif %} {{ user.email }}" title="{% if user.is_active %}Desactivar{% else %}Activar{% endif %}">
                                         <i class="bi {% if user.is_active %}bi-person-x{% else %}bi-person-check{% endif %}"></i>
