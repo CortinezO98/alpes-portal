@@ -104,6 +104,54 @@ class EngagementDetailView(ProgramAdminMixin, DetailView):
             "phase_progress__phase",
         )
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        participants = list(self.object.participants.all())
+        participant_count = len(participants)
+        progress_values = [item.progress_percent for item in participants]
+        average_progress = (
+            round(sum(progress_values) / participant_count)
+            if participant_count
+            else 0
+        )
+
+        phase_items = [
+            progress
+            for participant in participants
+            for progress in participant.phase_progress.all()
+        ]
+        review_count = sum(
+            1
+            for progress in phase_items
+            if progress.status
+            in {
+                ParticipantPhase.Status.SUBMITTED,
+                ParticipantPhase.Status.UNDER_REVIEW,
+            }
+        )
+        reopened_count = sum(
+            1
+            for progress in phase_items
+            if progress.status == ParticipantPhase.Status.REOPENED
+        )
+        completed_count = sum(
+            1
+            for participant in participants
+            if participant.progress_percent == 100
+        )
+
+        context.update(
+            participant_count=participant_count,
+            average_progress=average_progress,
+            review_count=review_count,
+            reopened_count=reopened_count,
+            completed_participant_count=completed_count,
+            participant_phases=self.object.program.phases.filter(
+                scope="PARTICIPANT"
+            ).order_by("order", "id"),
+        )
+        return context
+
 
 class EngagementParticipantCreateView(ProgramAdminMixin, CreateView):
     template_name = "programs/participant_form.html"
