@@ -2,6 +2,7 @@
 {% load static %}
 {% block title %}{{ engagement.title }} | ALPES{% endblock %}
 {% block dashboard_extra_css %}<link rel="stylesheet" href="{% static 'css/pages/programs.css' %}">{% endblock %}
+
 {% block dashboard_content %}
 <section class="dashboard-header">
     <p class="dashboard-eyebrow">{{ engagement.program.name }} · {{ engagement.get_mode_display }}</p>
@@ -11,40 +12,141 @@
         {{ engagement.get_status_display }} · {{ engagement.participants.count }} participante{{ engagement.participants.count|pluralize }}
     </p>
 </section>
+
 <div class="program-toolbar">
-    <a class="button button-primary" href="{% url 'programs:participant-add' engagement.pk %}">Agregar participante</a>
-    <a class="button button-secondary" href="{% url 'assessments:assign' %}">Asignar evaluación</a>
+    <a class="button button-primary" href="{% url 'programs:participant-add' engagement.pk %}">
+        <i class="bi bi-person-plus"></i> Agregar participante
+    </a>
+    <a class="button button-secondary" href="{% url 'assessments:assign' %}">
+        <i class="bi bi-clipboard2-plus"></i> Asignar evaluación
+    </a>
 </div>
+
 <section class="program-detail-layout">
     <article class="program-panel">
         <div class="program-panel-head">
-            <div><p class="dashboard-eyebrow">Ruta del programa</p><h2>Fases de Jubilación Plena</h2></div>
+            <div>
+                <p class="dashboard-eyebrow">Ruta del programa</p>
+                <h2>Fases de Jubilación Plena</h2>
+            </div>
         </div>
         <ol class="phase-reference">
             {% for phase in engagement.program.phases.all %}
                 <li>
                     <span>{{ phase.order|stringformat:"02d" }}</span>
-                    <div><strong>{{ phase.name }}</strong>{% if phase.is_automatic %}<small>Se actualiza automáticamente con la evaluación.</small>{% endif %}</div>
+                    <div>
+                        <strong>{{ phase.name }}</strong>
+                        {% if phase.is_automatic %}
+                            <small>Se actualiza automáticamente con la evaluación, pero el administrador puede corregir el avance.</small>
+                        {% endif %}
+                    </div>
                 </li>
             {% endfor %}
         </ol>
     </article>
+
     <article class="program-panel">
         <div class="program-panel-head">
-            <div><p class="dashboard-eyebrow">Seguimiento</p><h2>Participantes</h2></div>
+            <div>
+                <p class="dashboard-eyebrow">Seguimiento administrativo</p>
+                <h2>Avance por participante</h2>
+            </div>
         </div>
-        <div class="participant-list">
+
+        <div class="participant-list participant-list-admin">
             {% for item in engagement.participants.all %}
-                <div class="participant-row">
-                    <div>
-                        <strong>{% if item.participant.get_full_name %}{{ item.participant.get_full_name }}{% else %}{{ item.participant.email }}{% endif %}</strong>
-                        <small>{{ item.participant.email }}</small>
+                <article class="participant-progress-card">
+                    <div class="participant-progress-head">
+                        <div class="participant-identity">
+                            <span class="participant-initial">{{ item.participant.email|first|upper }}</span>
+                            <div>
+                                <strong>{% if item.participant.get_full_name %}{{ item.participant.get_full_name }}{% else %}{{ item.participant.email }}{% endif %}</strong>
+                                <small>{{ item.participant.email }}</small>
+                            </div>
+                        </div>
+                        <div class="participant-progress-summary">
+                            <strong>{{ item.progress_percent }}%</strong>
+                            <span>completado</span>
+                        </div>
                     </div>
-                    <div class="participant-progress">
-                        <strong>{{ item.progress_percent }}%</strong>
-                        <div class="progress-track"><span style="width: {{ item.progress_percent }}%"></span></div>
+
+                    <div class="progress-track progress-track-admin">
+                        <span style="width: {{ item.progress_percent }}%"></span>
                     </div>
-                </div>
+
+                    <div class="participant-phase-strip">
+                        {% for progress in item.phase_progress.all %}
+                            <span
+                                class="phase-dot phase-dot-{{ progress.status|lower }}"
+                                title="{{ progress.phase.name }} · {{ progress.get_status_display }}"
+                            >
+                                {% if progress.status == 'COMPLETED' %}
+                                    <i class="bi bi-check-lg"></i>
+                                {% elif progress.status == 'IN_PROGRESS' %}
+                                    <i class="bi bi-play-fill"></i>
+                                {% else %}
+                                    {{ progress.phase.order }}
+                                {% endif %}
+                            </span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="participant-admin-controls">
+                        <form
+                            method="post"
+                            action="{% url 'programs:participant-progress-update' engagement.pk item.pk %}"
+                            class="participant-phase-form"
+                            data-swal-confirm="true"
+                            data-swal-title="¿Mover el proceso?"
+                            data-swal-text="Las fases anteriores se marcarán como completadas y las siguientes quedarán pendientes."
+                            data-swal-confirm-text="Sí, actualizar avance"
+                            data-swal-icon="question"
+                        >
+                            {% csrf_token %}
+                            <label for="phase-{{ item.pk }}">Fase actual</label>
+                            <div class="participant-phase-control-row">
+                                <select id="phase-{{ item.pk }}" name="phase_progress_id" class="program-phase-select">
+                                    {% for progress in item.phase_progress.all %}
+                                        <option
+                                            value="{{ progress.pk }}"
+                                            {% if progress.status == 'IN_PROGRESS' %}selected{% endif %}
+                                        >
+                                            {{ progress.phase.order }}. {{ progress.phase.name }}
+                                            {% if progress.status == 'COMPLETED' %} · completada{% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <button class="button button-primary button-compact" type="submit">
+                                    <i class="bi bi-arrow-right-circle"></i>
+                                    Mover
+                                </button>
+                            </div>
+                        </form>
+
+                        {% if item.progress_percent < 100 %}
+                            <form
+                                method="post"
+                                action="{% url 'programs:participant-progress-complete' engagement.pk item.pk %}"
+                                data-swal-confirm="true"
+                                data-swal-title="¿Completar todo el proceso?"
+                                data-swal-text="Todas las fases de este participante quedarán marcadas como completadas."
+                                data-swal-confirm-text="Sí, completar proceso"
+                                data-swal-icon="warning"
+                            >
+                                {% csrf_token %}
+                                <button class="button button-secondary button-compact" type="submit">
+                                    <i class="bi bi-check2-circle"></i>
+                                    Completar
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="participant-complete-badge">
+                                <i class="bi bi-check-circle-fill"></i>
+                                Proceso completado
+                            </span>
+                        {% endif %}
+                    </div>
+                </article>
             {% empty %}
                 <div class="program-empty">Agrega el primer participante para iniciar el acompañamiento.</div>
             {% endfor %}
