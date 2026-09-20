@@ -11,6 +11,7 @@ from apps.accounts.models import User
 from .forms import (
     ActionPlanGoalForm,
     ActionPlanItemForm,
+    ConsultantExperienceRecordForm,
     DreamChallengeNodeForm,
     EngagementForm,
     EngagementParticipantForm,
@@ -23,6 +24,7 @@ from .forms import (
 from .models import (
     ActionPlanGoal,
     ActionPlanItem,
+    ConsultantExperienceRecord,
     DreamChallengeNode,
     Engagement,
     EngagementParticipant,
@@ -404,7 +406,14 @@ class ParticipantPhaseDetailView(LoginRequiredMixin, DetailView):
         context["workspace_scope"] = "participant"
         context["engagement"] = self.object.engagement_participant.engagement
 
-        if self.object.phase.code == "conversaciones":
+        if self.object.phase.code == "charla-inicial":
+            record = getattr(self.object, "consultant_experience", None)
+            context["consultant_experience_record"] = record
+            if context["is_program_admin"]:
+                context["consultant_experience_form"] = ConsultantExperienceRecordForm(
+                    instance=record
+                )
+        elif self.object.phase.code == "conversaciones":
             context["transformation_form"] = TransformationSessionForm()
             context["transformation_sessions"] = self.object.transformation_sessions.all()
         elif self.object.phase.code == "mapa-retos-suenos":
@@ -418,6 +427,48 @@ class ParticipantPhaseDetailView(LoginRequiredMixin, DetailView):
             context["action_goals"] = self.object.action_goals.prefetch_related("items").all()
 
         return context
+
+
+class ConsultantExperienceSaveView(ProgramAdminMixin, View):
+    def post(self, request, pk):
+        progress = get_object_or_404(
+            ParticipantPhase.objects.select_related(
+                "phase",
+                "engagement_participant__engagement",
+            ),
+            pk=pk,
+        )
+        if progress.phase.code != "charla-inicial":
+            messages.error(request, "Esta fase no corresponde a la charla inicial.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        if progress.status in {
+            ParticipantPhase.Status.PENDING,
+            ParticipantPhase.Status.COMPLETED,
+            ParticipantPhase.Status.SUBMITTED,
+            ParticipantPhase.Status.UNDER_REVIEW,
+        }:
+            messages.error(request, "La charla no puede editarse en el estado actual de la fase.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        record = ConsultantExperienceRecord.objects.filter(
+            participant_phase=progress
+        ).first()
+        form = ConsultantExperienceRecordForm(request.POST, instance=record)
+        if not form.is_valid():
+            messages.error(request, "Revisa la información de la charla y vuelve a intentarlo.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        saved = form.save(commit=False)
+        saved.participant_phase = progress
+        if record is None:
+            saved.created_by = request.user
+        saved.updated_by = request.user
+        saved.save()
+
+        _mark_phase_in_progress(progress)
+        messages.success(request, "La charla y experiencia del consultor fue guardada.")
+        return redirect("programs:participant-phase-detail", pk=progress.pk)
 
 
 class ParticipantPhaseArtifactCreateView(LoginRequiredMixin, View):
@@ -672,6 +723,7 @@ class RoadmapDetailView(LoginRequiredMixin, DetailView):
             "phase_progress__phase",
             "phase_progress__artifacts",
             "phase_progress__comments__author",
+            "phase_progress__consultant_experience",
             "phase_progress__transformation_sessions",
             "phase_progress__dream_map_nodes__parent",
             "phase_progress__action_goals__items",
