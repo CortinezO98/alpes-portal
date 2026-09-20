@@ -24,11 +24,13 @@ def _json_safe(value):
 def _serialize_artifacts(progress):
     return [
         {
+            "id": item.pk,
             "name": item.original_name,
             "description": item.description,
             "uploaded_by": item.uploaded_by.email,
             "created_at": item.created_at.isoformat(),
             "size_bytes": item.size_bytes,
+            "content_type": item.content_type,
         }
         for item in progress.artifacts.select_related("uploaded_by").all()
     ]
