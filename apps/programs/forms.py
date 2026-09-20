@@ -6,6 +6,7 @@ from apps.assessments.models import AssessmentTemplate
 from .models import (
     ActionPlanGoal,
     ActionPlanItem,
+    ConsultantExperienceRecord,
     DreamChallengeNode,
     Engagement,
     EngagementParticipant,
@@ -520,5 +521,65 @@ class ActionPlanItemForm(forms.ModelForm):
             "responsible": "Responsable",
             "due_date": "Fecha compromiso",
             "status": "Estado",
+            "consultant_appreciation": "Apreciación del consultor",
+        }
+
+
+class ConsultantExperienceRecordForm(forms.ModelForm):
+    class Meta:
+        model = ConsultantExperienceRecord
+        fields = (
+            "session_date",
+            "topic",
+            "consultant_experience",
+            "participant_learnings",
+            "commitments",
+            "consultant_appreciation",
+        )
+        widgets = {
+            "session_date": forms.DateInput(
+                attrs={"class": "form-control", "type": "date"}
+            ),
+            "topic": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Ej. Preparación para una nueva etapa",
+                }
+            ),
+            "consultant_experience": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 4,
+                    "placeholder": "Experiencias, reflexiones o contenidos compartidos por el consultor...",
+                }
+            ),
+            "participant_learnings": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                    "placeholder": "Principales aprendizajes o reflexiones del participante...",
+                }
+            ),
+            "commitments": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                    "placeholder": "Compromisos o acuerdos derivados de la charla...",
+                }
+            ),
+            "consultant_appreciation": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                    "placeholder": "Apreciación profesional del consultor...",
+                }
+            ),
+        }
+        labels = {
+            "session_date": "Fecha de la charla",
+            "topic": "Tema / enfoque",
+            "consultant_experience": "Experiencia y contenido compartido",
+            "participant_learnings": "Aprendizajes del participante",
+            "commitments": "Compromisos",
             "consultant_appreciation": "Apreciación del consultor",
         }
