@@ -71,13 +71,28 @@ def _participant_next_progress(progress):
 
 
 def _unlock_after_participant_completion(progress):
-    next_progress = _participant_next_progress(progress)
-    while next_progress and next_progress.status == ParticipantPhase.Status.COMPLETED:
-        next_progress = _participant_next_progress(next_progress)
+    ordered_progress = list(
+        progress.engagement_participant.phase_progress.filter(
+            phase__scope=ProgramPhase.Scope.PARTICIPANT
+        )
+        .select_related("phase")
+        .order_by("phase__order", "id")
+    )
+    next_actionable = next(
+        (
+            item
+            for item in ordered_progress
+            if item.status != ParticipantPhase.Status.COMPLETED
+        ),
+        None,
+    )
 
-    if next_progress and next_progress.status == ParticipantPhase.Status.PENDING:
-        next_progress.status = ParticipantPhase.Status.AVAILABLE
-        next_progress.save(update_fields=("status", "updated_at"))
+    if (
+        next_actionable
+        and next_actionable.status == ParticipantPhase.Status.PENDING
+    ):
+        next_actionable.status = ParticipantPhase.Status.AVAILABLE
+        next_actionable.save(update_fields=("status", "updated_at"))
 
     if progress.phase.code == "reporte-individual":
         engagement = progress.engagement_participant.engagement
@@ -104,6 +119,14 @@ def _unlock_after_participant_completion(progress):
 
 @transaction.atomic
 def submit_participant_phase(progress, actor):
+    if progress.status in {
+        ParticipantPhase.Status.PENDING,
+        ParticipantPhase.Status.COMPLETED,
+        ParticipantPhase.Status.SUBMITTED,
+        ParticipantPhase.Status.UNDER_REVIEW,
+    }:
+        raise ValueError("Esta fase no está disponible para envío en su estado actual.")
+
     if (
         progress.phase.requires_artifact
         and not progress.artifacts.exists()
@@ -136,6 +159,12 @@ def submit_participant_phase(progress, actor):
 
 @transaction.atomic
 def review_participant_phase(progress, *, actor, approve, note=""):
+    if progress.status not in {
+        ParticipantPhase.Status.SUBMITTED,
+        ParticipantPhase.Status.UNDER_REVIEW,
+    }:
+        raise ValueError("La fase debe estar enviada a revisión antes de aprobarla o reabrirla.")
+
     if note:
         progress.notes = note
 
@@ -167,6 +196,14 @@ def review_participant_phase(progress, *, actor, approve, note=""):
 
 @transaction.atomic
 def submit_engagement_phase(progress, actor):
+    if progress.status in {
+        ParticipantPhase.Status.PENDING,
+        ParticipantPhase.Status.COMPLETED,
+        ParticipantPhase.Status.SUBMITTED,
+        ParticipantPhase.Status.UNDER_REVIEW,
+    }:
+        raise ValueError("Esta fase organizacional no está disponible para envío.")
+
     if progress.phase.requires_artifact and not progress.artifacts.exists():
         raise ValueError("Esta fase requiere al menos un soporte antes de enviarla.")
 
@@ -192,6 +229,12 @@ def submit_engagement_phase(progress, actor):
 
 @transaction.atomic
 def review_engagement_phase(progress, *, actor, approve, note=""):
+    if progress.status not in {
+        ParticipantPhase.Status.SUBMITTED,
+        ParticipantPhase.Status.UNDER_REVIEW,
+    }:
+        raise ValueError("La fase organizacional debe estar enviada a revisión.")
+
     if note:
         progress.notes = note
 
