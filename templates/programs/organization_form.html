@@ -1,0 +1,28 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block title %}Nueva organización | ALPES{% endblock %}
+{% block dashboard_extra_css %}<link rel="stylesheet" href="{% static 'css/pages/programs.css' %}">{% endblock %}
+{% block dashboard_content %}
+<section class="dashboard-header">
+    <p class="dashboard-eyebrow">Organizaciones</p>
+    <h1 class="dashboard-title">Crear organización.</h1>
+    <p class="dashboard-description">Registra la empresa que contratará un proceso de acompañamiento.</p>
+</section>
+<form method="post" class="program-form-card">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert-error">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="program-form-grid">
+        {% for field in form %}
+            <div class="form-field">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+    <div class="program-form-actions">
+        <button class="button button-primary" type="submit">Crear organización</button>
+        <a class="button button-secondary" href="{% url 'programs:engagement-list' %}">Cancelar</a>
+    </div>
+</form>
+{% endblock %}
