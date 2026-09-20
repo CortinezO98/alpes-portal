@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.assessments.models import Answer, Assessment, AssessmentTemplate, Question
+from apps.reports.models import DimensionAppreciation
 
 
 @pytest.fixture
@@ -177,3 +178,40 @@ def test_qualitative_answers_are_preserved_but_not_rendered_in_results(client, r
     assert response.context["general_answers"][0]["answer"] == "Libertad financiera"
     assert b"Lectura cualitativa" not in response.content
     assert b"Libertad financiera" not in response.content
+
+
+@pytest.mark.django_db
+def test_admin_can_save_dimension_appreciation(client, report_setup):
+    _, admin, _, completed = report_setup
+    dimension = completed.template.dimensions.order_by("order", "id").first()
+    client.force_login(admin)
+
+    response = client.post(
+        reverse(
+            "reports:dimension-appreciation",
+            kwargs={
+                "assessment_pk": completed.pk,
+                "dimension_pk": dimension.pk,
+            },
+        ),
+        {
+            "interpretation": "Lectura profesional de prueba.",
+            "strengths": "Fortaleza observada.",
+            "opportunities": "Oportunidad prioritaria.",
+            "recommendation": "Acción recomendada.",
+        },
+    )
+
+    assert response.status_code == 302
+    appreciation = DimensionAppreciation.objects.get(
+        assessment=completed,
+        dimension=dimension,
+    )
+    assert appreciation.consultant == admin
+    assert appreciation.interpretation == "Lectura profesional de prueba."
+
+    detail = client.get(
+        reverse("reports:assessment-detail", kwargs={"pk": completed.pk})
+    )
+    first_dimension = detail.context["report_dimensions"][0]
+    assert first_dimension["appreciation"]["recommendation"] == "Acción recomendada."
