@@ -260,6 +260,14 @@ class ParticipantProgressUpdateView(ProgramAdminMixin, View):
             engagement_participant=membership,
         )
 
+        reason = (request.POST.get("manual_reason") or "").strip()
+        if not reason:
+            messages.error(
+                request,
+                "Indica el motivo del ajuste manual para conservar la trazabilidad.",
+            )
+            return redirect("programs:engagement-detail", pk=engagement.pk)
+
         now = timezone.now()
         progress_items = list(
             membership.phase_progress.select_related("phase").order_by("phase__order", "id")
@@ -290,6 +298,16 @@ class ParticipantProgressUpdateView(ProgramAdminMixin, View):
                     "updated_at",
                 )
             )
+
+        PhaseComment.objects.create(
+            participant_phase=target_progress,
+            author=request.user,
+            body=(
+                f"Ajuste manual de hoja de ruta. Nueva fase actual: "
+                f"{target_progress.phase.name}. Motivo: {reason}"
+            ),
+            is_internal=True,
+        )
 
         if engagement.status == Engagement.Status.PLANNING:
             engagement.status = Engagement.Status.ACTIVE
