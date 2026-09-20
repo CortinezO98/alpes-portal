@@ -1,3 +1,4 @@
+import apps.programs.models
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
@@ -183,7 +184,7 @@ class Migration(migrations.Migration):
             name="PhaseArtifact",
             fields=[
                 ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("file", models.FileField(upload_to="programs.models.phase_artifact_upload_to")),
+                ("file", models.FileField(upload_to=apps.programs.models.phase_artifact_upload_to)),
                 ("original_name", models.CharField(max_length=255)),
                 ("content_type", models.CharField(blank=True, max_length=120)),
                 ("size_bytes", models.PositiveBigIntegerField(default=0)),
@@ -277,8 +278,8 @@ class Migration(migrations.Migration):
             model_name="phaseartifact",
             constraint=models.CheckConstraint(
                 condition=(
-                    models.Q(("engagement_phase__isnull", True), ("participant_phase__isnull", False))
-                    | models.Q(("engagement_phase__isnull", False), ("participant_phase__isnull", True))
+                    models.Q(participant_phase__isnull=False, engagement_phase__isnull=True)
+                    | models.Q(participant_phase__isnull=True, engagement_phase__isnull=False)
                 ),
                 name="phase_artifact_single_owner",
             ),
@@ -287,8 +288,8 @@ class Migration(migrations.Migration):
             model_name="phasecomment",
             constraint=models.CheckConstraint(
                 condition=(
-                    models.Q(("engagement_phase__isnull", True), ("participant_phase__isnull", False))
-                    | models.Q(("engagement_phase__isnull", False), ("participant_phase__isnull", True))
+                    models.Q(participant_phase__isnull=False, engagement_phase__isnull=True)
+                    | models.Q(participant_phase__isnull=True, engagement_phase__isnull=False)
                 ),
                 name="phase_comment_single_owner",
             ),
