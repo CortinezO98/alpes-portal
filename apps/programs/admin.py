@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import (
     ActionPlanGoal,
     ActionPlanItem,
+    ConsultantExperienceRecord,
     DreamChallengeNode,
     Engagement,
     EngagementParticipant,
@@ -102,3 +103,13 @@ class ActionPlanGoalAdmin(admin.ModelAdmin):
 class ActionPlanItemAdmin(admin.ModelAdmin):
     list_display = ("action", "goal", "status", "due_date")
     list_filter = ("status",)
+
+
+
+@admin.register(ConsultantExperienceRecord)
+class ConsultantExperienceRecordAdmin(admin.ModelAdmin):
+    list_display = ("session_date", "topic", "participant_phase", "updated_by", "updated_at")
+    search_fields = (
+        "topic",
+        "participant_phase__engagement_participant__participant__email",
+    )
