@@ -31,7 +31,6 @@ from .models import (
     EngagementPhase,
     Organization,
     ParticipantPhase,
-    PhaseArtifact,
     PhaseComment,
     TransformationSession,
 )
