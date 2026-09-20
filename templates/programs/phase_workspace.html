@@ -63,6 +63,42 @@
     </div>
 </section>
 
+{% if progress.phase.code == "rueda-vida" and assessment_reconciliation %}
+    <section class="phase-sync-banner phase-sync-{{ assessment_reconciliation.status }}">
+        {% if assessment_reconciliation.status == "linked_completed" %}
+            <i class="bi bi-link-45deg"></i>
+            <div>
+                <strong>Evaluación encontrada y vinculada</strong>
+                <p>La Rueda de la Vida completada fue asociada a este proceso y la fase se sincronizó automáticamente.</p>
+            </div>
+        {% elif assessment_reconciliation.status == "synchronized_completed" %}
+            <i class="bi bi-check-circle"></i>
+            <div>
+                <strong>Evaluación completada sincronizada</strong>
+                <p>La evaluación ya estaba vinculada al proceso y la fase fue actualizada con su estado real.</p>
+            </div>
+        {% elif assessment_reconciliation.status == "synchronized_in_progress" %}
+            <i class="bi bi-arrow-repeat"></i>
+            <div>
+                <strong>Evaluación en progreso</strong>
+                <p>La evaluación ya está vinculada y esta fase refleja su avance actual.</p>
+            </div>
+        {% elif assessment_reconciliation.status == "ambiguous" %}
+            <i class="bi bi-exclamation-triangle"></i>
+            <div>
+                <strong>Hay varias evaluaciones completadas posibles</strong>
+                <p>Por seguridad no se vinculó ninguna automáticamente. Revisa las evaluaciones del participante antes de continuar.</p>
+            </div>
+        {% elif assessment_reconciliation.status == "not_found" %}
+            <i class="bi bi-info-circle"></i>
+            <div>
+                <strong>No se encontró una evaluación completada para vincular</strong>
+                <p>Verifica en Evaluaciones que el participante tenga asignada y finalizada la Rueda de la Vida.</p>
+            </div>
+        {% endif %}
+    </section>
+{% endif %}
+
 <div class="phase-workspace-grid">
     <main class="phase-workspace-main">
         {% include "programs/partials/_consultant_experience.html" %}
