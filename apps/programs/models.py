@@ -334,3 +334,150 @@ class PhaseComment(models.Model):
         ]
         verbose_name = "comentario de fase"
         verbose_name_plural = "comentarios de fase"
+
+
+
+class TransformationSession(models.Model):
+    participant_phase = models.ForeignKey(
+        ParticipantPhase,
+        on_delete=models.CASCADE,
+        related_name="transformation_sessions",
+    )
+    session_date = models.DateField()
+    title = models.CharField(max_length=180)
+    topics = models.TextField(blank=True)
+    findings = models.TextField(blank=True)
+    commitments = models.TextField(blank=True)
+    consultant_appreciation = models.TextField(blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="created_transformation_sessions",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("session_date", "id")
+        verbose_name = "sesión transformadora"
+        verbose_name_plural = "sesiones transformadoras"
+
+    def __str__(self):
+        return f"{self.session_date} · {self.title}"
+
+
+class DreamChallengeNode(models.Model):
+    class NodeType(models.TextChoices):
+        DREAM = "DREAM", "Sueño"
+        CHALLENGE = "CHALLENGE", "Reto"
+        GOAL = "GOAL", "Meta"
+        MILESTONE = "MILESTONE", "Hito"
+
+    class Priority(models.TextChoices):
+        LOW = "LOW", "Baja"
+        MEDIUM = "MEDIUM", "Media"
+        HIGH = "HIGH", "Alta"
+
+    participant_phase = models.ForeignKey(
+        ParticipantPhase,
+        on_delete=models.CASCADE,
+        related_name="dream_map_nodes",
+    )
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        related_name="children",
+        null=True,
+        blank=True,
+    )
+    node_type = models.CharField(max_length=20, choices=NodeType.choices)
+    title = models.CharField(max_length=180)
+    description = models.TextField(blank=True)
+    priority = models.CharField(
+        max_length=10,
+        choices=Priority.choices,
+        default=Priority.MEDIUM,
+    )
+    target_date = models.DateField(null=True, blank=True)
+    order = models.PositiveSmallIntegerField(default=1)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="created_dream_map_nodes",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("order", "id")
+        verbose_name = "nodo de retos y sueños"
+        verbose_name_plural = "nodos de retos y sueños"
+
+    def __str__(self):
+        return f"{self.get_node_type_display()} · {self.title}"
+
+
+class ActionPlanGoal(models.Model):
+    participant_phase = models.ForeignKey(
+        ParticipantPhase,
+        on_delete=models.CASCADE,
+        related_name="action_goals",
+    )
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    target_date = models.DateField(null=True, blank=True)
+    order = models.PositiveSmallIntegerField(default=1)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="created_action_plan_goals",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("order", "id")
+        verbose_name = "meta del plan de acción"
+        verbose_name_plural = "metas del plan de acción"
+
+    def __str__(self):
+        return self.title
+
+
+class ActionPlanItem(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pendiente"
+        IN_PROGRESS = "IN_PROGRESS", "En curso"
+        COMPLETED = "COMPLETED", "Completada"
+
+    goal = models.ForeignKey(
+        ActionPlanGoal,
+        on_delete=models.CASCADE,
+        related_name="items",
+    )
+    action = models.CharField(max_length=240)
+    indicator = models.CharField(max_length=240, blank=True)
+    responsible = models.CharField(max_length=180, blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+    consultant_appreciation = models.TextField(blank=True)
+    order = models.PositiveSmallIntegerField(default=1)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="created_action_plan_items",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("order", "id")
+        verbose_name = "acción del plan"
+        verbose_name_plural = "acciones del plan"
+
+    def __str__(self):
+        return self.action
