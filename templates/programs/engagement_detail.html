@@ -1,6 +1,10 @@
 {% extends "base/dashboard.html" %}
 {% load static %}
 {% block title %}{{ engagement.title }} | ALPES{% endblock %}
+
+{% block dashboard_extra_js %}
+<script src="{% static 'js/pages/program-engagement.js' %}"></script>
+{% endblock %}
 {% block dashboard_extra_css %}<link rel="stylesheet" href="{% static 'css/pages/programs.css' %}">{% endblock %}
 
 {% block dashboard_content %}
@@ -83,6 +87,126 @@
         {% endif %}
     </article>
     {% endif %}
+</section>
+
+<section class="engagement-control-center animate__animated animate__fadeInUp motion-soft">
+    <div class="engagement-control-head">
+        <div>
+            <p class="dashboard-eyebrow">Centro de control</p>
+            <h2>Seguimiento integral del acompañamiento</h2>
+            <p>Consulta en una sola vista dónde va cada participante, qué fases requieren revisión y qué acciones necesitan atención.</p>
+        </div>
+        <div class="engagement-control-actions">
+            <div class="engagement-search">
+                <i class="bi bi-search"></i>
+                <input id="engagement-participant-search" type="search" placeholder="Buscar participante..." autocomplete="off">
+            </div>
+            <select id="engagement-status-filter" class="program-phase-select" aria-label="Filtrar participantes">
+                <option value="">Todos</option>
+                <option value="review">Pendientes de revisión</option>
+                <option value="reopened">Con ajustes solicitados</option>
+                <option value="completed">Proceso completado</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="engagement-kpis">
+        <article>
+            <span class="engagement-kpi-icon"><i class="bi bi-people"></i></span>
+            <div><strong>{{ participant_count }}</strong><span>Participantes</span></div>
+        </article>
+        <article>
+            <span class="engagement-kpi-icon"><i class="bi bi-graph-up-arrow"></i></span>
+            <div><strong>{{ average_progress }}%</strong><span>Avance promedio</span></div>
+        </article>
+        <article>
+            <span class="engagement-kpi-icon"><i class="bi bi-inbox"></i></span>
+            <div><strong>{{ review_count }}</strong><span>Fases por revisar</span></div>
+        </article>
+        <article>
+            <span class="engagement-kpi-icon"><i class="bi bi-arrow-counterclockwise"></i></span>
+            <div><strong>{{ reopened_count }}</strong><span>Fases reabiertas</span></div>
+        </article>
+        <article>
+            <span class="engagement-kpi-icon"><i class="bi bi-check2-circle"></i></span>
+            <div><strong>{{ completed_participant_count }}</strong><span>Procesos completados</span></div>
+        </article>
+    </div>
+
+    <div class="engagement-matrix-wrap">
+        <table class="engagement-matrix">
+            <thead>
+                <tr>
+                    <th class="engagement-matrix-participant">Participante</th>
+                    {% for phase in participant_phases %}
+                        <th title="{{ phase.name }}">
+                            <span>{{ phase.order|stringformat:"02d" }}</span>
+                            <small>{{ phase.name }}</small>
+                        </th>
+                    {% endfor %}
+                    <th>Avance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in engagement.participants.all %}
+                    <tr
+                        data-engagement-participant-row
+                        data-search="{% if item.participant.get_full_name %}{{ item.participant.get_full_name|lower }} {% endif %}{{ item.participant.email|lower }}"
+                        data-review="{% for progress in item.phase_progress.all %}{% if progress.status == 'SUBMITTED' or progress.status == 'UNDER_REVIEW' %}1{% endif %}{% endfor %}"
+                        data-reopened="{% for progress in item.phase_progress.all %}{% if progress.status == 'REOPENED' %}1{% endif %}{% endfor %}"
+                        data-completed="{% if item.progress_percent == 100 %}1{% endif %}"
+                    >
+                        <td class="engagement-matrix-participant">
+                            <div class="matrix-participant">
+                                <span>{{ item.participant.email|first|upper }}</span>
+                                <div>
+                                    <strong>{% if item.participant.get_full_name %}{{ item.participant.get_full_name }}{% else %}{{ item.participant.email }}{% endif %}</strong>
+                                    <small>{{ item.participant.email }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        {% for progress in item.phase_progress.all %}
+                            <td class="matrix-phase-cell">
+                                <a
+                                    class="matrix-phase matrix-phase-{{ progress.status|lower }}"
+                                    href="{% url 'programs:participant-phase-detail' progress.pk %}"
+                                    title="{{ progress.phase.name }} · {{ progress.get_status_display }}"
+                                >
+                                    {% if progress.status == "COMPLETED" %}
+                                        <i class="bi bi-check-lg"></i>
+                                    {% elif progress.status == "SUBMITTED" or progress.status == "UNDER_REVIEW" %}
+                                        <i class="bi bi-inbox"></i>
+                                    {% elif progress.status == "REOPENED" %}
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    {% elif progress.status == "IN_PROGRESS" %}
+                                        <i class="bi bi-play-fill"></i>
+                                    {% elif progress.status == "AVAILABLE" %}
+                                        <i class="bi bi-unlock"></i>
+                                    {% else %}
+                                        <i class="bi bi-lock"></i>
+                                    {% endif %}
+                                    <span>{{ progress.get_status_display }}</span>
+                                </a>
+                            </td>
+                        {% endfor %}
+                        <td class="matrix-progress-cell">
+                            <strong>{{ item.progress_percent }}%</strong>
+                            <div class="progress-track"><span style="width:{{ item.progress_percent }}%"></span></div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="program-empty">Aún no hay participantes en este acompañamiento.</div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div id="engagement-matrix-empty" class="program-empty d-none">
+            No hay participantes que coincidan con los filtros seleccionados.
+        </div>
+    </div>
 </section>
 
 <section class="program-panel participant-management-panel">
