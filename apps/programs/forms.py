@@ -3,7 +3,18 @@ from django import forms
 from apps.accounts.models import User
 from apps.assessments.models import AssessmentTemplate
 
-from .models import Engagement, EngagementParticipant, Organization, PhaseArtifact, PhaseComment, ServiceProgram
+from .models import (
+    ActionPlanGoal,
+    ActionPlanItem,
+    DreamChallengeNode,
+    Engagement,
+    EngagementParticipant,
+    Organization,
+    PhaseArtifact,
+    PhaseComment,
+    ServiceProgram,
+    TransformationSession,
+)
 
 
 class OrganizationForm(forms.ModelForm):
@@ -411,3 +422,100 @@ class PhaseCommentForm(forms.ModelForm):
             ),
         }
         labels = {"body": "Apreciación / comentario"}
+
+
+class TransformationSessionForm(forms.ModelForm):
+    class Meta:
+        model = TransformationSession
+        fields = (
+            "session_date",
+            "title",
+            "topics",
+            "findings",
+            "commitments",
+            "consultant_appreciation",
+        )
+        widgets = {
+            "session_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Ej. Adaptación al cambio"}),
+            "topics": forms.Textarea(attrs={"class": "form-control", "rows": 2, "placeholder": "Temas abordados..."}),
+            "findings": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Hallazgos relevantes..."}),
+            "commitments": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Compromisos acordados..."}),
+            "consultant_appreciation": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Apreciación profesional..."}),
+        }
+        labels = {
+            "session_date": "Fecha de la sesión",
+            "title": "Tema principal",
+            "topics": "Temas abordados",
+            "findings": "Hallazgos",
+            "commitments": "Compromisos",
+            "consultant_appreciation": "Apreciación del consultor",
+        }
+
+
+class DreamChallengeNodeForm(forms.ModelForm):
+    class Meta:
+        model = DreamChallengeNode
+        fields = ("parent", "node_type", "title", "description", "priority", "target_date")
+        widgets = {
+            "parent": forms.Select(attrs={"class": "form-select"}),
+            "node_type": forms.Select(attrs={"class": "form-select"}),
+            "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Ej. Viajar por Europa"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 2, "placeholder": "Describe este sueño, reto, meta o hito..."}),
+            "priority": forms.Select(attrs={"class": "form-select"}),
+            "target_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+        }
+        labels = {
+            "parent": "Depende de / se relaciona con",
+            "node_type": "Tipo",
+            "title": "Nombre",
+            "description": "Descripción",
+            "priority": "Prioridad",
+            "target_date": "Fecha objetivo",
+        }
+
+    def __init__(self, *args, participant_phase, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["parent"].required = False
+        self.fields["parent"].empty_label = "Nodo principal"
+        self.fields["parent"].queryset = DreamChallengeNode.objects.filter(
+            participant_phase=participant_phase
+        ).order_by("order", "id")
+
+
+class ActionPlanGoalForm(forms.ModelForm):
+    class Meta:
+        model = ActionPlanGoal
+        fields = ("title", "description", "target_date")
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Ej. Construir estabilidad financiera"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 2, "placeholder": "Describe el resultado que quieres alcanzar..."}),
+            "target_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+        }
+        labels = {
+            "title": "Meta",
+            "description": "Descripción",
+            "target_date": "Fecha objetivo",
+        }
+
+
+class ActionPlanItemForm(forms.ModelForm):
+    class Meta:
+        model = ActionPlanItem
+        fields = ("action", "indicator", "responsible", "due_date", "status", "consultant_appreciation")
+        widgets = {
+            "action": forms.TextInput(attrs={"class": "form-control", "placeholder": "Acción concreta"}),
+            "indicator": forms.TextInput(attrs={"class": "form-control", "placeholder": "¿Cómo sabremos que se cumplió?"}),
+            "responsible": forms.TextInput(attrs={"class": "form-control", "placeholder": "Responsable"}),
+            "due_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "status": forms.Select(attrs={"class": "form-select"}),
+            "consultant_appreciation": forms.Textarea(attrs={"class": "form-control", "rows": 2, "placeholder": "Apreciación o recomendación del consultor..."}),
+        }
+        labels = {
+            "action": "Acción",
+            "indicator": "Indicador",
+            "responsible": "Responsable",
+            "due_date": "Fecha compromiso",
+            "status": "Estado",
+            "consultant_appreciation": "Apreciación del consultor",
+        }
