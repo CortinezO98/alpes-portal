@@ -3,12 +3,18 @@ from html import escape
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import (
+    BaseDocTemplate,
     CondPageBreak,
+    Flowable,
+    Frame,
     KeepTogether,
+    NextPageTemplate,
+    PageBreak,
+    PageTemplate,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
@@ -18,6 +24,7 @@ from reportlab.platypus import (
 
 
 PAGE_WIDTH, PAGE_HEIGHT = A4
+LANDSCAPE_WIDTH, LANDSCAPE_HEIGHT = landscape(A4)
 PRIMARY = colors.HexColor("#176b68")
 PRIMARY_DARK = colors.HexColor("#125b57")
 PRIMARY_SOFT = colors.HexColor("#e8f0ef")
@@ -182,13 +189,14 @@ def _styles():
 
 def _page(canvas, doc):
     canvas.saveState()
+    page_width, _ = canvas._pagesize
     canvas.setStrokeColor(BORDER)
     canvas.setLineWidth(0.4)
-    canvas.line(18 * mm, 15 * mm, PAGE_WIDTH - 18 * mm, 15 * mm)
+    canvas.line(18 * mm, 15 * mm, page_width - 18 * mm, 15 * mm)
     canvas.setFillColor(MUTED)
     canvas.setFont("Helvetica", 7)
     canvas.drawString(18 * mm, 9 * mm, "ALPES - Documento generado desde la plataforma")
-    canvas.drawRightString(PAGE_WIDTH - 18 * mm, 9 * mm, f"Pagina {doc.page}")
+    canvas.drawRightString(page_width - 18 * mm, 9 * mm, f"Pagina {doc.page}")
     canvas.restoreState()
 
 
@@ -276,6 +284,250 @@ def _dream_tree(nodes):
         else:
             roots.append(node)
     return roots
+
+
+def _dream_leaf_count(node):
+    children = node.get("children") or []
+    if not children:
+        return 1
+    return sum(_dream_leaf_count(child) for child in children)
+
+
+def _dream_root_chunks(roots, max_leaf_rows=5):
+    chunks = []
+    current = []
+    current_rows = 0
+    for root in roots:
+        rows = max(1, _dream_leaf_count(root))
+        if current and current_rows + rows > max_leaf_rows:
+            chunks.append(current)
+            current = []
+            current_rows = 0
+        current.append(root)
+        current_rows += rows
+    if current:
+        chunks.append(current)
+    return chunks
+
+
+class DreamMapFlowable(Flowable):
+    def __init__(self, roots, title="Mapa de retos y sueños"):
+        super().__init__()
+        self.roots = roots
+        self.title = title
+        self.width = 260 * mm
+        self.height = 158 * mm
+
+    def wrap(self, avail_width, avail_height):
+        return min(self.width, avail_width), min(self.height, avail_height)
+
+    def _layout(self):
+        root_x = 6 * mm
+        root_w = 34 * mm
+        node_w = 48 * mm
+        node_h = 22 * mm
+        col_gap = 12 * mm
+        top = self.height - 24 * mm
+        bottom = 8 * mm
+
+        leaves = []
+        def collect_leaves(node):
+            children = node.get("children") or []
+            if not children:
+                leaves.append(node.get("id"))
+                return
+            for child in children:
+                collect_leaves(child)
+
+        for root in self.roots:
+            collect_leaves(root)
+        if not leaves:
+            leaves = [None]
+
+        usable_h = max(20 * mm, top - bottom - node_h)
+        row_gap = usable_h / max(1, len(leaves) - 1) if len(leaves) > 1 else 0
+        leaf_y = {
+            leaf_id: bottom + index * row_gap
+            for index, leaf_id in enumerate(leaves)
+        }
+
+        positions = {}
+        def place(node, depth=1):
+            children = node.get("children") or []
+            if children:
+                child_positions = [place(child, depth + 1) for child in children]
+                y = sum(pos[1] for pos in child_positions) / len(child_positions)
+            else:
+                y = leaf_y.get(node.get("id"), bottom)
+            x = root_x + root_w + col_gap + (depth - 1) * (node_w + col_gap)
+            positions[node.get("id")] = (x, y, node_w, node_h)
+            return positions[node.get("id")]
+
+        for root in self.roots:
+            place(root)
+
+        all_root_positions = [positions.get(root.get("id")) for root in self.roots if positions.get(root.get("id"))]
+        if all_root_positions:
+            root_y = sum(pos[1] + pos[3] / 2 for pos in all_root_positions) / len(all_root_positions) - 12 * mm
+        else:
+            root_y = self.height / 2 - 12 * mm
+        positions["__root__"] = (root_x, root_y, root_w, 24 * mm)
+        return positions
+
+    def _draw_wrapped_text(self, canvas, text, x, y, width, font_name, font_size, leading, max_lines, color):
+        words = _safe(text).split()
+        lines = []
+        current = ""
+        for word in words:
+            candidate = f"{current} {word}".strip()
+            if canvas.stringWidth(candidate, font_name, font_size) <= width:
+                current = candidate
+            else:
+                if current:
+                    lines.append(current)
+                current = word
+                if len(lines) >= max_lines:
+                    break
+        if current and len(lines) < max_lines:
+            lines.append(current)
+        if words and len(lines) == max_lines:
+            joined = " ".join(lines)
+            if len(joined.split()) < len(words):
+                last = lines[-1]
+                while last and canvas.stringWidth(last + "...", font_name, font_size) > width:
+                    last = last[:-1]
+                lines[-1] = last.rstrip() + "..."
+        canvas.setFillColor(color)
+        canvas.setFont(font_name, font_size)
+        cursor = y
+        for line in lines:
+            canvas.drawString(x, cursor, line)
+            cursor -= leading
+
+    def draw(self):
+        canvas = self.canv
+        positions = self._layout()
+
+        canvas.saveState()
+        canvas.setFillColor(PRIMARY_DARK)
+        canvas.setFont("Helvetica-Bold", 15)
+        canvas.drawString(0, self.height - 8 * mm, _safe(self.title))
+        canvas.setFillColor(MUTED)
+        canvas.setFont("Helvetica", 7.5)
+        canvas.drawString(
+            0,
+            self.height - 13 * mm,
+            "Representacion visual de sueños, retos, metas e hitos de la nueva etapa.",
+        )
+
+        legend = [
+            ("Sueño", PRIMARY),
+            ("Reto", ACCENT),
+            ("Meta", colors.HexColor("#527b78")),
+            ("Hito", PRIMARY_DARK),
+        ]
+        legend_x = 132 * mm
+        for label, color in legend:
+            canvas.setFillColor(color)
+            canvas.circle(legend_x, self.height - 10.5 * mm, 1.6 * mm, fill=1, stroke=0)
+            canvas.setFillColor(MUTED)
+            canvas.setFont("Helvetica-Bold", 6.5)
+            canvas.drawString(legend_x + 3 * mm, self.height - 12 * mm, label)
+            legend_x += 26 * mm
+
+        # Connectors first, behind the nodes.
+        canvas.setStrokeColor(BORDER)
+        canvas.setLineWidth(1.1)
+        for node in self.roots:
+            target = positions.get(node.get("id"))
+            source = positions["__root__"]
+            if target:
+                self._draw_connector(canvas, source, target)
+            self._draw_child_connectors(canvas, node, positions)
+
+        # Central/root node.
+        rx, ry, rw, rh = positions["__root__"]
+        canvas.setFillColor(PRIMARY)
+        canvas.setStrokeColor(PRIMARY_DARK)
+        canvas.roundRect(rx, ry, rw, rh, 5 * mm, fill=1, stroke=1)
+        canvas.setFillColor(colors.white)
+        canvas.setFont("Helvetica-Bold", 9)
+        canvas.drawCentredString(rx + rw / 2, ry + rh / 2 + 1.5 * mm, "Mi nueva etapa")
+
+        for node in self.roots:
+            self._draw_node_recursive(canvas, node, positions)
+
+        canvas.restoreState()
+
+    def _draw_connector(self, canvas, source, target):
+        sx = source[0] + source[2]
+        sy = source[1] + source[3] / 2
+        tx = target[0]
+        ty = target[1] + target[3] / 2
+        mid = (sx + tx) / 2
+        path = canvas.beginPath()
+        path.moveTo(sx, sy)
+        path.curveTo(mid, sy, mid, ty, tx, ty)
+        canvas.drawPath(path, stroke=1, fill=0)
+
+    def _draw_child_connectors(self, canvas, node, positions):
+        source = positions.get(node.get("id"))
+        if source is None:
+            return
+        for child in node.get("children") or []:
+            target = positions.get(child.get("id"))
+            if target:
+                self._draw_connector(canvas, source, target)
+            self._draw_child_connectors(canvas, child, positions)
+
+    def _draw_node_recursive(self, canvas, node, positions):
+        position = positions.get(node.get("id"))
+        if position is None:
+            return
+        x, y, w, h = position
+        stripe = _dream_type_color(node.get("type"))
+
+        canvas.setFillColor(colors.white)
+        canvas.setStrokeColor(BORDER)
+        canvas.roundRect(x, y, w, h, 3 * mm, fill=1, stroke=1)
+        canvas.setFillColor(stripe)
+        canvas.roundRect(x, y, 3.2 * mm, h, 3 * mm, fill=1, stroke=0)
+        canvas.rect(x + 1.6 * mm, y, 1.6 * mm, h, fill=1, stroke=0)
+
+        canvas.setFillColor(stripe)
+        canvas.setFont("Helvetica-Bold", 5.8)
+        canvas.drawString(x + 6 * mm, y + h - 5.2 * mm, _safe(node.get("type_label") or "Elemento").upper())
+
+        priority = _safe(node.get("priority_label") or "")
+        if priority:
+            canvas.setFillColor(MUTED)
+            canvas.setFont("Helvetica-Bold", 5.3)
+            canvas.drawRightString(x + w - 4 * mm, y + h - 5.2 * mm, priority)
+
+        self._draw_wrapped_text(
+            canvas,
+            node.get("title") or "",
+            x + 6 * mm,
+            y + h - 10 * mm,
+            w - 10 * mm,
+            "Helvetica-Bold",
+            7.2,
+            8.2,
+            2,
+            TEXT,
+        )
+
+        date_text = node.get("target_date") or ""
+        if date_text:
+            raw = str(date_text)
+            if len(raw) >= 10 and raw[4:5] == "-":
+                raw = f"{raw[8:10]}/{raw[5:7]}/{raw[:4]}"
+            canvas.setFillColor(MUTED)
+            canvas.setFont("Helvetica", 5.4)
+            canvas.drawString(x + 6 * mm, y + 3.2 * mm, raw)
+
+        for child in node.get("children") or []:
+            self._draw_node_recursive(canvas, child, positions)
 
 
 def _dream_type_color(node_type):
