@@ -1,13 +1,16 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Avg, Q
-from django.shortcuts import get_object_or_404
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect
+from django.views import View
 from django.views.generic import TemplateView
 
 from apps.accounts.mixins import RoleRequiredMixin
 from apps.accounts.models import User
 from apps.assessments.models import Assessment, Dimension, Question
 
-from .forms import AnalyticsFilterForm
+from .forms import AnalyticsFilterForm, DimensionAppreciationForm
+from .models import DimensionAppreciation
 from .services.report_builder import build_assessment_report
 
 
@@ -133,3 +136,46 @@ class AssessmentReportDetailView(
             template_version=self.assessment.template.version,
         )
         return context
+
+
+
+class DimensionAppreciationUpdateView(
+    LoginRequiredMixin,
+    RoleRequiredMixin,
+    View,
+):
+    allowed_roles = (User.Role.ADMIN, User.Role.SUPERADMIN)
+
+    def post(self, request, assessment_pk, dimension_pk):
+        assessment = get_object_or_404(
+            Assessment.objects.select_related("template"),
+            pk=assessment_pk,
+        )
+        dimension = get_object_or_404(
+            Dimension,
+            pk=dimension_pk,
+            template=assessment.template,
+        )
+        instance = DimensionAppreciation.objects.filter(
+            assessment=assessment,
+            dimension=dimension,
+        ).first()
+        form = DimensionAppreciationForm(request.POST, instance=instance)
+        if not form.is_valid():
+            messages.error(
+                request,
+                "No fue posible guardar la apreciación. Revisa la información ingresada.",
+            )
+            return redirect("reports:assessment-detail", pk=assessment.pk)
+
+        appreciation = form.save(commit=False)
+        appreciation.assessment = assessment
+        appreciation.dimension = dimension
+        appreciation.consultant = request.user
+        appreciation.save()
+
+        messages.success(
+            request,
+            f"La apreciación de “{dimension.name}” fue guardada correctamente.",
+        )
+        return redirect("reports:assessment-detail", pk=assessment.pk)
