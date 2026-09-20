@@ -1,6 +1,9 @@
 from django.contrib import admin
 
 from .models import (
+    ActionPlanGoal,
+    ActionPlanItem,
+    DreamChallengeNode,
     Engagement,
     EngagementParticipant,
     EngagementPhase,
@@ -10,6 +13,7 @@ from .models import (
     PhaseComment,
     ProgramPhase,
     ServiceProgram,
+    TransformationSession,
 )
 
 
@@ -68,3 +72,33 @@ class PhaseArtifactAdmin(admin.ModelAdmin):
 class PhaseCommentAdmin(admin.ModelAdmin):
     list_display = ("author", "is_internal", "created_at")
     list_filter = ("is_internal",)
+
+
+
+@admin.register(TransformationSession)
+class TransformationSessionAdmin(admin.ModelAdmin):
+    list_display = ("session_date", "title", "participant_phase", "created_by")
+    search_fields = ("title", "participant_phase__engagement_participant__participant__email")
+
+
+@admin.register(DreamChallengeNode)
+class DreamChallengeNodeAdmin(admin.ModelAdmin):
+    list_display = ("title", "node_type", "priority", "participant_phase", "target_date")
+    list_filter = ("node_type", "priority")
+
+
+class ActionPlanItemInline(admin.TabularInline):
+    model = ActionPlanItem
+    extra = 0
+
+
+@admin.register(ActionPlanGoal)
+class ActionPlanGoalAdmin(admin.ModelAdmin):
+    list_display = ("title", "participant_phase", "target_date")
+    inlines = (ActionPlanItemInline,)
+
+
+@admin.register(ActionPlanItem)
+class ActionPlanItemAdmin(admin.ModelAdmin):
+    list_display = ("action", "goal", "status", "due_date")
+    list_filter = ("status",)
