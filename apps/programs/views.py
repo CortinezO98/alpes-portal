@@ -456,7 +456,38 @@ class ParticipantPhaseDetailView(LoginRequiredMixin, DetailView):
         elif self.object.phase.code == "plan-accion":
             context["action_goal_form"] = ActionPlanGoalForm()
             context["action_item_form"] = ActionPlanItemForm()
-            context["action_goals"] = self.object.action_goals.prefetch_related("items").all()
+            action_goals = self.object.action_goals.prefetch_related("items").all()
+            context["action_goals"] = action_goals
+
+            map_progress = (
+                self.object.engagement_participant.phase_progress.filter(
+                    phase__code="mapa-retos-suenos"
+                )
+                .select_related("phase")
+                .first()
+            )
+            existing_goal_keys = {
+                (
+                    goal.title.strip().lower(),
+                    (goal.description or "").strip().lower(),
+                    goal.target_date,
+                )
+                for goal in action_goals
+            }
+            context["dream_map_options"] = []
+            if map_progress:
+                context["dream_map_options"] = [
+                    {
+                        "node": node,
+                        "already_added": (
+                            node.title.strip().lower(),
+                            (node.description or "").strip().lower(),
+                            node.target_date,
+                        )
+                        in existing_goal_keys,
+                    }
+                    for node in map_progress.dream_map_nodes.select_related("parent").all()
+                ]
 
         return context
 
@@ -841,6 +872,57 @@ class DreamChallengeNodeCreateView(LoginRequiredMixin, View):
         node.save()
         _mark_phase_in_progress(progress)
         messages.success(request, f"{node.get_node_type_display()} agregado al mapa.")
+        return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+
+class ActionPlanGoalImportFromMapView(LoginRequiredMixin, View):
+    def post(self, request, pk, node_pk):
+        progress = _participant_phase_for_request(request, pk)
+        if progress.phase.code != "plan-accion":
+            messages.error(request, "Esta fase no admite metas del plan de acción.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+        if progress.status in {
+            ParticipantPhase.Status.PENDING,
+            ParticipantPhase.Status.COMPLETED,
+            ParticipantPhase.Status.SUBMITTED,
+            ParticipantPhase.Status.UNDER_REVIEW,
+        }:
+            messages.error(request, "La fase no está disponible para edición.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        map_progress = get_object_or_404(
+            ParticipantPhase.objects.select_related("phase"),
+            engagement_participant=progress.engagement_participant,
+            phase__code="mapa-retos-suenos",
+        )
+        node = get_object_or_404(
+            DreamChallengeNode,
+            pk=node_pk,
+            participant_phase=map_progress,
+        )
+
+        duplicate = progress.action_goals.filter(
+            title__iexact=node.title.strip(),
+            description=node.description or "",
+            target_date=node.target_date,
+        ).exists()
+        if duplicate:
+            messages.info(request, "Este elemento del mapa ya fue agregado al plan de acción.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        ActionPlanGoal.objects.create(
+            participant_phase=progress,
+            title=node.title,
+            description=node.description,
+            target_date=node.target_date,
+            order=progress.action_goals.count() + 1,
+            created_by=request.user,
+        )
+        _mark_phase_in_progress(progress)
+        messages.success(
+            request,
+            f"“{node.title}” fue agregado al plan de acción desde el mapa.",
+        )
         return redirect("programs:participant-phase-detail", pk=progress.pk)
 
 
