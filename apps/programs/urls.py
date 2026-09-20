@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     ActionPlanGoalCreateView,
+    ActionPlanGoalImportFromMapView,
     ActionPlanGoalUpdateView,
     ActionPlanItemCreateView,
     ActionPlanItemUpdateView,
@@ -88,6 +89,11 @@ urlpatterns = [
         "fases/participante/<int:pk>/plan/metas/",
         ActionPlanGoalCreateView.as_view(),
         name="action-goal-create",
+    ),
+    path(
+        "fases/participante/<int:pk>/plan/mapa/<int:node_pk>/",
+        ActionPlanGoalImportFromMapView.as_view(),
+        name="action-goal-import-map",
     ),
     path(
         "fases/participante/<int:pk>/plan/metas/<int:goal_pk>/",
