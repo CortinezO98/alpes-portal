@@ -107,10 +107,11 @@ class UnifiedEngagementCreateForm(forms.Form):
     title = forms.CharField(
         label="Nombre del proceso",
         max_length=200,
+        required=False,
         widget=forms.TextInput(
             attrs={
                 "class": "form-control",
-                "placeholder": "Ej. Jubilación Plena · Ecopetrol 2026",
+                "placeholder": "Opcional · se genera automáticamente",
             }
         ),
     )
