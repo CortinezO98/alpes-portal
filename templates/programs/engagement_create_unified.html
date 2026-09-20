@@ -1,0 +1,271 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Nuevo acompañamiento | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/pages/programs.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/programs-onboarding.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="onboarding-shell">
+    <section class="onboarding-hero animate__animated animate__fadeInUp motion-soft">
+        <div>
+            <span class="onboarding-kicker">Nuevo acompañamiento</span>
+            <h1>Crea todo el proceso en una sola pantalla.</h1>
+            <p>Empresa, programa, participantes y evaluación quedan vinculados al guardar. Sin saltar entre módulos.</p>
+        </div>
+        <a class="btn btn-outline-secondary btn-sm rounded-pill px-3" href="{% url 'programs:engagement-list' %}">Cancelar</a>
+    </section>
+
+    <form method="post" id="engagement-onboarding-form" class="row g-4" novalidate>
+        {% csrf_token %}
+        {{ form.new_participants_json }}
+
+        {% if form.non_field_errors %}
+            <div class="col-12">
+                <div class="alert alert-danger shadow-sm border-0" role="alert">{{ form.non_field_errors }}</div>
+            </div>
+        {% endif %}
+
+        <div class="col-xl-8">
+            <div class="onboarding-stack">
+
+                <section class="onboarding-section animate__animated animate__fadeInUp motion-card">
+                    <div class="section-heading">
+                        <span class="section-number">01</span>
+                        <div>
+                            <h2>¿Cómo será el acompañamiento?</h2>
+                            <p>Define lo esencial. El resto se ajusta automáticamente.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">{{ form.mode.label }}</label>
+                            <div class="mode-grid">
+                                {% for radio in form.mode %}
+                                    <label class="mode-card">
+                                        {{ radio.tag }}
+                                        <span class="mode-card-body">
+                                            <span class="mode-icon">{% if radio.choice_label == 'Empresarial' %}🏢{% else %}👤{% endif %}</span>
+                                            <strong>{{ radio.choice_label }}</strong>
+                                            <small>{% if radio.choice_label == 'Empresarial' %}Para una empresa y varios participantes.{% else %}Para una persona sin organización asociada.{% endif %}</small>
+                                        </span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                            {% for error in form.mode.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <div class="col-md-8">
+                            <label class="form-label" for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                            {{ form.title }}
+                            {% for error in form.title.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="{{ form.program.id_for_label }}">{{ form.program.label }}</label>
+                            {{ form.program }}
+                            {% for error in form.program.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+                </section>
+
+                <section class="onboarding-section animate__animated animate__fadeInUp motion-card motion-delay-1" id="organization-section">
+                    <div class="section-heading">
+                        <span class="section-number">02</span>
+                        <div>
+                            <h2>Empresa</h2>
+                            <p>Selecciona una existente o créala aquí mismo.</p>
+                        </div>
+                    </div>
+
+                    <div id="organization-existing-wrap">
+                        <label class="form-label" for="{{ form.organization.id_for_label }}">{{ form.organization.label }}</label>
+                        {{ form.organization }}
+                        {% for error in form.organization.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <div class="form-check form-switch mt-3">
+                        {{ form.create_organization }}
+                        <label class="form-check-label fw-semibold" for="{{ form.create_organization.id_for_label }}">
+                            {{ form.create_organization.label }}
+                        </label>
+                    </div>
+
+                    <div class="organization-quick-create mt-3" id="organization-quick-create" hidden>
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <label class="form-label" for="{{ form.organization_name.id_for_label }}">{{ form.organization_name.label }}</label>
+                                {{ form.organization_name }}
+                                {% for error in form.organization_name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label" for="{{ form.organization_tax_id.id_for_label }}">{{ form.organization_tax_id.label }}</label>
+                                {{ form.organization_tax_id }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ form.organization_contact_name.id_for_label }}">{{ form.organization_contact_name.label }}</label>
+                                {{ form.organization_contact_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ form.organization_contact_email.id_for_label }}">{{ form.organization_contact_email.label }}</label>
+                                {{ form.organization_contact_email }}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="onboarding-section animate__animated animate__fadeInUp motion-card motion-delay-2">
+                    <div class="section-heading">
+                        <span class="section-number">03</span>
+                        <div>
+                            <h2>Participantes</h2>
+                            <p>Selecciona usuarios existentes o crea nuevos sin salir del formulario.</p>
+                        </div>
+                        <span class="participant-counter badge rounded-pill text-bg-light" id="participant-count">0 seleccionados</span>
+                    </div>
+
+                    <div class="participant-toolbar">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">⌕</span>
+                            <input type="search" class="form-control border-start-0 ps-0" id="participant-search" placeholder="Buscar por nombre o correo">
+                        </div>
+                        <button type="button" class="btn btn-outline-success" id="add-new-participant">
+                            + Participante nuevo
+                        </button>
+                    </div>
+
+                    <div class="participant-picker mt-3" id="participant-picker">
+                        {% for user in form.fields.participants.queryset %}
+                            <label class="participant-option" data-search="{{ user.get_full_name|lower }} {{ user.email|lower }}">
+                                <input
+                                    class="form-check-input participant-existing-check"
+                                    type="checkbox"
+                                    name="participants"
+                                    value="{{ user.pk }}"
+                                >
+                                <span>
+                                    <strong>{% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.email }}{% endif %}</strong>
+                                    <small>{{ user.email }}</small>
+                                </span>
+                            </label>
+                        {% empty %}
+                            <div class="text-muted small py-3">No hay usuarios disponibles. Puedes crear participantes nuevos aquí mismo.</div>
+                        {% endfor %}
+                    </div>
+                    {% for error in form.participants.errors %}<div class="invalid-feedback d-block mt-2">{{ error }}</div>{% endfor %}
+
+                    <div class="new-participants-list mt-3" id="new-participants-list"></div>
+                    {% for error in form.new_participants_json.errors %}<div class="invalid-feedback d-block mt-2">{{ error }}</div>{% endfor %}
+                </section>
+
+                <section class="onboarding-section animate__animated animate__fadeInUp motion-card motion-delay-3">
+                    <div class="section-heading">
+                        <span class="section-number">04</span>
+                        <div>
+                            <h2>Inicio automático</h2>
+                            <p>Deja lista la evaluación desde el primer momento.</p>
+                        </div>
+                    </div>
+
+                    <div class="automation-box">
+                        <div class="form-check form-switch">
+                            {{ form.assign_assessment }}
+                            <label class="form-check-label fw-semibold" for="{{ form.assign_assessment.id_for_label }}">
+                                {{ form.assign_assessment.label }}
+                            </label>
+                        </div>
+                        <div class="mt-3" id="assessment-template-wrap">
+                            <label class="form-label" for="{{ form.assessment_template.id_for_label }}">{{ form.assessment_template.label }}</label>
+                            {{ form.assessment_template }}
+                            {% for error in form.assessment_template.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <button
+                        class="advanced-toggle mt-3"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#advanced-options"
+                        aria-expanded="false"
+                        aria-controls="advanced-options"
+                    >
+                        Opciones adicionales
+                        <span>⌄</span>
+                    </button>
+
+                    <div class="collapse mt-3" id="advanced-options">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label" for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+                                {{ form.status }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="{{ form.start_date.id_for_label }}">{{ form.start_date.label }}</label>
+                                {{ form.start_date }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="{{ form.end_date.id_for_label }}">{{ form.end_date.label }}</label>
+                                {{ form.end_date }}
+                                {% for error in form.end_date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+                                {{ form.notes }}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <aside class="onboarding-summary animate__animated animate__fadeInRight motion-soft">
+                <span class="summary-kicker">Resumen en vivo</span>
+                <h2>Todo listo en un solo guardado.</h2>
+
+                <div class="summary-list">
+                    <div>
+                        <span>Modalidad</span>
+                        <strong id="summary-mode">Empresarial</strong>
+                    </div>
+                    <div>
+                        <span>Organización</span>
+                        <strong id="summary-organization">Por seleccionar</strong>
+                    </div>
+                    <div>
+                        <span>Programa</span>
+                        <strong id="summary-program">Jubilación Plena</strong>
+                    </div>
+                    <div>
+                        <span>Participantes</span>
+                        <strong id="summary-participants">0</strong>
+                    </div>
+                    <div>
+                        <span>Evaluación</span>
+                        <strong id="summary-assessment">Automática</strong>
+                    </div>
+                </div>
+
+                <div class="summary-result">
+                    <span>Al guardar se crearán</span>
+                    <p><strong>1 proceso</strong>, sus fases, participantes y evaluaciones correspondientes.</p>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-lg w-100 rounded-3 onboarding-submit">
+                    Crear acompañamiento
+                </button>
+                <p class="summary-help">Los cambios se guardan juntos. Si algo falla, no queda información incompleta.</p>
+            </aside>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block dashboard_extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/pages/programs-onboarding.js' %}"></script>
+{% endblock %}
