@@ -49,6 +49,12 @@ def _p(value, style):
     return Paragraph(escape(_safe(value)).replace("\n", "<br/>"), style)
 
 
+def _labeled(label, value, style):
+    safe_label = escape(_safe(label))
+    safe_value = escape(_safe(value)).replace("\n", "<br/>")
+    return Paragraph(f"<b>{safe_label}:</b> {safe_value}", style)
+
+
 def _date(value):
     if not value:
         return "Pendiente"
@@ -272,8 +278,9 @@ def build_individual_report_pdf(report_version):
                 ("Apreciacion del consultor", "consultant_appreciation"),
             ):
                 if consultant_experience.get(key):
-                    story.append(_p(
-                        f"<b>{label}:</b> {consultant_experience.get(key)}",
+                    story.append(_labeled(
+                        label,
+                        consultant_experience.get(key),
                         styles["body"],
                     ))
 
@@ -292,16 +299,19 @@ def build_individual_report_pdf(report_version):
                     ("Apreciacion del consultor", "consultant_appreciation"),
                 ):
                     if session.get(key):
-                        block.append(_p(f"<b>{label}:</b> {session.get(key)}", styles["body"]))
+                        block.append(_labeled(label, session.get(key), styles["body"]))
                 story.append(KeepTogether(block))
 
         nodes = phase.get("nodes") or []
         if nodes:
             story.append(_p("Mapa de retos y suenos", styles["subsection"]))
             for node in nodes:
-                story.append(_p(
-                    f"<b>{node.get('type_label', '')}:</b> {node.get('title', '')}"
-                    + (f" - {node.get('description')}" if node.get("description") else ""),
+                node_value = node.get("title", "")
+                if node.get("description"):
+                    node_value += f" - {node.get('description')}"
+                story.append(_labeled(
+                    node.get("type_label", ""),
+                    node_value,
                     styles["body"],
                 ))
 
@@ -323,8 +333,9 @@ def build_individual_report_pdf(report_version):
         if comments:
             story.append(_p("Apreciaciones de la fase", styles["subsection"]))
             for comment in comments:
-                story.append(_p(
-                    f"<b>{comment.get('author', '')}:</b> {comment.get('body', '')}",
+                story.append(_labeled(
+                    comment.get("author", ""),
+                    comment.get("body", ""),
                     styles["body"],
                 ))
 
@@ -423,8 +434,9 @@ def build_organizational_report_pdf(report_version):
     for phase in snapshot.get("phase_summary") or []:
         statuses = phase.get("statuses") or {}
         summary = ", ".join(f"{key}: {value}" for key, value in statuses.items()) or "Sin registros"
-        story.append(_p(
-            f"<b>{phase.get('order')}. {phase.get('name')}</b> - {summary}",
+        story.append(_labeled(
+            f"{phase.get('order')}. {phase.get('name')}",
+            summary,
             styles["body"],
         ))
 
