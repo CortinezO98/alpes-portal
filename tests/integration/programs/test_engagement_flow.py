@@ -10,6 +10,7 @@ from apps.programs.models import (
     EngagementParticipant,
     ActionPlanGoal,
     ActionPlanItem,
+    ConsultantExperienceRecord,
     DreamChallengeNode,
     EngagementPhase,
     Organization,
@@ -263,6 +264,81 @@ def test_life_wheel_completion_does_not_skip_locked_previous_phase(program_setup
     assert initial.status == ParticipantPhase.Status.AVAILABLE
     assert conversation.status == ParticipantPhase.Status.PENDING
 
+
+
+
+@pytest.mark.django_db
+def test_admin_can_document_consultant_experience(client, program_setup):
+    program, superadmin, participant = program_setup
+    engagement = Engagement.objects.create(
+        title="Charla inicial",
+        program=program,
+        mode=Engagement.Mode.INDIVIDUAL,
+        consultant=superadmin,
+        status=Engagement.Status.ACTIVE,
+    )
+    membership = EngagementParticipant.objects.create(
+        engagement=engagement,
+        participant=participant,
+    )
+    ensure_participant_phases(membership)
+    phase = membership.phase_progress.get(phase__code="charla-inicial")
+
+    client.force_login(superadmin)
+    response = client.post(
+        reverse("programs:consultant-experience-save", kwargs={"pk": phase.pk}),
+        {
+            "session_date": "2026-09-20",
+            "topic": "Preparación para la nueva etapa",
+            "consultant_experience": "Experiencias y lecciones compartidas.",
+            "participant_learnings": "Identificó oportunidades para su nueva etapa.",
+            "commitments": "Reflexionar sobre prioridades personales.",
+            "consultant_appreciation": "Participación activa y receptiva.",
+        },
+    )
+
+    assert response.status_code == 302
+    record = ConsultantExperienceRecord.objects.get(participant_phase=phase)
+    assert record.created_by == superadmin
+    assert record.updated_by == superadmin
+    assert record.topic == "Preparación para la nueva etapa"
+    phase.refresh_from_db()
+    assert phase.status == ParticipantPhase.Status.IN_PROGRESS
+
+
+@pytest.mark.django_db
+def test_initial_phase_requires_structured_chat_before_submission(program_setup):
+    program, superadmin, participant = program_setup
+    engagement = Engagement.objects.create(
+        title="Validación charla",
+        program=program,
+        mode=Engagement.Mode.INDIVIDUAL,
+        consultant=superadmin,
+        status=Engagement.Status.ACTIVE,
+    )
+    membership = EngagementParticipant.objects.create(
+        engagement=engagement,
+        participant=participant,
+    )
+    ensure_participant_phases(membership)
+    phase = membership.phase_progress.get(phase__code="charla-inicial")
+    phase.status = ParticipantPhase.Status.IN_PROGRESS
+    phase.save(update_fields=("status", "updated_at"))
+
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    from apps.programs.models import PhaseArtifact
+
+    PhaseArtifact.objects.create(
+        participant_phase=phase,
+        file=SimpleUploadedFile("soporte.pdf", b"%PDF-1.4 soporte"),
+        original_name="soporte.pdf",
+        content_type="application/pdf",
+        size_bytes=16,
+        uploaded_by=superadmin,
+    )
+
+    with pytest.raises(ValueError, match="charla y experiencia"):
+        submit_participant_phase(phase, superadmin)
 
 @pytest.mark.django_db
 def test_admin_can_create_specialized_phase_content(client, program_setup):
