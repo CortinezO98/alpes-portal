@@ -62,6 +62,7 @@ def build_individual_program_snapshot(participation):
         .prefetch_related(
             "artifacts__uploaded_by",
             "comments__author",
+            "consultant_experience",
             "transformation_sessions",
             "dream_map_nodes__parent",
             "action_goals__items",
@@ -81,7 +82,19 @@ def build_individual_program_snapshot(participation):
             "comments": _serialize_comments(progress),
         }
 
-        if progress.phase.code == "conversaciones":
+        if progress.phase.code == "charla-inicial":
+            record = getattr(progress, "consultant_experience", None)
+            if record:
+                phase_data["consultant_experience"] = {
+                    "date": record.session_date.isoformat(),
+                    "topic": record.topic,
+                    "consultant_experience": record.consultant_experience,
+                    "participant_learnings": record.participant_learnings,
+                    "commitments": record.commitments,
+                    "consultant_appreciation": record.consultant_appreciation,
+                    "updated_by": record.updated_by.email,
+                }
+        elif progress.phase.code == "conversaciones":
             phase_data["sessions"] = [
                 {
                     "date": session.session_date.isoformat(),
