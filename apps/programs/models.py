@@ -43,6 +43,10 @@ class ServiceProgram(models.Model):
 
 
 class ProgramPhase(models.Model):
+    class Scope(models.TextChoices):
+        PARTICIPANT = "PARTICIPANT", "Participante"
+        ENGAGEMENT = "ENGAGEMENT", "Proceso / empresa"
+
     program = models.ForeignKey(ServiceProgram, on_delete=models.CASCADE, related_name="phases")
     code = models.SlugField(max_length=80)
     name = models.CharField(max_length=180)
@@ -50,6 +54,10 @@ class ProgramPhase(models.Model):
     order = models.PositiveSmallIntegerField()
     participant_visible = models.BooleanField(default=True)
     is_automatic = models.BooleanField(default=False)
+    scope = models.CharField(max_length=20, choices=Scope.choices, default=Scope.PARTICIPANT)
+    allows_artifacts = models.BooleanField(default=True)
+    requires_artifact = models.BooleanField(default=False)
+    requires_review = models.BooleanField(default=True)
 
     class Meta:
         ordering = ("order", "id")
@@ -141,7 +149,7 @@ class EngagementParticipant(models.Model):
 
     @property
     def progress_percent(self):
-        phases = list(self.phase_progress.all())
+        phases = list(self.phase_progress.filter(phase__scope=ProgramPhase.Scope.PARTICIPANT))
         total = len(phases)
         if not total:
             return 0
@@ -152,8 +160,12 @@ class EngagementParticipant(models.Model):
 class ParticipantPhase(models.Model):
     class Status(models.TextChoices):
         PENDING = "PENDING", "Pendiente"
+        AVAILABLE = "AVAILABLE", "Disponible"
         IN_PROGRESS = "IN_PROGRESS", "En progreso"
+        SUBMITTED = "SUBMITTED", "Enviada"
+        UNDER_REVIEW = "UNDER_REVIEW", "En revisión"
         COMPLETED = "COMPLETED", "Completada"
+        REOPENED = "REOPENED", "Reabierta"
 
     engagement_participant = models.ForeignKey(
         EngagementParticipant, on_delete=models.CASCADE, related_name="phase_progress"
@@ -187,3 +199,138 @@ class ParticipantPhase(models.Model):
 
     def __str__(self):
         return f"{self.engagement_participant} · {self.phase.name}"
+
+
+class EngagementPhase(models.Model):
+    engagement = models.ForeignKey(
+        Engagement, on_delete=models.CASCADE, related_name="phase_progress"
+    )
+    phase = models.ForeignKey(
+        ProgramPhase, on_delete=models.PROTECT, related_name="engagement_progress"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=ParticipantPhase.Status.choices,
+        default=ParticipantPhase.Status.PENDING,
+        db_index=True,
+    )
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    completed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="completed_engagement_phases",
+        null=True,
+        blank=True,
+    )
+    notes = models.TextField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("phase__order", "id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("engagement", "phase"),
+                name="engagement_phase_progress_uniq",
+            )
+        ]
+        verbose_name = "avance de fase del proceso"
+        verbose_name_plural = "avances de fase del proceso"
+
+    def __str__(self):
+        return f"{self.engagement} · {self.phase.name}"
+
+
+def phase_artifact_upload_to(instance, filename):
+    if instance.participant_phase_id:
+        progress = instance.participant_phase
+        engagement_id = progress.engagement_participant.engagement_id
+        owner = f"participant-{progress.engagement_participant_id}"
+        phase_code = progress.phase.code
+    else:
+        progress = instance.engagement_phase
+        engagement_id = progress.engagement_id
+        owner = "engagement"
+        phase_code = progress.phase.code
+    return f"programs/{engagement_id}/{owner}/{phase_code}/{filename}"
+
+
+class PhaseArtifact(models.Model):
+    participant_phase = models.ForeignKey(
+        ParticipantPhase,
+        on_delete=models.CASCADE,
+        related_name="artifacts",
+        null=True,
+        blank=True,
+    )
+    engagement_phase = models.ForeignKey(
+        EngagementPhase,
+        on_delete=models.CASCADE,
+        related_name="artifacts",
+        null=True,
+        blank=True,
+    )
+    file = models.FileField(upload_to=phase_artifact_upload_to)
+    original_name = models.CharField(max_length=255)
+    content_type = models.CharField(max_length=120, blank=True)
+    size_bytes = models.PositiveBigIntegerField(default=0)
+    description = models.CharField(max_length=255, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="program_phase_artifacts",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    Q(participant_phase__isnull=False, engagement_phase__isnull=True)
+                    | Q(participant_phase__isnull=True, engagement_phase__isnull=False)
+                ),
+                name="phase_artifact_single_owner",
+            )
+        ]
+        verbose_name = "soporte de fase"
+        verbose_name_plural = "soportes de fase"
+
+
+class PhaseComment(models.Model):
+    participant_phase = models.ForeignKey(
+        ParticipantPhase,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        null=True,
+        blank=True,
+    )
+    engagement_phase = models.ForeignKey(
+        EngagementPhase,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        null=True,
+        blank=True,
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="program_phase_comments",
+    )
+    body = models.TextField()
+    is_internal = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("created_at",)
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    Q(participant_phase__isnull=False, engagement_phase__isnull=True)
+                    | Q(participant_phase__isnull=True, engagement_phase__isnull=False)
+                ),
+                name="phase_comment_single_owner",
+            )
+        ]
+        verbose_name = "comentario de fase"
+        verbose_name_plural = "comentarios de fase"
