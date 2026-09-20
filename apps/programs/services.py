@@ -2,6 +2,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from .models import (
+    ConsultantExperienceRecord,
     Engagement,
     EngagementParticipant,
     EngagementPhase,
@@ -144,11 +145,13 @@ def submit_participant_phase(progress, actor):
     ):
         raise ValueError("Esta fase requiere al menos un soporte antes de enviarla.")
 
-    if progress.phase.code == "charla-inicial":
-        try:
-            progress.consultant_experience
-        except progress.__class__.consultant_experience.RelatedObjectDoesNotExist:
-            raise ValueError("Registra la charla y experiencia del consultor antes de enviar la fase.")
+    if (
+        progress.phase.code == "charla-inicial"
+        and not ConsultantExperienceRecord.objects.filter(
+            participant_phase=progress
+        ).exists()
+    ):
+        raise ValueError("Registra la charla y experiencia del consultor antes de enviar la fase.")
 
     if progress.phase.code == "conversaciones" and not progress.transformation_sessions.exists():
         raise ValueError("Registra al menos una conversación transformadora antes de enviar la fase.")
