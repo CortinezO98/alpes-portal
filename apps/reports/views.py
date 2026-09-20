@@ -308,7 +308,7 @@ class IndividualProgramReportGenerateView(
     @transaction.atomic
     def post(self, request, pk):
         participation = get_object_or_404(
-            EngagementParticipant.objects.select_for_update().select_related(
+            EngagementParticipant.objects.select_for_update(of=("self",)).select_related(
                 "participant",
                 "engagement__program",
                 "engagement__organization",
@@ -439,7 +439,7 @@ class OrganizationalProgramReportGenerateView(
     @transaction.atomic
     def post(self, request, pk):
         engagement = get_object_or_404(
-            Engagement.objects.select_for_update().select_related(
+            Engagement.objects.select_for_update(of=("self",)).select_related(
                 "program", "organization", "consultant"
             ),
             pk=pk,
