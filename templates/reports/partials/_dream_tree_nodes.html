@@ -1,0 +1,21 @@
+{% for node in nodes %}
+<div class="final-dream-tree-node final-dream-tree-node-{{ node.type|lower }}">
+    <div class="final-dream-tree-card">
+        <div class="final-dream-tree-head">
+            <span class="final-dream-tree-type">{{ node.type_label }}</span>
+            {% if node.priority_label %}<span class="final-dream-tree-priority">{{ node.priority_label }}</span>{% endif %}
+        </div>
+        <strong>{{ node.title }}</strong>
+        {% if node.description %}<p>{{ node.description }}</p>{% endif %}
+        <div class="final-dream-tree-meta">
+            {% if node.target_date %}<span><i class="bi bi-calendar3"></i> {{ node.target_date }}</span>{% endif %}
+        </div>
+    </div>
+
+    {% if node.children %}
+    <div class="final-dream-tree-children">
+        {% include "reports/partials/_dream_tree_nodes.html" with nodes=node.children %}
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
