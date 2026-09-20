@@ -23,12 +23,15 @@
                         <span>Fase {{ progress.phase.order|stringformat:"02d" }}</span>
                         <h2>{{ progress.phase.name }}</h2>
                         <p>{{ progress.get_status_display }}</p>
-                        {% if progress.phase.code == 'rueda-vida' %}
-                            {% if participation.assessments.all %}
-                                <a class="program-link" href="{% url 'assessments:my-list' %}">Ir a mi evaluación →</a>
-                            {% else %}
-                                <small>La evaluación todavía no ha sido asignada.</small>
-                            {% endif %}
+                        {% if progress.status != 'PENDING' %}
+                            <a class="program-link" href="{% url 'programs:participant-phase-detail' progress.pk %}">
+                                Abrir fase →
+                            </a>
+                        {% else %}
+                            <small>Se habilitará al completar la fase anterior.</small>
+                        {% endif %}
+                        {% if progress.phase.code == 'rueda-vida' and participation.assessments.all %}
+                            <a class="program-link program-link-secondary" href="{% url 'assessments:my-list' %}">Ir a mi evaluación →</a>
                         {% endif %}
                     </div>
                 </li>
