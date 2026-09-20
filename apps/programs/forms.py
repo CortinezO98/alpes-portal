@@ -3,7 +3,7 @@ from django import forms
 from apps.accounts.models import User
 from apps.assessments.models import AssessmentTemplate
 
-from .models import Engagement, EngagementParticipant, Organization, ServiceProgram
+from .models import Engagement, EngagementParticipant, Organization, PhaseArtifact, PhaseComment, ServiceProgram
 
 
 class OrganizationForm(forms.ModelForm):
@@ -354,3 +354,60 @@ class UnifiedEngagementCreateForm(forms.Form):
                 "La fecha estimada de cierre no puede ser anterior al inicio.",
             )
         return cleaned
+
+
+class PhaseArtifactForm(forms.ModelForm):
+    MAX_FILE_SIZE = 20 * 1024 * 1024
+    ALLOWED_EXTENSIONS = {
+        "pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx",
+        "png", "jpg", "jpeg", "webp",
+    }
+
+    class Meta:
+        model = PhaseArtifact
+        fields = ("file", "description")
+        widgets = {
+            "file": forms.ClearableFileInput(
+                attrs={
+                    "class": "form-control",
+                    "accept": ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.webp",
+                }
+            ),
+            "description": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Descripción breve del soporte (opcional)",
+                }
+            ),
+        }
+        labels = {
+            "file": "Archivo",
+            "description": "Descripción",
+        }
+
+    def clean_file(self):
+        uploaded = self.cleaned_data["file"]
+        extension = uploaded.name.rsplit(".", 1)[-1].lower() if "." in uploaded.name else ""
+        if extension not in self.ALLOWED_EXTENSIONS:
+            raise forms.ValidationError(
+                "Formato no permitido. Usa PDF, Word, PowerPoint, Excel o imágenes."
+            )
+        if uploaded.size > self.MAX_FILE_SIZE:
+            raise forms.ValidationError("El archivo no puede superar 20 MB.")
+        return uploaded
+
+
+class PhaseCommentForm(forms.ModelForm):
+    class Meta:
+        model = PhaseComment
+        fields = ("body",)
+        widgets = {
+            "body": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                    "placeholder": "Escribe una observación, apreciación o retroalimentación...",
+                }
+            ),
+        }
+        labels = {"body": "Apreciación / comentario"}
