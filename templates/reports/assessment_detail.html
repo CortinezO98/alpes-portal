@@ -118,6 +118,51 @@
                     {% else %}
                         <p class="dimension-empty">Esta dimensión no tiene respuestas de escala para mostrar.</p>
                     {% endif %}
+
+                    <section class="dimension-appreciation">
+                        <div class="dimension-appreciation-head">
+                            <div>
+                                <span class="dimension-body-kicker">Apreciación profesional</span>
+                                <strong>Lectura del consultor</strong>
+                            </div>
+                            {% if dimension.appreciation.updated_at %}
+                                <small>Actualizada {{ dimension.appreciation.updated_at|date:"d/m/Y H:i" }}</small>
+                            {% endif %}
+                        </div>
+                        <form method="post" action="{% url 'reports:dimension-appreciation' assessment.pk dimension.id %}" class="dimension-appreciation-form">
+                            {% csrf_token %}
+                            <div class="dimension-appreciation-grid">
+                                <div class="dimension-appreciation-field dimension-appreciation-span">
+                                    <label for="interpretation-{{ dimension.id }}">Lectura profesional</label>
+                                    <textarea id="interpretation-{{ dimension.id }}" name="interpretation" rows="3" placeholder="Interpreta el resultado de esta dimensión...">{{ dimension.appreciation.interpretation }}</textarea>
+                                </div>
+                                <div class="dimension-appreciation-field">
+                                    <label for="strengths-{{ dimension.id }}">Fortalezas identificadas</label>
+                                    <textarea id="strengths-{{ dimension.id }}" name="strengths" rows="2" placeholder="Fortalezas observadas...">{{ dimension.appreciation.strengths }}</textarea>
+                                </div>
+                                <div class="dimension-appreciation-field">
+                                    <label for="opportunities-{{ dimension.id }}">Oportunidades</label>
+                                    <textarea id="opportunities-{{ dimension.id }}" name="opportunities" rows="2" placeholder="Aspectos por fortalecer...">{{ dimension.appreciation.opportunities }}</textarea>
+                                </div>
+                                <div class="dimension-appreciation-field dimension-appreciation-span">
+                                    <label for="recommendation-{{ dimension.id }}">Recomendación</label>
+                                    <textarea id="recommendation-{{ dimension.id }}" name="recommendation" rows="2" placeholder="Recomendación o siguiente acción...">{{ dimension.appreciation.recommendation }}</textarea>
+                                </div>
+                            </div>
+                            <div class="dimension-appreciation-actions">
+                                <span>
+                                    {% if dimension.appreciation.consultant %}
+                                        <i class="bi bi-person-check"></i> {{ dimension.appreciation.consultant }}
+                                    {% else %}
+                                        Esta lectura alimentará el reporte individual final.
+                                    {% endif %}
+                                </span>
+                                <button class="button button-primary" type="submit">
+                                    <i class="bi bi-check2-circle"></i> Guardar apreciación
+                                </button>
+                            </div>
+                        </form>
+                    </section>
                 </div>
             </details>
         {% endfor %}
