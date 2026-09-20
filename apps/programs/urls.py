@@ -1,6 +1,10 @@
 from django.urls import path
 
 from .views import (
+    ActionPlanGoalCreateView,
+    ActionPlanItemCreateView,
+    ActionPlanItemUpdateView,
+    DreamChallengeNodeCreateView,
     EngagementCreateView,
     EngagementDetailView,
     EngagementListView,
@@ -21,6 +25,7 @@ from .views import (
     ParticipantProgressCompleteView,
     ParticipantProgressUpdateView,
     RoadmapDetailView,
+    TransformationSessionCreateView,
     UnifiedEngagementCreateView,
 )
 
@@ -50,6 +55,31 @@ urlpatterns = [
         "fases/participante/<int:pk>/",
         ParticipantPhaseDetailView.as_view(),
         name="participant-phase-detail",
+    ),
+    path(
+        "fases/participante/<int:pk>/conversaciones/",
+        TransformationSessionCreateView.as_view(),
+        name="transformation-session-create",
+    ),
+    path(
+        "fases/participante/<int:pk>/mapa/",
+        DreamChallengeNodeCreateView.as_view(),
+        name="dream-node-create",
+    ),
+    path(
+        "fases/participante/<int:pk>/plan/metas/",
+        ActionPlanGoalCreateView.as_view(),
+        name="action-goal-create",
+    ),
+    path(
+        "fases/participante/<int:pk>/plan/metas/<int:goal_pk>/acciones/",
+        ActionPlanItemCreateView.as_view(),
+        name="action-item-create",
+    ),
+    path(
+        "fases/participante/<int:pk>/plan/acciones/<int:item_pk>/",
+        ActionPlanItemUpdateView.as_view(),
+        name="action-item-update",
     ),
     path(
         "fases/participante/<int:pk>/soportes/",
