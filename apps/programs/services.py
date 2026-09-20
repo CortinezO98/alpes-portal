@@ -96,6 +96,13 @@ def _unlock_after_participant_completion(progress):
 
     if progress.phase.code == "reporte-individual":
         engagement = progress.engagement_participant.engagement
+
+        if engagement.mode == Engagement.Mode.INDIVIDUAL:
+            engagement.status = Engagement.Status.COMPLETED
+            engagement.end_date = engagement.end_date or timezone.localdate()
+            engagement.save(update_fields=("status", "end_date", "updated_at"))
+            return
+
         individual_report_phase = progress.phase
         incomplete_exists = ParticipantPhase.objects.filter(
             engagement_participant__engagement=engagement,
@@ -224,6 +231,12 @@ def submit_engagement_phase(progress, actor):
             "updated_at",
         )
     )
+
+    if progress.status == ParticipantPhase.Status.COMPLETED:
+        progress.engagement.status = Engagement.Status.COMPLETED
+        progress.engagement.end_date = progress.engagement.end_date or timezone.localdate()
+        progress.engagement.save(update_fields=("status", "end_date", "updated_at"))
+
     return progress
 
 
