@@ -1,0 +1,39 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block title %}Acompañamientos | ALPES{% endblock %}
+{% block dashboard_extra_css %}<link rel="stylesheet" href="{% static 'css/pages/programs.css' %}">{% endblock %}
+{% block dashboard_content %}
+<section class="dashboard-header">
+    <p class="dashboard-eyebrow">Programas</p>
+    <h1 class="dashboard-title">Procesos de acompañamiento.</h1>
+    <p class="dashboard-description">Gestiona procesos individuales y empresariales, participantes y avance por fases.</p>
+</section>
+<div class="program-toolbar">
+    <div class="program-toolbar-actions">
+        <a class="button button-primary" href="{% url 'programs:engagement-create' %}">Nuevo proceso</a>
+        <a class="button button-secondary" href="{% url 'programs:organization-create' %}">Nueva organización</a>
+    </div>
+</div>
+<section class="program-grid">
+    {% for engagement in engagements %}
+        <article class="program-card">
+            <div class="program-card-head">
+                <div>
+                    <span class="program-badge">{{ engagement.get_mode_display }}</span>
+                    <h2>{{ engagement.title }}</h2>
+                    <p>{{ engagement.program.name }}</p>
+                </div>
+                <span class="program-status">{{ engagement.get_status_display }}</span>
+            </div>
+            <dl class="program-meta">
+                <div><dt>Organización</dt><dd>{{ engagement.organization|default:"Proceso individual" }}</dd></div>
+                <div><dt>Participantes</dt><dd>{{ engagement.participants.count }}</dd></div>
+                <div><dt>Consultor</dt><dd>{{ engagement.consultant.email }}</dd></div>
+            </dl>
+            <a class="program-link" href="{% url 'programs:engagement-detail' engagement.pk %}">Ver seguimiento →</a>
+        </article>
+    {% empty %}
+        <div class="program-empty">Aún no hay procesos creados.</div>
+    {% endfor %}
+</section>
+{% endblock %}
