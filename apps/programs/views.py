@@ -93,6 +93,7 @@ class EngagementDetailView(ProgramAdminMixin, DetailView):
             "program__phases",
             "participants__participant",
             "participants__phase_progress__phase",
+            "phase_progress__phase",
         )
 
 
