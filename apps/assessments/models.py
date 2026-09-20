@@ -201,6 +201,13 @@ class Assessment(models.Model):
         on_delete=models.PROTECT,
         related_name="created_assessments",
     )
+    engagement_participant = models.ForeignKey(
+        "programs.EngagementParticipant",
+        on_delete=models.PROTECT,
+        related_name="assessments",
+        null=True,
+        blank=True,
+    )
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
