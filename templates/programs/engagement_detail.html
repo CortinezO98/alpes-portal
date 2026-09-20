@@ -74,6 +74,13 @@
                 </a>
             {% endfor %}
         </div>
+        {% if engagement.mode == "ORGANIZATIONAL" %}
+        <div class="organization-report-cta">
+            <a class="button button-primary button-compact" href="{% url 'reports:program-organizational' engagement.pk %}">
+                <i class="bi bi-building-check"></i> Reporte organizacional
+            </a>
+        </div>
+        {% endif %}
     </article>
     {% endif %}
 </section>
@@ -132,6 +139,10 @@
                         <a class="button button-secondary button-compact" href="{% url 'programs:roadmap-detail' item.pk %}">
                             <i class="bi bi-journal-text"></i>
                             Hoja de ruta
+                        </a>
+                        <a class="button button-secondary button-compact" href="{% url 'reports:program-individual' item.pk %}">
+                            <i class="bi bi-file-earmark-richtext"></i>
+                            Reporte individual
                         </a>
                         {% for progress in item.phase_progress.all %}
                             {% if progress.status == "AVAILABLE" or progress.status == "IN_PROGRESS" or progress.status == "SUBMITTED" or progress.status == "UNDER_REVIEW" or progress.status == "REOPENED" %}
