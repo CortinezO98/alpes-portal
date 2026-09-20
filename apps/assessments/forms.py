@@ -2,6 +2,7 @@ from django import forms
 from django.utils.text import slugify
 
 from apps.accounts.models import User
+from apps.programs.models import EngagementParticipant
 
 from .models import Answer, Assessment, AssessmentTemplate, Dimension, Question
 
@@ -9,14 +10,16 @@ from .models import Answer, Assessment, AssessmentTemplate, Dimension, Question
 class AssessmentAssignForm(forms.ModelForm):
     class Meta:
         model = Assessment
-        fields = ("template", "participant")
+        fields = ("template", "participant", "engagement_participant")
         widgets = {
             "template": forms.Select(attrs={"class": "form-control"}),
             "participant": forms.Select(attrs={"class": "form-control"}),
+            "engagement_participant": forms.Select(attrs={"class": "form-control"}),
         }
         labels = {
             "template": "Plantilla",
             "participant": "Participante",
+            "engagement_participant": "Proceso de acompañamiento (opcional)",
         }
 
     def __init__(self, *args, **kwargs):
@@ -29,11 +32,24 @@ class AssessmentAssignForm(forms.ModelForm):
             role=User.Role.USER,
             is_active=True,
         ).order_by("email")
+        self.fields["engagement_participant"].required = False
+        self.fields["engagement_participant"].queryset = EngagementParticipant.objects.filter(
+            is_active=True,
+            engagement__status__in=("PLANNING", "ACTIVE"),
+        ).select_related("engagement", "participant").order_by(
+            "engagement__title", "participant__email"
+        )
 
     def clean(self):
         cleaned = super().clean()
         template = cleaned.get("template")
         participant = cleaned.get("participant")
+        engagement_participant = cleaned.get("engagement_participant")
+        if engagement_participant and participant and engagement_participant.participant_id != participant.pk:
+            self.add_error(
+                "engagement_participant",
+                "El proceso seleccionado pertenece a un participante diferente.",
+            )
         if template and participant:
             already_open = Assessment.objects.filter(
                 template=template,
