@@ -1,0 +1,75 @@
+{% if progress.phase.code == "mapa-retos-suenos" %}
+<section class="phase-card phase-special-card animate__animated animate__fadeInUp motion-card">
+    <div class="phase-card-head">
+        <div class="phase-card-icon"><i class="bi bi-diagram-3"></i></div>
+        <div>
+            <h2>Mapa de retos y sueños</h2>
+            <p>Construye una vista estructurada de sueños, retos, metas e hitos. Cada elemento puede depender de otro para formar ramificaciones.</p>
+        </div>
+    </div>
+
+    {% if progress.status != "PENDING" and progress.status != "COMPLETED" %}
+    <details class="special-create-panel" {% if not dream_nodes %}open{% endif %}>
+        <summary><i class="bi bi-plus-circle"></i> Agregar elemento al mapa</summary>
+        <form method="post" action="{% url 'programs:dream-node-create' progress.pk %}" class="special-form">
+            {% csrf_token %}
+            <div class="special-form-grid special-form-grid-three">
+                <div>
+                    <label class="form-label">{{ dream_node_form.node_type.label }}</label>
+                    {{ dream_node_form.node_type }}
+                </div>
+                <div>
+                    <label class="form-label">{{ dream_node_form.priority.label }}</label>
+                    {{ dream_node_form.priority }}
+                </div>
+                <div>
+                    <label class="form-label">{{ dream_node_form.target_date.label }}</label>
+                    {{ dream_node_form.target_date }}
+                </div>
+                <div class="special-span-three">
+                    <label class="form-label">{{ dream_node_form.title.label }}</label>
+                    {{ dream_node_form.title }}
+                </div>
+                <div class="special-span-three">
+                    <label class="form-label">{{ dream_node_form.description.label }}</label>
+                    {{ dream_node_form.description }}
+                </div>
+                <div class="special-span-three">
+                    <label class="form-label">{{ dream_node_form.parent.label }}</label>
+                    {{ dream_node_form.parent }}
+                    <small class="field-hint">Déjalo como “Nodo principal” para iniciar una nueva rama.</small>
+                </div>
+            </div>
+            <div class="special-form-actions">
+                <button class="button button-primary" type="submit"><i class="bi bi-node-plus"></i> Agregar al mapa</button>
+            </div>
+        </form>
+    </details>
+    {% endif %}
+
+    <div class="dream-map-canvas">
+        <div class="dream-map-center"><i class="bi bi-compass"></i><strong>Mi nueva etapa</strong></div>
+        {% for node in dream_nodes %}
+            <article class="dream-node dream-node-{{ node.node_type|lower }}">
+                <div class="dream-node-line"></div>
+                <div class="dream-node-head">
+                    <span class="dream-node-type">{{ node.get_node_type_display }}</span>
+                    <span class="dream-node-priority dream-priority-{{ node.priority|lower }}">{{ node.get_priority_display }}</span>
+                </div>
+                <h3>{{ node.title }}</h3>
+                {% if node.description %}<p>{{ node.description }}</p>{% endif %}
+                <div class="dream-node-meta">
+                    {% if node.parent %}<span><i class="bi bi-diagram-2"></i> {{ node.parent.title }}</span>{% endif %}
+                    {% if node.target_date %}<span><i class="bi bi-calendar3"></i> {{ node.target_date|date:"d/m/Y" }}</span>{% endif %}
+                </div>
+            </article>
+        {% empty %}
+            <div class="dream-map-empty">
+                <i class="bi bi-stars"></i>
+                <strong>Empieza a construir el mapa</strong>
+                <span>Agrega un sueño o reto principal y luego crea metas e hitos relacionados.</span>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
