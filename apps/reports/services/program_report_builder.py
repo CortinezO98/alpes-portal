@@ -1,10 +1,24 @@
 from collections import defaultdict
+from datetime import date, datetime
+from decimal import Decimal
 from statistics import mean
 
 from apps.assessments.models import Assessment
 from apps.programs.models import ParticipantPhase
 
 from .report_builder import build_assessment_report
+
+
+def _json_safe(value):
+    if isinstance(value, (datetime, date)):
+        return value.isoformat()
+    if isinstance(value, Decimal):
+        return float(value)
+    if isinstance(value, dict):
+        return {key: _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    return value
 
 
 def _serialize_artifacts(progress):
@@ -40,7 +54,7 @@ def build_individual_program_snapshot(participation):
         .first()
     )
 
-    assessment_report = build_assessment_report(assessment) if assessment else None
+    assessment_report = _json_safe(build_assessment_report(assessment)) if assessment else None
     phases = []
 
     for progress in (
