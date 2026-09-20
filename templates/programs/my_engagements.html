@@ -1,0 +1,27 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block title %}Mi proceso | ALPES{% endblock %}
+{% block dashboard_extra_css %}<link rel="stylesheet" href="{% static 'css/pages/programs.css' %}">{% endblock %}
+{% block dashboard_content %}
+<section class="dashboard-header">
+    <p class="dashboard-eyebrow">Acompañamiento</p>
+    <h1 class="dashboard-title">Mi proceso.</h1>
+    <p class="dashboard-description">Consulta tu avance dentro de los programas en los que participas.</p>
+</section>
+<section class="program-grid">
+    {% for participation in participations %}
+        <article class="program-card">
+            <span class="program-badge">{{ participation.engagement.get_mode_display }}</span>
+            <h2>{{ participation.engagement.title }}</h2>
+            <p>{{ participation.engagement.program.name }}{% if participation.engagement.organization %} · {{ participation.engagement.organization.name }}{% endif %}</p>
+            <div class="participant-progress participant-progress-full">
+                <strong>{{ participation.progress_percent }}% completado</strong>
+                <div class="progress-track"><span style="width: {{ participation.progress_percent }}%"></span></div>
+            </div>
+            <a class="program-link" href="{% url 'programs:my-engagement-detail' participation.pk %}">Ver mi ruta →</a>
+        </article>
+    {% empty %}
+        <div class="program-empty">Aún no tienes un proceso de acompañamiento asignado.</div>
+    {% endfor %}
+</section>
+{% endblock %}
