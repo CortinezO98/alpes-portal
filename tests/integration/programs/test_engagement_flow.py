@@ -262,3 +262,92 @@ def test_life_wheel_completion_does_not_skip_locked_previous_phase(program_setup
     initial = membership.phase_progress.get(phase__code="charla-inicial")
     assert initial.status == ParticipantPhase.Status.AVAILABLE
     assert conversation.status == ParticipantPhase.Status.PENDING
+
+
+@pytest.mark.django_db
+def test_admin_can_create_specialized_phase_content(client, program_setup):
+    program, superadmin, participant = program_setup
+    engagement = Engagement.objects.create(
+        title="Contenido especializado",
+        program=program,
+        mode=Engagement.Mode.INDIVIDUAL,
+        consultant=superadmin,
+        status=Engagement.Status.ACTIVE,
+    )
+    membership = EngagementParticipant.objects.create(
+        engagement=engagement,
+        participant=participant,
+    )
+    ensure_participant_phases(membership)
+    client.force_login(superadmin)
+
+    conversation_phase = membership.phase_progress.get(phase__code="conversaciones")
+    conversation_phase.status = ParticipantPhase.Status.AVAILABLE
+    conversation_phase.save(update_fields=("status", "updated_at"))
+    response = client.post(
+        reverse("programs:transformation-session-create", kwargs={"pk": conversation_phase.pk}),
+        {
+            "session_date": "2026-09-20",
+            "title": "Adaptación al cambio",
+            "topics": "Nueva etapa",
+            "findings": "Hallazgo",
+            "commitments": "Compromiso",
+            "consultant_appreciation": "Apreciación",
+        },
+    )
+    assert response.status_code == 302
+    assert TransformationSession.objects.filter(
+        participant_phase=conversation_phase,
+        title="Adaptación al cambio",
+    ).exists()
+
+    map_phase = membership.phase_progress.get(phase__code="mapa-retos-suenos")
+    map_phase.status = ParticipantPhase.Status.AVAILABLE
+    map_phase.save(update_fields=("status", "updated_at"))
+    response = client.post(
+        reverse("programs:dream-node-create", kwargs={"pk": map_phase.pk}),
+        {
+            "parent": "",
+            "node_type": DreamChallengeNode.NodeType.DREAM,
+            "title": "Viajar",
+            "description": "Conocer Europa",
+            "priority": DreamChallengeNode.Priority.HIGH,
+            "target_date": "2027-12-31",
+        },
+    )
+    assert response.status_code == 302
+    assert DreamChallengeNode.objects.filter(
+        participant_phase=map_phase,
+        title="Viajar",
+    ).exists()
+
+    action_phase = membership.phase_progress.get(phase__code="plan-accion")
+    action_phase.status = ParticipantPhase.Status.AVAILABLE
+    action_phase.save(update_fields=("status", "updated_at"))
+    response = client.post(
+        reverse("programs:action-goal-create", kwargs={"pk": action_phase.pk}),
+        {
+            "title": "Estabilidad financiera",
+            "description": "Construir un fondo",
+            "target_date": "2027-06-30",
+        },
+    )
+    assert response.status_code == 302
+    goal = ActionPlanGoal.objects.get(participant_phase=action_phase)
+
+    response = client.post(
+        reverse(
+            "programs:action-item-create",
+            kwargs={"pk": action_phase.pk, "goal_pk": goal.pk},
+        ),
+        {
+            "action": "Crear presupuesto",
+            "indicator": "Presupuesto mensual activo",
+            "responsible": "Participante",
+            "due_date": "2026-10-31",
+            "status": ActionPlanItem.Status.IN_PROGRESS,
+            "consultant_appreciation": "Buen primer paso.",
+        },
+    )
+    assert response.status_code == 302
+    assert ActionPlanItem.objects.filter(goal=goal, action="Crear presupuesto").exists()
