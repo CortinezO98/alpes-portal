@@ -9,14 +9,21 @@ from apps.accounts.mixins import RoleRequiredMixin
 from apps.accounts.models import User
 
 from .forms import (
+    ActionPlanGoalForm,
+    ActionPlanItemForm,
+    DreamChallengeNodeForm,
     EngagementForm,
     EngagementParticipantForm,
     OrganizationForm,
     PhaseArtifactForm,
     PhaseCommentForm,
+    TransformationSessionForm,
     UnifiedEngagementCreateForm,
 )
 from .models import (
+    ActionPlanGoal,
+    ActionPlanItem,
+    DreamChallengeNode,
     Engagement,
     EngagementParticipant,
     EngagementPhase,
@@ -24,6 +31,7 @@ from .models import (
     ParticipantPhase,
     PhaseArtifact,
     PhaseComment,
+    TransformationSession,
 )
 from .services import (
     create_engagement_bundle,
@@ -347,6 +355,20 @@ class ParticipantPhaseDetailView(LoginRequiredMixin, DetailView):
         context["is_program_admin"] = _user_is_program_admin(self.request.user)
         context["workspace_scope"] = "participant"
         context["engagement"] = self.object.engagement_participant.engagement
+
+        if self.object.phase.code == "conversaciones":
+            context["transformation_form"] = TransformationSessionForm()
+            context["transformation_sessions"] = self.object.transformation_sessions.all()
+        elif self.object.phase.code == "mapa-retos-suenos":
+            context["dream_node_form"] = DreamChallengeNodeForm(
+                participant_phase=self.object
+            )
+            context["dream_nodes"] = self.object.dream_map_nodes.select_related("parent").all()
+        elif self.object.phase.code == "plan-accion":
+            context["action_goal_form"] = ActionPlanGoalForm()
+            context["action_item_form"] = ActionPlanItemForm()
+            context["action_goals"] = self.object.action_goals.prefetch_related("items").all()
+
         return context
 
 
@@ -597,3 +619,148 @@ class RoadmapDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["is_program_admin"] = _user_is_program_admin(self.request.user)
         return context
+
+
+
+def _mark_phase_in_progress(progress):
+    if progress.status in {
+        ParticipantPhase.Status.AVAILABLE,
+        ParticipantPhase.Status.REOPENED,
+    }:
+        progress.status = ParticipantPhase.Status.IN_PROGRESS
+        progress.started_at = progress.started_at or timezone.now()
+        progress.save(update_fields=("status", "started_at", "updated_at"))
+
+
+class TransformationSessionCreateView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        progress = _participant_phase_for_request(request, pk)
+        if progress.phase.code != "conversaciones":
+            messages.error(request, "Esta fase no admite sesiones transformadoras.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+        if progress.status in {ParticipantPhase.Status.PENDING, ParticipantPhase.Status.COMPLETED}:
+            messages.error(request, "La fase no está disponible para edición.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        form = TransformationSessionForm(request.POST)
+        if not form.is_valid():
+            messages.error(request, "Revisa la información de la sesión.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        session = form.save(commit=False)
+        session.participant_phase = progress
+        session.created_by = request.user
+        if not _user_is_program_admin(request.user):
+            session.consultant_appreciation = ""
+        session.save()
+        _mark_phase_in_progress(progress)
+        messages.success(request, "La conversación transformadora fue registrada.")
+        return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+
+class DreamChallengeNodeCreateView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        progress = _participant_phase_for_request(request, pk)
+        if progress.phase.code != "mapa-retos-suenos":
+            messages.error(request, "Esta fase no admite elementos del mapa.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+        if progress.status in {ParticipantPhase.Status.PENDING, ParticipantPhase.Status.COMPLETED}:
+            messages.error(request, "La fase no está disponible para edición.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        form = DreamChallengeNodeForm(request.POST, participant_phase=progress)
+        if not form.is_valid():
+            messages.error(request, "Revisa la información del elemento del mapa.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        node = form.save(commit=False)
+        node.participant_phase = progress
+        node.created_by = request.user
+        node.order = progress.dream_map_nodes.count() + 1
+        node.save()
+        _mark_phase_in_progress(progress)
+        messages.success(request, f"{node.get_node_type_display()} agregado al mapa.")
+        return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+
+class ActionPlanGoalCreateView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        progress = _participant_phase_for_request(request, pk)
+        if progress.phase.code != "plan-accion":
+            messages.error(request, "Esta fase no admite metas del plan de acción.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+        if progress.status in {ParticipantPhase.Status.PENDING, ParticipantPhase.Status.COMPLETED}:
+            messages.error(request, "La fase no está disponible para edición.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        form = ActionPlanGoalForm(request.POST)
+        if not form.is_valid():
+            messages.error(request, "Revisa la información de la meta.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        goal = form.save(commit=False)
+        goal.participant_phase = progress
+        goal.created_by = request.user
+        goal.order = progress.action_goals.count() + 1
+        goal.save()
+        _mark_phase_in_progress(progress)
+        messages.success(request, "La meta fue agregada al plan de acción.")
+        return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+
+class ActionPlanItemCreateView(LoginRequiredMixin, View):
+    def post(self, request, pk, goal_pk):
+        progress = _participant_phase_for_request(request, pk)
+        goal = get_object_or_404(
+            ActionPlanGoal,
+            pk=goal_pk,
+            participant_phase=progress,
+        )
+        if progress.phase.code != "plan-accion":
+            messages.error(request, "Esta fase no admite acciones.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+        if progress.status in {ParticipantPhase.Status.PENDING, ParticipantPhase.Status.COMPLETED}:
+            messages.error(request, "La fase no está disponible para edición.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        form = ActionPlanItemForm(request.POST)
+        if not form.is_valid():
+            messages.error(request, "Revisa la información de la acción.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        item = form.save(commit=False)
+        item.goal = goal
+        item.created_by = request.user
+        item.order = goal.items.count() + 1
+        if not _user_is_program_admin(request.user):
+            item.consultant_appreciation = ""
+        item.save()
+        _mark_phase_in_progress(progress)
+        messages.success(request, "La acción fue agregada a la meta.")
+        return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+
+class ActionPlanItemUpdateView(LoginRequiredMixin, View):
+    def post(self, request, pk, item_pk):
+        progress = _participant_phase_for_request(request, pk)
+        item = get_object_or_404(
+            ActionPlanItem.objects.select_related("goal"),
+            pk=item_pk,
+            goal__participant_phase=progress,
+        )
+        if progress.status in {ParticipantPhase.Status.PENDING, ParticipantPhase.Status.COMPLETED}:
+            messages.error(request, "La fase no está disponible para edición.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        form = ActionPlanItemForm(request.POST, instance=item)
+        if not form.is_valid():
+            messages.error(request, "No fue posible actualizar la acción.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        updated = form.save(commit=False)
+        if not _user_is_program_admin(request.user):
+            updated.consultant_appreciation = item.consultant_appreciation
+        updated.save()
+        _mark_phase_in_progress(progress)
+        messages.success(request, "La acción fue actualizada.")
+        return redirect("programs:participant-phase-detail", pk=progress.pk)
