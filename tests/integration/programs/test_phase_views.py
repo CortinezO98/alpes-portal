@@ -415,3 +415,42 @@ def test_locked_phase_rejects_specialized_edits_and_invalid_review(client, phase
     assert response.status_code == 302
     conversation.refresh_from_db()
     assert conversation.status == ParticipantPhase.Status.PENDING
+
+
+@pytest.mark.django_db
+def test_admin_can_unlock_pending_phase_from_workspace(client, phase_views_setup):
+    admin, participant, _, engagement, membership = phase_views_setup
+    progress = membership.phase_progress.get(phase__code="mapa-retos-suenos")
+    assert progress.status == ParticipantPhase.Status.PENDING
+
+    client.force_login(admin)
+    detail = client.get(
+        reverse("programs:participant-phase-detail", kwargs={"pk": progress.pk})
+    )
+    assert detail.status_code == 200
+    assert b"Habilitar esta fase" in detail.content
+
+    response = client.post(
+        reverse(
+            "programs:participant-progress-update",
+            kwargs={
+                "engagement_pk": engagement.pk,
+                "participant_pk": membership.pk,
+            },
+        ),
+        {
+            "phase_progress_id": progress.pk,
+            "manual_reason": "Habilitación manual desde la fase Mapa de retos y sueños",
+        },
+    )
+    assert response.status_code == 302
+
+    progress.refresh_from_db()
+    assert progress.status == ParticipantPhase.Status.IN_PROGRESS
+
+    client.force_login(participant)
+    detail = client.get(
+        reverse("programs:participant-phase-detail", kwargs={"pk": progress.pk})
+    )
+    assert detail.status_code == 200
+    assert b"Agregar soporte" in detail.content
