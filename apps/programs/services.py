@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.utils import timezone
 
-from .models import Engagement, Organization, ParticipantPhase
+from .models import Engagement, EngagementParticipant, Organization, ParticipantPhase
 
 
 @transaction.atomic
