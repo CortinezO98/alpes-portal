@@ -62,6 +62,50 @@
                     {% if node.parent %}<span><i class="bi bi-diagram-2"></i> {{ node.parent.title }}</span>{% endif %}
                     {% if node.target_date %}<span><i class="bi bi-calendar3"></i> {{ node.target_date|date:"d/m/Y" }}</span>{% endif %}
                 </div>
+
+                {% if progress.status != "PENDING" and progress.status != "COMPLETED" and progress.status != "SUBMITTED" and progress.status != "UNDER_REVIEW" %}
+                <details class="action-edit dream-node-edit">
+                    <summary><i class="bi bi-pencil"></i> Editar</summary>
+                    <form method="post" action="{% url 'programs:dream-node-update' progress.pk node.pk %}" class="special-form special-form-inline">
+                        {% csrf_token %}
+                        <div>
+                            <label>Tipo</label>
+                            <select class="form-select" name="node_type">
+                                <option value="DREAM" {% if node.node_type == "DREAM" %}selected{% endif %}>Sueño</option>
+                                <option value="CHALLENGE" {% if node.node_type == "CHALLENGE" %}selected{% endif %}>Reto</option>
+                                <option value="GOAL" {% if node.node_type == "GOAL" %}selected{% endif %}>Meta</option>
+                                <option value="MILESTONE" {% if node.node_type == "MILESTONE" %}selected{% endif %}>Hito</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Prioridad</label>
+                            <select class="form-select" name="priority">
+                                <option value="LOW" {% if node.priority == "LOW" %}selected{% endif %}>Baja</option>
+                                <option value="MEDIUM" {% if node.priority == "MEDIUM" %}selected{% endif %}>Media</option>
+                                <option value="HIGH" {% if node.priority == "HIGH" %}selected{% endif %}>Alta</option>
+                            </select>
+                        </div>
+                        <div class="special-span-two"><label>Nombre</label><input class="form-control" name="title" value="{{ node.title }}" required></div>
+                        <div class="special-span-two"><label>Descripción</label><textarea class="form-control" name="description" rows="2">{{ node.description }}</textarea></div>
+                        <div>
+                            <label>Fecha objetivo</label>
+                            <input class="form-control" type="date" name="target_date" value="{{ node.target_date|date:'Y-m-d' }}">
+                        </div>
+                        <div>
+                            <label>Relacionado con</label>
+                            <select class="form-select" name="parent">
+                                <option value="">Nodo principal</option>
+                                {% for candidate in dream_nodes %}
+                                    {% if candidate.pk != node.pk %}
+                                    <option value="{{ candidate.pk }}" {% if node.parent_id == candidate.pk %}selected{% endif %}>{{ candidate.get_node_type_display }} · {{ candidate.title }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="special-span-two special-form-actions"><button class="button button-secondary" type="submit">Guardar cambios</button></div>
+                    </form>
+                </details>
+                {% endif %}
             </article>
         {% empty %}
             <div class="dream-map-empty">
