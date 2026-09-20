@@ -10,10 +10,36 @@ from django.views.generic import FormView, ListView, TemplateView
 
 from apps.accounts.mixins import RoleRequiredMixin
 from apps.accounts.models import User
+from apps.programs.models import ParticipantPhase
 from apps.programs.services import mark_assessment_phase_completed, mark_assessment_phase_started
 
 from .forms import AssessmentAssignForm, DimensionAnswerForm, GeneralQuestionsForm
 from .models import Assessment, Dimension, Question
+
+
+def _assessment_phase_is_unlocked(assessment):
+    if not assessment.engagement_participant_id:
+        return True
+    progress = ParticipantPhase.objects.filter(
+        engagement_participant=assessment.engagement_participant,
+        phase__code="rueda-vida",
+    ).first()
+    if progress is None:
+        return True
+    return progress.status != ParticipantPhase.Status.PENDING
+
+
+def _guard_assessment_phase(request, assessment):
+    if _assessment_phase_is_unlocked(assessment):
+        return None
+    messages.warning(
+        request,
+        "La Rueda de la Vida se habilitará cuando completes la fase anterior de tu hoja de ruta.",
+    )
+    return redirect(
+        "programs:my-engagement-detail",
+        pk=assessment.engagement_participant_id,
+    )
 
 
 class AssessmentManagementListView(
@@ -74,6 +100,10 @@ class AssessmentStartView(LoginRequiredMixin, View):
         if assessment.status == Assessment.Status.COMPLETED:
             return redirect("assessments:result", pk=assessment.pk)
 
+        guard = _guard_assessment_phase(request, assessment)
+        if guard:
+            return guard
+
         if assessment.status == Assessment.Status.DRAFT:
             assessment.status = Assessment.Status.IN_PROGRESS
             assessment.started_at = assessment.started_at or timezone.now()
@@ -102,6 +132,10 @@ class AssessmentDimensionView(LoginRequiredMixin, FormView):
         )
         if self.assessment.status == Assessment.Status.COMPLETED:
             return redirect("assessments:result", pk=self.assessment.pk)
+
+        guard = _guard_assessment_phase(request, self.assessment)
+        if guard:
+            return guard
 
         self.dimension = get_object_or_404(
             Dimension,
@@ -172,6 +206,9 @@ class AssessmentGeneralQuestionsView(LoginRequiredMixin, FormView):
         )
         if self.assessment.status == Assessment.Status.COMPLETED:
             return redirect("assessments:result", pk=self.assessment.pk)
+        guard = _guard_assessment_phase(request, self.assessment)
+        if guard:
+            return guard
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
