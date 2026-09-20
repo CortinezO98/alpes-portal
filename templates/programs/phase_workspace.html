@@ -69,6 +69,35 @@
         {% include "programs/partials/_dream_map.html" %}
         {% include "programs/partials/_action_plan.html" %}
 
+        {% if progress.phase.code == "reporte-individual" and workspace_scope == "participant" %}
+        <section class="phase-card phase-report-launch animate__animated animate__fadeInUp motion-card">
+            <div class="phase-card-head">
+                <div class="phase-card-icon"><i class="bi bi-file-earmark-richtext"></i></div>
+                <div>
+                    <h2>Reporte individual profesional</h2>
+                    <p>Consolida resultados, sesiones, mapa de retos y sueños, plan de acción y apreciaciones del consultor en un informe versionado.</p>
+                </div>
+            </div>
+            <a class="button button-primary" href="{% url 'reports:program-individual' progress.engagement_participant.pk %}">
+                <i class="bi bi-file-earmark-text"></i>
+                {% if is_program_admin %}Preparar reporte individual{% else %}Ver reporte individual{% endif %}
+            </a>
+        </section>
+        {% elif progress.phase.code == "reporte-organizacional" and workspace_scope == "engagement" %}
+        <section class="phase-card phase-report-launch animate__animated animate__fadeInUp motion-card">
+            <div class="phase-card-head">
+                <div class="phase-card-icon"><i class="bi bi-buildings"></i></div>
+                <div>
+                    <h2>Reporte organizacional</h2>
+                    <p>Consolida resultados agregados del proceso empresarial preservando la privacidad de las respuestas individuales.</p>
+                </div>
+            </div>
+            <a class="button button-primary" href="{% url 'reports:program-organizational' engagement.pk %}">
+                <i class="bi bi-bar-chart-line"></i> Preparar reporte organizacional
+            </a>
+        </section>
+        {% endif %}
+
         <section class="phase-card animate__animated animate__fadeInUp motion-card">
             <div class="phase-card-head">
                 <div class="phase-card-icon"><i class="bi bi-folder2-open"></i></div>
