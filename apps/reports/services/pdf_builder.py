@@ -619,7 +619,7 @@ def build_individual_report_pdf(report_version):
     assessment_report = assessment.get("report") or {}
 
     buffer = BytesIO()
-    doc = SimpleDocTemplate(
+    doc = BaseDocTemplate(
         buffer,
         pagesize=A4,
         rightMargin=18 * mm,
@@ -629,6 +629,42 @@ def build_individual_report_pdf(report_version):
         title=f"Reporte individual v{report_version.version}",
         author="ALPES",
     )
+    portrait_frame = Frame(
+        18 * mm,
+        20 * mm,
+        PAGE_WIDTH - 36 * mm,
+        PAGE_HEIGHT - 37 * mm,
+        id="portrait-frame",
+        leftPadding=0,
+        rightPadding=0,
+        topPadding=0,
+        bottomPadding=0,
+    )
+    landscape_frame = Frame(
+        18 * mm,
+        20 * mm,
+        LANDSCAPE_WIDTH - 36 * mm,
+        LANDSCAPE_HEIGHT - 37 * mm,
+        id="landscape-frame",
+        leftPadding=0,
+        rightPadding=0,
+        topPadding=0,
+        bottomPadding=0,
+    )
+    doc.addPageTemplates([
+        PageTemplate(
+            id="portrait",
+            pagesize=A4,
+            frames=[portrait_frame],
+            onPage=_page,
+        ),
+        PageTemplate(
+            id="landscape",
+            pagesize=landscape(A4),
+            frames=[landscape_frame],
+            onPage=_page,
+        ),
+    ])
     story = []
 
     story.append(_p("ALPES", styles["center"]))
@@ -662,6 +698,55 @@ def build_individual_report_pdf(report_version):
     for phase in phases:
         if phase.get("code") == "reporte-individual":
             continue
+
+        if phase.get("code") == "mapa-retos-suenos" and phase.get("nodes"):
+            tree = _dream_tree(phase.get("nodes") or [])
+            chunks = _dream_root_chunks(tree)
+            story.append(NextPageTemplate("landscape"))
+            story.append(PageBreak())
+            for index, chunk in enumerate(chunks):
+                title = f"{section_number}. Mapa de retos y sueños"
+                if len(chunks) > 1:
+                    title += f" · parte {index + 1} de {len(chunks)}"
+                story.append(DreamMapFlowable(chunk, title=title))
+                if index < len(chunks) - 1:
+                    story.append(PageBreak())
+
+            story.append(NextPageTemplate("portrait"))
+            story.append(PageBreak())
+
+            artifacts = phase.get("artifacts") or []
+            comments = phase.get("comments") or []
+            if artifacts or comments:
+                story.append(_p(
+                    f"{section_number}. Mapa de retos y sueños · trazabilidad",
+                    styles["section"],
+                ))
+                if comments:
+                    story.append(_p("Apreciaciones de la fase", styles["subsection"]))
+                    for comment in comments:
+                        story.append(_labeled(
+                            comment.get("author", ""),
+                            comment.get("body", ""),
+                            styles["body"],
+                        ))
+                if artifacts:
+                    story.append(_p("Soportes registrados", styles["subsection"]))
+                    for artifact in artifacts:
+                        label = artifact.get("name", "")
+                        if artifact.get("description"):
+                            label += f" ({artifact.get('description')})"
+                        if artifact.get("absolute_url"):
+                            story.append(_link_p(
+                                f"Abrir soporte: {label}",
+                                artifact.get("absolute_url"),
+                                styles["small"],
+                            ))
+                        else:
+                            story.append(_p(f"- {label}", styles["small"]))
+            section_number += 1
+            continue
+
         story.append(CondPageBreak(34 * mm))
         story.append(KeepTogether([
             _p(
@@ -712,27 +797,6 @@ def build_individual_report_pdf(report_version):
                         block.append(_labeled(label, session.get(key), styles["body"]))
                 story.append(KeepTogether(block))
 
-        nodes = phase.get("nodes") or []
-        if nodes:
-            story.append(_p("Mapa de retos y suenos", styles["subsection"]))
-            root_box = Table(
-                [[_p("Mi nueva etapa", styles["center"])]],
-                colWidths=[55 * mm],
-                hAlign="LEFT",
-            )
-            root_box.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, -1), PRIMARY),
-                ("TEXTCOLOR", (0, 0), (-1, -1), colors.white),
-                ("BOX", (0, 0), (-1, -1), 0.35, PRIMARY_DARK),
-                ("LEFTPADDING", (0, 0), (-1, -1), 7),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 7),
-                ("TOPPADDING", (0, 0), (-1, -1), 6),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-            ]))
-            story.append(root_box)
-            story.append(Spacer(1, 3 * mm))
-            _append_dream_tree(story, _dream_tree(nodes), styles)
-
         goals = phase.get("goals") or []
         if goals:
             story.append(_p("Plan de accion", styles["subsection"]))
@@ -778,7 +842,7 @@ def build_individual_report_pdf(report_version):
     story.append(_p(f"{section_number + 2}. Conclusiones", styles["section"]))
     story.append(_p(report_version.conclusions, styles["body"]))
 
-    doc.build(story, onFirstPage=_page, onLaterPages=_page)
+    doc.build(story)
     return buffer.getvalue()
 
 
