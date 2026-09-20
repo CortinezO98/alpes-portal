@@ -10,7 +10,7 @@ from django.views.generic import TemplateView
 from apps.accounts.mixins import RoleRequiredMixin
 from apps.accounts.models import User
 from apps.assessments.models import Assessment, Dimension, Question
-from apps.programs.models import Engagement, EngagementParticipant
+from apps.programs.models import Engagement, EngagementParticipant, ParticipantPhase
 from apps.programs.services import (
     complete_generated_individual_report,
     complete_generated_organizational_report,
@@ -241,9 +241,20 @@ class IndividualProgramReportView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         selected = self._selected_version()
         latest = self.participation.individual_report_versions.first()
+        report_phase = self.participation.phase_progress.select_related("phase").filter(
+            phase__code="reporte-individual"
+        ).first()
+        blockers = self.participation.phase_progress.filter(
+            phase__scope="PARTICIPANT",
+            phase__order__lt=report_phase.phase.order if report_phase else 999,
+        ).exclude(status=ParticipantPhase.Status.COMPLETED)
+
         context.update(
             participation=self.participation,
             engagement=self.participation.engagement,
+            report_phase=report_phase,
+            can_generate_report=bool(report_phase and not blockers.exists()),
+            pending_report_phases=list(blockers.select_related("phase").order_by("phase__order")),
             report_version=selected,
             report_versions=self.participation.individual_report_versions.all(),
             is_report_admin=_is_report_admin(self.request.user),
@@ -340,8 +351,16 @@ class OrganizationalProgramReportView(
         context = super().get_context_data(**kwargs)
         selected = self._selected_version()
         latest = self.engagement.organizational_report_versions.first()
+        pending_individual_reports = ParticipantPhase.objects.filter(
+            engagement_participant__engagement=self.engagement,
+            engagement_participant__is_active=True,
+            phase__code="reporte-individual",
+        ).exclude(status=ParticipantPhase.Status.COMPLETED)
+
         context.update(
             engagement=self.engagement,
+            can_generate_report=not pending_individual_reports.exists(),
+            pending_individual_report_count=pending_individual_reports.count(),
             report_version=selected,
             report_versions=self.engagement.organizational_report_versions.all(),
             report_form=OrganizationalReportVersionForm(
