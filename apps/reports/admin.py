@@ -21,7 +21,12 @@ class IndividualReportVersionAdmin(admin.ModelAdmin):
         "engagement_participant__participant__email",
         "engagement_participant__engagement__title",
     )
-    readonly_fields = ("snapshot", "created_at")
+
+    def has_add_permission(self, request):
+        return False
+
+    def get_readonly_fields(self, request, obj=None):
+        return tuple(field.name for field in self.model._meta.fields)
 
 
 @admin.register(OrganizationalReportVersion)
@@ -29,4 +34,9 @@ class OrganizationalReportVersionAdmin(admin.ModelAdmin):
     list_display = ("engagement", "version", "created_by", "created_at")
     list_filter = ("created_at",)
     search_fields = ("engagement__title", "engagement__organization__name")
-    readonly_fields = ("snapshot", "created_at")
+
+    def has_add_permission(self, request):
+        return False
+
+    def get_readonly_fields(self, request, obj=None):
+        return tuple(field.name for field in self.model._meta.fields)
