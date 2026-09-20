@@ -1,6 +1,7 @@
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.assessments.models import Assessment, AssessmentTemplate
