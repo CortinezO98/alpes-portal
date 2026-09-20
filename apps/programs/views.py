@@ -610,6 +610,9 @@ class RoadmapDetailView(LoginRequiredMixin, DetailView):
             "phase_progress__phase",
             "phase_progress__artifacts",
             "phase_progress__comments__author",
+            "phase_progress__transformation_sessions",
+            "phase_progress__dream_map_nodes__parent",
+            "phase_progress__action_goals__items",
         )
         if _user_is_program_admin(self.request.user):
             return queryset
