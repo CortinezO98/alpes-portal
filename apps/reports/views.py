@@ -2,6 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Avg, Max, Q
 from django.contrib import messages
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views import View
@@ -28,6 +29,7 @@ from .services.program_report_builder import (
     build_individual_program_snapshot,
     build_organizational_program_snapshot,
 )
+from .services.pdf_builder import build_individual_report_pdf, build_organizational_report_pdf
 
 
 class AnalyticsDashboardView(
@@ -475,3 +477,60 @@ class OrganizationalProgramReportGenerateView(
         return redirect(
             f"{reverse('reports:program-organizational', kwargs={'pk': engagement.pk})}?version={report.version}"
         )
+
+
+
+class IndividualProgramReportPdfView(LoginRequiredMixin, View):
+    def get(self, request, pk, version):
+        participation = get_object_or_404(
+            EngagementParticipant.objects.select_related(
+                "participant", "engagement__organization"
+            ),
+            pk=pk,
+        )
+        if not (
+            _is_report_admin(request.user)
+            or participation.participant_id == request.user.id
+        ):
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied
+
+        report = get_object_or_404(
+            IndividualReportVersion,
+            engagement_participant=participation,
+            version=version,
+        )
+        content = build_individual_report_pdf(report)
+        response = HttpResponse(content, content_type="application/pdf")
+        response["Content-Disposition"] = (
+            f'attachment; filename="ALPES-reporte-individual-v{report.version}.pdf"'
+        )
+        response["X-Content-Type-Options"] = "nosniff"
+        return response
+
+
+class OrganizationalProgramReportPdfView(
+    LoginRequiredMixin,
+    RoleRequiredMixin,
+    View,
+):
+    allowed_roles = (User.Role.ADMIN, User.Role.SUPERADMIN)
+
+    def get(self, request, pk, version):
+        engagement = get_object_or_404(
+            Engagement.objects.select_related("organization", "program"),
+            pk=pk,
+            mode=Engagement.Mode.ORGANIZATIONAL,
+        )
+        report = get_object_or_404(
+            OrganizationalReportVersion,
+            engagement=engagement,
+            version=version,
+        )
+        content = build_organizational_report_pdf(report)
+        response = HttpResponse(content, content_type="application/pdf")
+        response["Content-Disposition"] = (
+            f'attachment; filename="ALPES-reporte-organizacional-v{report.version}.pdf"'
+        )
+        response["X-Content-Type-Options"] = "nosniff"
+        return response
