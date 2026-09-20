@@ -91,6 +91,16 @@ class DimensionAppreciationForm(forms.ModelForm):
 
 
 class IndividualReportVersionForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in (
+            "executive_summary",
+            "integral_appreciation",
+            "recommendations",
+            "conclusions",
+        ):
+            self.fields[name].required = True
+
     class Meta:
         model = IndividualReportVersion
         fields = (
@@ -122,6 +132,16 @@ class IndividualReportVersionForm(forms.ModelForm):
 
 
 class OrganizationalReportVersionForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in (
+            "executive_summary",
+            "organizational_appreciation",
+            "recommendations",
+            "conclusions",
+        ):
+            self.fields[name].required = True
+
     class Meta:
         model = OrganizationalReportVersion
         fields = (
