@@ -42,3 +42,48 @@ class AnalyticsFilterForm(forms.Form):
         if date_from and date_to and date_from > date_to:
             raise forms.ValidationError("La fecha inicial no puede ser posterior a la fecha final.")
         return cleaned
+
+
+from .models import DimensionAppreciation
+
+
+class DimensionAppreciationForm(forms.ModelForm):
+    class Meta:
+        model = DimensionAppreciation
+        fields = ("interpretation", "strengths", "opportunities", "recommendation")
+        widgets = {
+            "interpretation": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                    "placeholder": "Lectura profesional de esta dimensión...",
+                }
+            ),
+            "strengths": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 2,
+                    "placeholder": "Fortalezas identificadas...",
+                }
+            ),
+            "opportunities": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 2,
+                    "placeholder": "Oportunidades de mejora...",
+                }
+            ),
+            "recommendation": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 2,
+                    "placeholder": "Recomendación o siguiente acción...",
+                }
+            ),
+        }
+        labels = {
+            "interpretation": "Lectura profesional",
+            "strengths": "Fortalezas identificadas",
+            "opportunities": "Oportunidades",
+            "recommendation": "Recomendación",
+        }
