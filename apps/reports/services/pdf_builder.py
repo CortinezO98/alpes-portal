@@ -49,6 +49,15 @@ def _p(value, style):
     return Paragraph(escape(_safe(value)).replace("\n", "<br/>"), style)
 
 
+def _link_p(label, url, style):
+    safe_label = escape(_safe(label))
+    safe_url = escape(_safe(url), quote=True)
+    return Paragraph(
+        f'<link href="{safe_url}" color="#176b68"><u>{safe_label}</u></link>',
+        style,
+    )
+
+
 def _labeled(label, value, style):
     safe_label = escape(_safe(label))
     safe_value = escape(_safe(value)).replace("\n", "<br/>")
@@ -127,6 +136,38 @@ def _styles():
             textColor=MUTED,
             uppercase=True,
         ),
+        "table_header": ParagraphStyle(
+            "AlpesTableHeader",
+            parent=base["BodyText"],
+            fontName="Helvetica-Bold",
+            fontSize=6.5,
+            leading=8,
+            textColor=colors.white,
+        ),
+        "band_green": ParagraphStyle(
+            "AlpesBandGreen",
+            parent=base["BodyText"],
+            fontName="Helvetica-Bold",
+            fontSize=7.5,
+            leading=9,
+            textColor=colors.HexColor("#245f3b"),
+        ),
+        "band_yellow": ParagraphStyle(
+            "AlpesBandYellow",
+            parent=base["BodyText"],
+            fontName="Helvetica-Bold",
+            fontSize=7.5,
+            leading=9,
+            textColor=colors.HexColor("#6e5318"),
+        ),
+        "band_red": ParagraphStyle(
+            "AlpesBandRed",
+            parent=base["BodyText"],
+            fontName="Helvetica-Bold",
+            fontSize=7.5,
+            leading=9,
+            textColor=colors.HexColor("#8d3030"),
+        ),
         "center": ParagraphStyle(
             "AlpesCenter",
             parent=base["BodyText"],
@@ -174,24 +215,39 @@ def _meta_table(rows, styles):
 
 def _score_table(dimensions, styles):
     data = [[
-        _p("Dimension", styles["label"]),
-        _p("Resultado", styles["label"]),
-        _p("Lectura profesional", styles["label"]),
+        _p("Dimension", styles["table_header"]),
+        _p("Resultado", styles["table_header"]),
+        _p("Lectura profesional", styles["table_header"]),
     ]]
+    row_bands = []
     for dimension in dimensions:
         appreciation = dimension.get("appreciation") or {}
+        band = (dimension.get("band_label") or "").strip().lower()
+        if band == "verde":
+            band_style = styles["band_green"]
+            band_bg = colors.HexColor("#dcefe2")
+        elif band == "amarillo":
+            band_style = styles["band_yellow"]
+            band_bg = colors.HexColor("#f7edca")
+        elif band == "rojo":
+            band_style = styles["band_red"]
+            band_bg = colors.HexColor("#f3d8d8")
+        else:
+            band_style = styles["body"]
+            band_bg = SURFACE
         data.append([
             _p(dimension.get("name", ""), styles["body"]),
             _p(
                 f"{dimension.get('average', '-')}/10 - {dimension.get('band_label', '')}",
-                styles["body"],
+                band_style,
             ),
             _p(appreciation.get("interpretation") or "Sin apreciacion registrada.", styles["small"]),
         ])
+        row_bands.append(band_bg)
+
     table = Table(data, colWidths=[46 * mm, 34 * mm, 80 * mm], repeatRows=1)
-    table.setStyle(TableStyle([
+    table_style = [
         ("BACKGROUND", (0, 0), (-1, 0), PRIMARY),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
         ("BOX", (0, 0), (-1, -1), 0.35, BORDER),
         ("INNERGRID", (0, 0), (-1, -1), 0.25, BORDER),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
@@ -199,7 +255,10 @@ def _score_table(dimensions, styles):
         ("RIGHTPADDING", (0, 0), (-1, -1), 5),
         ("TOPPADDING", (0, 0), (-1, -1), 5),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-    ]))
+    ]
+    for row_index, band_bg in enumerate(row_bands, start=1):
+        table_style.append(("BACKGROUND", (1, row_index), (1, row_index), band_bg))
+    table.setStyle(TableStyle(table_style))
     return table
 
 
@@ -450,11 +509,13 @@ def build_individual_report_pdf(report_version):
         if artifacts:
             story.append(_p("Soportes registrados", styles["subsection"]))
             for artifact in artifacts:
-                story.append(_p(
-                    f"- {artifact.get('name', '')}"
-                    + (f" ({artifact.get('description')})" if artifact.get("description") else ""),
-                    styles["small"],
-                ))
+                label = artifact.get("name", "")
+                if artifact.get("description"):
+                    label += f" ({artifact.get('description')})"
+                if artifact.get("absolute_url"):
+                    story.append(_link_p(f"Abrir soporte: {label}", artifact.get("absolute_url"), styles["small"]))
+                else:
+                    story.append(_p(f"- {label}", styles["small"]))
         section_number += 1
 
     story.append(CondPageBreak(58 * mm))
