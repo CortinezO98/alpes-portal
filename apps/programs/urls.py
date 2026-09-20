@@ -5,6 +5,7 @@ from .views import (
     ActionPlanGoalUpdateView,
     ActionPlanItemCreateView,
     ActionPlanItemUpdateView,
+    ConsultantExperienceSaveView,
     DreamChallengeNodeCreateView,
     DreamChallengeNodeUpdateView,
     EngagementCreateView,
@@ -58,6 +59,11 @@ urlpatterns = [
         "fases/participante/<int:pk>/",
         ParticipantPhaseDetailView.as_view(),
         name="participant-phase-detail",
+    ),
+    path(
+        "fases/participante/<int:pk>/charla/",
+        ConsultantExperienceSaveView.as_view(),
+        name="consultant-experience-save",
     ),
     path(
         "fases/participante/<int:pk>/conversaciones/",
