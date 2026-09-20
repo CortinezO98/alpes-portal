@@ -129,6 +129,10 @@
 
                 <div class="participant-admin-controls">
                     <div class="participant-primary-actions">
+                        <a class="button button-secondary button-compact" href="{% url 'programs:roadmap-detail' item.pk %}">
+                            <i class="bi bi-journal-text"></i>
+                            Hoja de ruta
+                        </a>
                         {% for progress in item.phase_progress.all %}
                             {% if progress.status == "AVAILABLE" or progress.status == "IN_PROGRESS" or progress.status == "SUBMITTED" or progress.status == "UNDER_REVIEW" or progress.status == "REOPENED" %}
                                 <a class="button button-primary button-compact" href="{% url 'programs:participant-phase-detail' progress.pk %}">
