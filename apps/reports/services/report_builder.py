@@ -2,6 +2,8 @@ from statistics import mean
 
 from apps.assessments.models import Answer, Question
 
+from apps.reports.models import DimensionAppreciation
+
 from .scoring import get_score_band
 
 
@@ -12,6 +14,13 @@ def build_assessment_report(assessment):
         .order_by("question__order", "question__id")
     )
     answers_by_question = {answer.question_id: answer for answer in answers}
+
+    appreciations = {
+        item.dimension_id: item
+        for item in DimensionAppreciation.objects.filter(
+            assessment=assessment
+        ).select_related("dimension", "consultant")
+    }
 
     dimensions = []
     for dimension in assessment.template.dimensions.prefetch_related("questions").order_by("order", "id"):
@@ -43,6 +52,7 @@ def build_assessment_report(assessment):
 
         average = round(mean(scores), 2) if scores else None
         band = get_score_band(average) if average is not None else None
+        appreciation = appreciations.get(dimension.pk)
         dimensions.append(
             {
                 "id": dimension.pk,
@@ -55,6 +65,14 @@ def build_assessment_report(assessment):
                 "band_label": band.label if band else "Sin resultado",
                 "band_color": band.color if band else "#A7B0AA",
                 "questions": question_rows,
+                "appreciation": {
+                    "interpretation": appreciation.interpretation if appreciation else "",
+                    "strengths": appreciation.strengths if appreciation else "",
+                    "opportunities": appreciation.opportunities if appreciation else "",
+                    "recommendation": appreciation.recommendation if appreciation else "",
+                    "consultant": appreciation.consultant.email if appreciation else "",
+                    "updated_at": appreciation.updated_at if appreciation else None,
+                },
             }
         )
 
