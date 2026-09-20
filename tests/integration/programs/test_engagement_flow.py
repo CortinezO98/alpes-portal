@@ -128,3 +128,49 @@ def test_superadmin_can_open_engagement_list(client, program_setup):
     response = client.get(reverse("programs:engagement-list"))
 
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_unified_form_creates_company_process_participant_and_assessment(client, program_setup):
+    program, superadmin, participant = program_setup
+    call_command("seed_jubilacion_plena")
+    template = AssessmentTemplate.objects.filter(
+        slug__startswith="alpes-jubilacion-plena",
+        publication_status=AssessmentTemplate.PublicationStatus.PUBLISHED,
+    ).order_by("-version").first()
+    client.force_login(superadmin)
+
+    response = client.post(
+        reverse("programs:engagement-create"),
+        {
+            "mode": Engagement.Mode.ORGANIZATIONAL,
+            "title": "Jubilación Plena · Empresa Prueba",
+            "program": program.pk,
+            "organization": "",
+            "create_organization": "on",
+            "organization_name": "Empresa Prueba",
+            "organization_tax_id": "900999111-1",
+            "organization_contact_name": "Contacto Demo",
+            "organization_contact_email": "contacto@empresa-prueba.test",
+            "participants": [participant.pk],
+            "new_participants_json": "[]",
+            "status": Engagement.Status.ACTIVE,
+            "start_date": "",
+            "end_date": "",
+            "assign_assessment": "on",
+            "assessment_template": template.pk,
+            "notes": "",
+        },
+    )
+
+    engagement = Engagement.objects.get(title="Jubilación Plena · Empresa Prueba")
+    membership = engagement.participants.get(participant=participant)
+
+    assert response.status_code == 302
+    assert engagement.organization.name == "Empresa Prueba"
+    assert membership.phase_progress.count() == 7
+    assert Assessment.objects.filter(
+        participant=participant,
+        engagement_participant=membership,
+        template=template,
+    ).exists()
