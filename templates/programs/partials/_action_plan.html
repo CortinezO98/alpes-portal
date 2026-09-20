@@ -9,6 +9,48 @@
     </div>
 
     {% if progress.status != "PENDING" and progress.status != "COMPLETED" %}
+        {% if dream_map_options %}
+        <section class="action-map-source">
+            <div class="action-map-source-head">
+                <div>
+                    <span class="dashboard-eyebrow">Mapa de retos y sueños</span>
+                    <h3>Traer elementos registrados al plan</h3>
+                    <p>Reutiliza lo que ya construiste en la fase anterior. Puedes convertir sueños, retos, metas e hitos en metas accionables.</p>
+                </div>
+            </div>
+            <div class="action-map-source-grid">
+                {% for option in dream_map_options %}
+                    <article class="action-map-source-card">
+                        <div class="action-map-source-meta">
+                            <span class="dream-node-type">{{ option.node.get_node_type_display }}</span>
+                            <span class="dream-node-priority dream-priority-{{ option.node.priority|lower }}">{{ option.node.get_priority_display }}</span>
+                        </div>
+                        <h4>{{ option.node.title }}</h4>
+                        {% if option.node.description %}<p>{{ option.node.description }}</p>{% endif %}
+                        <div class="action-map-source-footer">
+                            {% if option.node.target_date %}
+                                <span><i class="bi bi-calendar3"></i> {{ option.node.target_date|date:"d/m/Y" }}</span>
+                            {% else %}
+                                <span><i class="bi bi-calendar3"></i> Sin fecha objetivo</span>
+                            {% endif %}
+
+                            {% if option.already_added %}
+                                <span class="action-map-added"><i class="bi bi-check2-circle"></i> Ya agregado</span>
+                            {% else %}
+                                <form method="post" action="{% url 'programs:action-goal-import-map' progress.pk option.node.pk %}">
+                                    {% csrf_token %}
+                                    <button class="button button-secondary button-compact" type="submit">
+                                        <i class="bi bi-arrow-down-circle"></i> Agregar al plan
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
     <details class="special-create-panel" {% if not action_goals %}open{% endif %}>
         <summary><i class="bi bi-bullseye"></i> Crear una meta</summary>
         <form method="post" action="{% url 'programs:action-goal-create' progress.pk %}" class="special-form">
