@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.urls import reverse
 from django.utils import timezone
@@ -12,6 +13,7 @@ from apps.programs.models import (
     EngagementParticipant,
     Organization,
     ParticipantPhase,
+    PhaseArtifact,
     ServiceProgram,
 )
 from apps.programs.services import ensure_participant_phases
@@ -641,3 +643,125 @@ def test_build_dream_tree_preserves_parent_child_hierarchy():
         tree[0]["children"][0]["children"][0]["children"][0]["title"]
         == "Primer viaje"
     )
+
+
+
+@pytest.mark.django_db
+def test_report_view_exposes_existing_phase_support_link(client, report_setup):
+    superadmin, admin, participant, _ = report_setup
+    program = ServiceProgram.objects.get(code="jubilacion-plena")
+    engagement = Engagement.objects.create(
+        title="Reporte con soporte",
+        program=program,
+        mode=Engagement.Mode.INDIVIDUAL,
+        consultant=superadmin,
+        status=Engagement.Status.ACTIVE,
+    )
+    participation = EngagementParticipant.objects.create(
+        engagement=engagement,
+        participant=participant,
+    )
+    ensure_participant_phases(participation)
+    phase = participation.phase_progress.get(phase__code="charla-inicial")
+    artifact = PhaseArtifact.objects.create(
+        participant_phase=phase,
+        file=SimpleUploadedFile(
+            "evidencia.pdf",
+            b"%PDF-1.4 evidencia",
+            content_type="application/pdf",
+        ),
+        original_name="evidencia.pdf",
+        content_type="application/pdf",
+        size_bytes=18,
+        uploaded_by=admin,
+    )
+    version = IndividualReportVersion.objects.create(
+        engagement_participant=participation,
+        version=1,
+        executive_summary="Resumen.",
+        integral_appreciation="Apreciación.",
+        recommendations="Recomendaciones.",
+        conclusions="Conclusiones.",
+        snapshot={
+            "participant": {"name": participant.email, "email": participant.email},
+            "engagement": {
+                "title": engagement.title,
+                "program": program.name,
+                "organization": "",
+                "consultant": superadmin.email,
+            },
+            "progress_percent": 50,
+            "assessment": None,
+            "phases": [
+                {
+                    "code": "charla-inicial",
+                    "name": "Charla",
+                    "order": 1,
+                    "status_label": "Completada",
+                    "artifacts": [
+                        {
+                            "name": "evidencia.pdf",
+                            "description": "Soporte de prueba",
+                            "size_bytes": 18,
+                        }
+                    ],
+                }
+            ],
+        },
+        created_by=admin,
+    )
+
+    client.force_login(admin)
+    response = client.get(
+        reverse("reports:program-individual", kwargs={"pk": participation.pk}),
+        {"version": version.version},
+    )
+    assert response.status_code == 200
+    assert b"Abrir soporte" in response.content
+    assert reverse(
+        "programs:phase-artifact-download",
+        kwargs={"pk": artifact.pk},
+    ).encode() in response.content
+
+    download = client.get(
+        reverse("programs:phase-artifact-download", kwargs={"pk": artifact.pk})
+    )
+    assert download.status_code == 200
+    assert download["Content-Type"] == "application/pdf"
+
+
+@pytest.mark.django_db
+def test_participant_can_open_own_phase_support(client, report_setup):
+    superadmin, admin, participant, _ = report_setup
+    program = ServiceProgram.objects.get(code="jubilacion-plena")
+    engagement = Engagement.objects.create(
+        title="Soporte participante",
+        program=program,
+        mode=Engagement.Mode.INDIVIDUAL,
+        consultant=superadmin,
+        status=Engagement.Status.ACTIVE,
+    )
+    participation = EngagementParticipant.objects.create(
+        engagement=engagement,
+        participant=participant,
+    )
+    ensure_participant_phases(participation)
+    phase = participation.phase_progress.get(phase__code="charla-inicial")
+    artifact = PhaseArtifact.objects.create(
+        participant_phase=phase,
+        file=SimpleUploadedFile(
+            "propio.pdf",
+            b"%PDF-1.4 propio",
+            content_type="application/pdf",
+        ),
+        original_name="propio.pdf",
+        content_type="application/pdf",
+        size_bytes=15,
+        uploaded_by=admin,
+    )
+
+    client.force_login(participant)
+    response = client.get(
+        reverse("programs:phase-artifact-download", kwargs={"pk": artifact.pk})
+    )
+    assert response.status_code == 200
