@@ -3,6 +3,8 @@ from django import forms
 from apps.accounts.models import User
 from apps.assessments.models import Assessment
 
+from .models import DimensionAppreciation, IndividualReportVersion, OrganizationalReportVersion
+
 
 class AnalyticsFilterForm(forms.Form):
     status = forms.ChoiceField(
@@ -42,9 +44,6 @@ class AnalyticsFilterForm(forms.Form):
         if date_from and date_to and date_from > date_to:
             raise forms.ValidationError("La fecha inicial no puede ser posterior a la fecha final.")
         return cleaned
-
-
-from .models import DimensionAppreciation, IndividualReportVersion, OrganizationalReportVersion
 
 
 class DimensionAppreciationForm(forms.ModelForm):
