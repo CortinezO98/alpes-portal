@@ -157,14 +157,14 @@ def submit_participant_phase(progress, actor):
         raise ValueError("Registra al menos una conversación transformadora antes de enviar la fase.")
 
     if progress.phase.code == "mapa-retos-suenos" and not progress.dream_map_nodes.exists():
-        raise ValueError("Agrega al menos un elemento al mapa de retos y sueños antes de enviar la fase.")
+        raise ValueError("Agrega al menos un sueño, reto, meta o hito al mapa antes de enviar la fase.")
 
     if progress.phase.code == "plan-accion":
         goals = progress.action_goals.prefetch_related("items")
         if not goals.exists():
             raise ValueError("Crea al menos una meta antes de enviar el plan de acción.")
         if not any(goal.items.exists() for goal in goals):
-            raise ValueError("Agrega al menos una acción a una meta antes de enviar el plan de acción.")
+            raise ValueError("Cada meta debe tener al menos una acción antes de enviar el plan de acción.")
 
     progress.started_at = progress.started_at or timezone.now()
     if progress.phase.requires_review:
