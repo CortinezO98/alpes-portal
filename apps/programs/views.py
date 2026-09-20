@@ -59,20 +59,6 @@ class EngagementListView(ProgramAdminMixin, ListView):
             "program", "organization", "consultant"
         ).prefetch_related("participants").order_by("-created_at")
 
-    def get_object(self, queryset=None):
-        obj = super().get_object(queryset)
-        if obj.phase.code == "rueda-vida":
-            result = reconcile_participation_assessment(
-                obj.engagement_participant,
-                actor=self.request.user if _user_is_program_admin(self.request.user) else None,
-            )
-            if result["status"] in {"linked_completed", "synchronized_completed"}:
-                obj.refresh_from_db()
-            self.assessment_reconciliation = result
-        else:
-            self.assessment_reconciliation = None
-        return obj
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["organizations"] = Organization.objects.filter(is_active=True).order_by("name")
@@ -429,6 +415,19 @@ class ParticipantPhaseDetailView(LoginRequiredMixin, DetailView):
             engagement_participant__participant=self.request.user,
             phase__participant_visible=True,
         )
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        self.assessment_reconciliation = None
+        if obj.phase.code == "rueda-vida":
+            result = reconcile_participation_assessment(
+                obj.engagement_participant,
+                actor=self.request.user if _user_is_program_admin(self.request.user) else None,
+            )
+            if result["status"] in {"linked_completed", "synchronized_completed"}:
+                obj.refresh_from_db()
+            self.assessment_reconciliation = result
+        return obj
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
