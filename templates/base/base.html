@@ -45,6 +45,21 @@
 <body>
     {% if seo_index %}<a class="public-skip-link" href="#inicio">Ir al contenido principal</a>{% endif %}
     {% block body %}{% endblock %}
+
+    {% if messages %}
+        <div id="alpes-notifications" hidden aria-hidden="true">
+            {% for message in messages %}
+                <span
+                    data-alpes-notification
+                    data-level="{{ message.tags|default:'info' }}"
+                    data-message="{{ message|escapejs }}"
+                ></span>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/components/sweetalert.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
