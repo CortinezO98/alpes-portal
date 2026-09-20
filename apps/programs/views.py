@@ -37,6 +37,7 @@ from .models import (
 from .services import (
     create_engagement_bundle,
     ensure_participant_phases,
+    reconcile_participation_assessment,
     review_engagement_phase,
     review_participant_phase,
     submit_engagement_phase,
@@ -57,6 +58,20 @@ class EngagementListView(ProgramAdminMixin, ListView):
         return Engagement.objects.select_related(
             "program", "organization", "consultant"
         ).prefetch_related("participants").order_by("-created_at")
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        if obj.phase.code == "rueda-vida":
+            result = reconcile_participation_assessment(
+                obj.engagement_participant,
+                actor=self.request.user if _user_is_program_admin(self.request.user) else None,
+            )
+            if result["status"] in {"linked_completed", "synchronized_completed"}:
+                obj.refresh_from_db()
+            self.assessment_reconciliation = result
+        else:
+            self.assessment_reconciliation = None
+        return obj
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -422,6 +437,7 @@ class ParticipantPhaseDetailView(LoginRequiredMixin, DetailView):
         context["is_program_admin"] = _user_is_program_admin(self.request.user)
         context["workspace_scope"] = "participant"
         context["engagement"] = self.object.engagement_participant.engagement
+        context["assessment_reconciliation"] = self.assessment_reconciliation
 
         if self.object.phase.code == "charla-inicial":
             record = getattr(self.object, "consultant_experience", None)
