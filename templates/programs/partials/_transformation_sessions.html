@@ -77,6 +77,26 @@
                     {% if session.consultant_appreciation and is_program_admin %}
                     <div class="session-consultant-note"><i class="bi bi-person-check"></i><div><strong>Apreciación del consultor</strong><p>{{ session.consultant_appreciation|linebreaksbr }}</p></div></div>
                     {% endif %}
+
+                    {% if progress.status != "PENDING" and progress.status != "COMPLETED" and progress.status != "SUBMITTED" and progress.status != "UNDER_REVIEW" %}
+                    <details class="action-edit session-edit">
+                        <summary><i class="bi bi-pencil"></i> Editar sesión</summary>
+                        <form method="post" action="{% url 'programs:transformation-session-update' progress.pk session.pk %}" class="special-form special-form-inline">
+                            {% csrf_token %}
+                            <div><label>Fecha</label><input class="form-control" type="date" name="session_date" value="{{ session.session_date|date:'Y-m-d' }}" required></div>
+                            <div><label>Tema principal</label><input class="form-control" name="title" value="{{ session.title }}" required></div>
+                            <div class="special-span-two"><label>Temas abordados</label><textarea class="form-control" name="topics" rows="2">{{ session.topics }}</textarea></div>
+                            <div><label>Hallazgos</label><textarea class="form-control" name="findings" rows="2">{{ session.findings }}</textarea></div>
+                            <div><label>Compromisos</label><textarea class="form-control" name="commitments" rows="2">{{ session.commitments }}</textarea></div>
+                            {% if is_program_admin %}
+                            <div class="special-span-two"><label>Apreciación del consultor</label><textarea class="form-control" name="consultant_appreciation" rows="2">{{ session.consultant_appreciation }}</textarea></div>
+                            {% else %}
+                            <input type="hidden" name="consultant_appreciation" value="{{ session.consultant_appreciation }}">
+                            {% endif %}
+                            <div class="special-span-two special-form-actions"><button class="button button-secondary" type="submit">Guardar cambios</button></div>
+                        </form>
+                    </details>
+                    {% endif %}
                 </div>
             </article>
         {% empty %}
