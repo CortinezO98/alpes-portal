@@ -423,18 +423,22 @@ class ParticipantPhaseReviewView(ProgramAdminMixin, View):
             messages.error(request, "Acción de revisión no válida.")
             return redirect("programs:participant-phase-detail", pk=progress.pk)
 
-        review_participant_phase(
-            progress,
-            actor=request.user,
-            approve=approve,
-            note=note,
-        )
-        messages.success(
-            request,
-            "Fase aprobada y hoja de ruta actualizada."
-            if approve
-            else "La fase fue reabierta para ajustes.",
-        )
+        try:
+            review_participant_phase(
+                progress,
+                actor=request.user,
+                approve=approve,
+                note=note,
+            )
+        except ValueError as exc:
+            messages.error(request, str(exc))
+        else:
+            messages.success(
+                request,
+                "Fase aprobada y hoja de ruta actualizada."
+                if approve
+                else "La fase fue reabierta para ajustes.",
+            )
         return redirect("programs:participant-phase-detail", pk=progress.pk)
 
 
@@ -535,16 +539,20 @@ class EngagementPhaseReviewView(ProgramAdminMixin, View):
             messages.error(request, "Acción de revisión no válida.")
             return redirect("programs:engagement-phase-detail", pk=progress.pk)
 
-        review_engagement_phase(
-            progress,
-            actor=request.user,
-            approve=action == "approve",
-            note=note,
-        )
-        messages.success(
-            request,
-            "Fase organizacional aprobada."
-            if action == "approve"
-            else "La fase organizacional fue reabierta.",
-        )
+        try:
+            review_engagement_phase(
+                progress,
+                actor=request.user,
+                approve=action == "approve",
+                note=note,
+            )
+        except ValueError as exc:
+            messages.error(request, str(exc))
+        else:
+            messages.success(
+                request,
+                "Fase organizacional aprobada."
+                if action == "approve"
+                else "La fase organizacional fue reabierta.",
+            )
         return redirect("programs:engagement-phase-detail", pk=progress.pk)
