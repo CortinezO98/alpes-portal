@@ -21,7 +21,7 @@ def configure_phase_engine(apps, schema_editor):
     ProgramPhase.objects.filter(code="reporte-organizacional").update(
         scope="ENGAGEMENT",
         participant_visible=False,
-        requires_review=True,
+        requires_review=False,
         requires_artifact=False,
     )
     ProgramPhase.objects.exclude(code="reporte-organizacional").update(
