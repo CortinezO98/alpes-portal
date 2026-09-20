@@ -21,8 +21,11 @@
         {% endif %}
         <div class="final-report-toolbar-actions">
             {% if report_version %}
+                <a class="button button-primary" href="{% url 'reports:program-individual-pdf' participation.pk report_version.version %}">
+                    <i class="bi bi-download"></i> Descargar PDF
+                </a>
                 <button class="button button-secondary" type="button" onclick="window.print()">
-                    <i class="bi bi-file-earmark-pdf"></i> Imprimir / Guardar PDF
+                    <i class="bi bi-printer"></i> Imprimir
                 </button>
             {% endif %}
         </div>
