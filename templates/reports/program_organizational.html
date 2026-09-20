@@ -54,6 +54,15 @@
             {% endif %}
         </div>
 
+        {% if not can_generate_report %}
+        <div class="report-readiness-warning">
+            <i class="bi bi-lock"></i>
+            <div>
+                <strong>El reporte organizacional aún está bloqueado</strong>
+                <p>Faltan {{ pending_individual_report_count }} reporte(s) individual(es) por completar.</p>
+            </div>
+        </div>
+        {% endif %}
         <form method="post" action="{% url 'reports:program-organizational-generate' engagement.pk %}" class="report-editor-form">
             {% csrf_token %}
             <div class="report-editor-grid">
@@ -64,7 +73,7 @@
             </div>
             <div class="report-editor-actions">
                 <span><i class="bi bi-shield-lock"></i> Resultados agregados y versionados.</span>
-                <button class="button button-primary" type="submit" data-swal-confirm="true" data-swal-title="¿Generar reporte organizacional?" data-swal-text="Se guardará una nueva versión con los resultados agregados actuales." data-swal-confirm-text="Sí, generar reporte" data-swal-icon="question">
+                <button class="button button-primary" type="submit" {% if not can_generate_report %}disabled aria-disabled="true"{% endif %} data-swal-confirm="true" data-swal-title="¿Generar reporte organizacional?" data-swal-text="Se guardará una nueva versión con los resultados agregados actuales." data-swal-confirm-text="Sí, generar reporte" data-swal-icon="question">
                     <i class="bi bi-building-check"></i> Generar versión
                 </button>
             </div>
