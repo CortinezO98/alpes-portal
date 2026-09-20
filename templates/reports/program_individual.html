@@ -208,13 +208,17 @@
                                     </div>
                                 {% endif %}
 
-                                {% if phase.nodes %}
+                                {% if phase.code == "mapa-retos-suenos" and report_dream_tree %}
                                     <div class="final-report-subsection">
                                         <strong>Mapa de retos y sueños</strong>
-                                        <div class="final-node-grid">
-                                            {% for node in phase.nodes %}
-                                                <div><span>{{ node.type_label }}</span><b>{{ node.title }}</b>{% if node.description %}<p>{{ node.description }}</p>{% endif %}</div>
-                                            {% endfor %}
+                                        <div class="final-dream-tree">
+                                            <div class="final-dream-tree-root">
+                                                <i class="bi bi-compass"></i>
+                                                <span>Mi nueva etapa</span>
+                                            </div>
+                                            <div class="final-dream-tree-roots">
+                                                {% include "reports/partials/_dream_tree_nodes.html" with nodes=report_dream_tree %}
+                                            </div>
                                         </div>
                                     </div>
                                 {% endif %}
