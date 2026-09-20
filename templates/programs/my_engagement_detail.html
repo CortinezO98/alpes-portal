@@ -11,6 +11,11 @@
         {{ participation.progress_percent }}% del proceso completado.
     </p>
 </section>
+<div class="program-toolbar">
+    <a class="button button-secondary" href="{% url 'programs:roadmap-detail' participation.pk %}">
+        <i class="bi bi-journal-text"></i> Ver hoja de ruta
+    </a>
+</div>
 <section class="journey-card">
     <ol class="journey-timeline">
         {% for progress in participation.phase_progress.all %}
