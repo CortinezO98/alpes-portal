@@ -203,6 +203,78 @@ def _score_table(dimensions, styles):
     return table
 
 
+def _dream_tree(nodes):
+    by_id = {
+        node.get("id"): {**node, "children": []}
+        for node in (nodes or [])
+        if node.get("id") is not None
+    }
+    roots = []
+    for node in by_id.values():
+        parent = by_id.get(node.get("parent_id"))
+        if parent is not None and parent is not node:
+            parent["children"].append(node)
+        else:
+            roots.append(node)
+    return roots
+
+
+def _append_dream_tree(story, nodes, styles, level=0):
+    indent = min(level, 5) * 6 * mm
+    for node in nodes:
+        type_label = node.get("type_label", "")
+        title = node.get("title", "")
+        description = node.get("description", "")
+        priority = node.get("priority_label", "")
+        target_date = node.get("target_date")
+
+        card_data = [[
+            _p(type_label or "Elemento", styles["label"]),
+            _p(title, styles["subsection"]),
+        ]]
+        if description:
+            card_data.append([
+                _p("", styles["small"]),
+                _p(description, styles["small"]),
+            ])
+        meta_parts = []
+        if priority:
+            meta_parts.append(f"Prioridad: {priority}")
+        if target_date:
+            meta_parts.append(f"Fecha objetivo: {_date(target_date)}")
+        if meta_parts:
+            card_data.append([
+                _p("", styles["small"]),
+                _p(" · ".join(meta_parts), styles["small"]),
+            ])
+
+        table = Table(
+            card_data,
+            colWidths=[24 * mm, max(80 * mm, 136 * mm - indent)],
+            hAlign="LEFT",
+        )
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), SURFACE),
+            ("BOX", (0, 0), (-1, -1), 0.35, BORDER),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 5),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ]))
+        wrapper = Table([[Spacer(indent, 1), table]], colWidths=[indent, 160 * mm - indent])
+        wrapper.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ("TOPPADDING", (0, 0), (-1, -1), 1.5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 1.5),
+        ]))
+        story.append(wrapper)
+        if node.get("children"):
+            _append_dream_tree(story, node["children"], styles, level + 1)
+
+
 def build_individual_report_pdf(report_version):
     styles = _styles()
     snapshot = report_version.snapshot or {}
@@ -305,15 +377,23 @@ def build_individual_report_pdf(report_version):
         nodes = phase.get("nodes") or []
         if nodes:
             story.append(_p("Mapa de retos y suenos", styles["subsection"]))
-            for node in nodes:
-                node_value = node.get("title", "")
-                if node.get("description"):
-                    node_value += f" - {node.get('description')}"
-                story.append(_labeled(
-                    node.get("type_label", ""),
-                    node_value,
-                    styles["body"],
-                ))
+            root_box = Table(
+                [[_p("Mi nueva etapa", styles["center"])]],
+                colWidths=[55 * mm],
+                hAlign="LEFT",
+            )
+            root_box.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, -1), PRIMARY),
+                ("TEXTCOLOR", (0, 0), (-1, -1), colors.white),
+                ("BOX", (0, 0), (-1, -1), 0.35, PRIMARY_DARK),
+                ("LEFTPADDING", (0, 0), (-1, -1), 7),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ]))
+            story.append(root_box)
+            story.append(Spacer(1, 2 * mm))
+            _append_dream_tree(story, _dream_tree(nodes), styles)
 
         goals = phase.get("goals") or []
         if goals:
