@@ -8,6 +8,7 @@ from .views import (
     MyEngagementDetailView,
     MyEngagementListView,
     OrganizationCreateView,
+    UnifiedEngagementCreateView,
 )
 
 app_name = "programs"
@@ -15,7 +16,7 @@ app_name = "programs"
 urlpatterns = [
     path("", EngagementListView.as_view(), name="engagement-list"),
     path("organizaciones/nueva/", OrganizationCreateView.as_view(), name="organization-create"),
-    path("procesos/nuevo/", EngagementCreateView.as_view(), name="engagement-create"),
+    path("procesos/nuevo/", UnifiedEngagementCreateView.as_view(), name="engagement-create"),
     path("procesos/<int:pk>/", EngagementDetailView.as_view(), name="engagement-detail"),
     path(
         "procesos/<int:pk>/participantes/agregar/",
