@@ -452,11 +452,64 @@ class ParticipantPhaseDetailView(LoginRequiredMixin, DetailView):
             context["dream_node_form"] = DreamChallengeNodeForm(
                 participant_phase=self.object
             )
-            context["dream_nodes"] = self.object.dream_map_nodes.select_related("parent").all()
+            dream_nodes = list(
+                self.object.dream_map_nodes.select_related("parent").prefetch_related(
+                    "linked_action_goals__items"
+                ).all()
+            )
+            context["dream_nodes"] = dream_nodes
+            context["dream_map_graph"] = [
+                {
+                    "id": node.pk,
+                    "parent_id": node.parent_id,
+                    "title": node.title,
+                    "description": node.description,
+                    "type": node.node_type,
+                    "type_label": node.get_node_type_display(),
+                    "priority": node.priority,
+                    "priority_label": node.get_priority_display(),
+                    "target_date": (
+                        node.target_date.strftime("%d/%m/%Y")
+                        if node.target_date
+                        else ""
+                    ),
+                    "goals": [
+                        {
+                            "id": goal.pk,
+                            "title": goal.title,
+                            "description": goal.description,
+                            "target_date": (
+                                goal.target_date.strftime("%d/%m/%Y")
+                                if goal.target_date
+                                else ""
+                            ),
+                            "items": [
+                                {
+                                    "id": item.pk,
+                                    "action": item.action,
+                                    "indicator": item.indicator,
+                                    "responsible": item.responsible,
+                                    "due_date": (
+                                        item.due_date.strftime("%d/%m/%Y")
+                                        if item.due_date
+                                        else ""
+                                    ),
+                                    "status": item.status,
+                                    "status_label": item.get_status_display(),
+                                    "consultant_appreciation": item.consultant_appreciation,
+                                }
+                                for item in goal.items.all()
+                            ],
+                        }
+                        for goal in node.linked_action_goals.all()
+                    ],
+                }
+                for node in dream_nodes
+            ]
         elif self.object.phase.code == "plan-accion":
             context["action_goal_form"] = ActionPlanGoalForm()
             context["action_item_form"] = ActionPlanItemForm()
-            action_goals = self.object.action_goals.prefetch_related("items").all()
+            action_goals = self.object.action_goals.select_related("source_node").prefetch_related("items").all()
             context["action_goals"] = action_goals
 
             map_progress = (
@@ -480,11 +533,14 @@ class ParticipantPhaseDetailView(LoginRequiredMixin, DetailView):
                     {
                         "node": node,
                         "already_added": (
-                            node.title.strip().lower(),
-                            (node.description or "").strip().lower(),
-                            node.target_date,
-                        )
-                        in existing_goal_keys,
+                            self.object.action_goals.filter(source_node=node).exists()
+                            or (
+                                node.title.strip().lower(),
+                                (node.description or "").strip().lower(),
+                                node.target_date,
+                            )
+                            in existing_goal_keys
+                        ),
                     }
                     for node in map_progress.dream_map_nodes.select_related("parent").all()
                 ]
@@ -901,17 +957,20 @@ class ActionPlanGoalImportFromMapView(LoginRequiredMixin, View):
             participant_phase=map_progress,
         )
 
-        duplicate = progress.action_goals.filter(
-            title__iexact=node.title.strip(),
-            description=node.description or "",
-            target_date=node.target_date,
-        ).exists()
+        duplicate = progress.action_goals.filter(source_node=node).exists()
+        if not duplicate:
+            duplicate = progress.action_goals.filter(
+                title__iexact=node.title.strip(),
+                description=node.description or "",
+                target_date=node.target_date,
+            ).exists()
         if duplicate:
             messages.info(request, "Este elemento del mapa ya fue agregado al plan de acción.")
             return redirect("programs:participant-phase-detail", pk=progress.pk)
 
         ActionPlanGoal.objects.create(
             participant_phase=progress,
+            source_node=node,
             title=node.title,
             description=node.description,
             target_date=node.target_date,
