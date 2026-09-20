@@ -141,8 +141,8 @@ class EngagementParticipant(models.Model):
 
     @property
     def progress_percent(self):
-        phases = self.phase_progress.all()
-        total = len(phases) if hasattr(phases, "__len__") else phases.count()
+        phases = list(self.phase_progress.all())
+        total = len(phases)
         if not total:
             return 0
         completed = sum(1 for item in phases if item.status == ParticipantPhase.Status.COMPLETED)
