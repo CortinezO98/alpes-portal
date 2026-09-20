@@ -1,12 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import CreateView, DetailView, FormView, ListView
 
 from apps.accounts.mixins import RoleRequiredMixin
 from apps.accounts.models import User
-from apps.assessments.models import Assessment
 
 from .forms import (
     EngagementForm,
@@ -15,7 +13,7 @@ from .forms import (
     UnifiedEngagementCreateForm,
 )
 from .models import Engagement, EngagementParticipant, Organization
-from .services import ensure_participant_phases
+from .services import create_engagement_bundle, ensure_participant_phases
 
 
 class ProgramAdminMixin(LoginRequiredMixin, RoleRequiredMixin):
@@ -139,73 +137,16 @@ class UnifiedEngagementCreateView(ProgramAdminMixin, FormView):
     template_name = "programs/engagement_create_unified.html"
     form_class = UnifiedEngagementCreateForm
 
-    @transaction.atomic
     def form_valid(self, form):
-        cleaned = form.cleaned_data
-
-        organization = cleaned.get("organization")
-        if (
-            cleaned["mode"] == Engagement.Mode.ORGANIZATIONAL
-            and cleaned.get("create_organization")
-        ):
-            organization = Organization.objects.create(
-                name=cleaned["organization_name"].strip(),
-                tax_id=(cleaned.get("organization_tax_id") or "").strip(),
-                contact_name=(cleaned.get("organization_contact_name") or "").strip(),
-                contact_email=(cleaned.get("organization_contact_email") or "").strip(),
-            )
-
-        engagement = Engagement(
-            title=cleaned["title"].strip(),
-            program=cleaned["program"],
-            mode=cleaned["mode"],
-            organization=organization,
-            consultant=self.request.user,
-            status=cleaned["status"],
-            start_date=cleaned.get("start_date"),
-            end_date=cleaned.get("end_date"),
-            notes=(cleaned.get("notes") or "").strip(),
+        result = create_engagement_bundle(
+            cleaned_data=form.cleaned_data,
+            actor=self.request.user,
         )
-        engagement.full_clean()
-        engagement.save()
+        engagement = result["engagement"]
+        organization = result["organization"]
+        participant_count = result["participant_count"]
+        assessments_created = result["assessments_created"]
 
-        users = list(cleaned.get("participants") or [])
-        created_users = []
-        for row in cleaned.get("new_participants_json") or []:
-            user = User.objects.create_user(
-                email=row["email"],
-                password=row["password"],
-                first_name=row["first_name"],
-                last_name=row["last_name"],
-                role=User.Role.USER,
-                is_active=True,
-            )
-            created_users.append(user)
-            users.append(user)
-
-        template = cleaned.get("assessment_template")
-        assessments_created = 0
-        for user in users:
-            membership = EngagementParticipant.objects.create(
-                engagement=engagement,
-                participant=user,
-            )
-            ensure_participant_phases(membership)
-
-            if cleaned.get("assign_assessment") and template:
-                assessment, was_created = Assessment.objects.get_or_create(
-                    template=template,
-                    participant=user,
-                    engagement_participant=membership,
-                    defaults={
-                        "created_by": self.request.user,
-                        "status": Assessment.Status.DRAFT,
-                    },
-                )
-                if was_created:
-                    assessments_created += 1
-
-        participant_count = len(users)
         organization_message = (
             f" para {organization.name}" if organization is not None else ""
         )
@@ -216,7 +157,7 @@ class UnifiedEngagementCreateView(ProgramAdminMixin, FormView):
                 f"{participant_count} participante(s) vinculados"
                 + (
                     f" y {assessments_created} evaluación(es) asignada(s)."
-                    if cleaned.get("assign_assessment")
+                    if form.cleaned_data.get("assign_assessment")
                     else "."
                 )
             ),
