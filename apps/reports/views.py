@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Avg, Max, Q
@@ -11,7 +13,7 @@ from django.views.generic import TemplateView
 from apps.accounts.mixins import RoleRequiredMixin
 from apps.accounts.models import User
 from apps.assessments.models import Assessment, Dimension, Question
-from apps.programs.models import Engagement, EngagementParticipant, ParticipantPhase
+from apps.programs.models import Engagement, EngagementParticipant, ParticipantPhase, PhaseArtifact
 from apps.programs.services import (
     complete_generated_individual_report,
     complete_generated_organizational_report,
@@ -200,6 +202,46 @@ class DimensionAppreciationUpdateView(
 
 
 
+def _enrich_report_artifacts(participation, report_version, request):
+    if report_version is None:
+        return
+    snapshot = deepcopy(report_version.snapshot or {})
+    live_artifacts = {}
+    for artifact in (
+        PhaseArtifact.objects.filter(
+            participant_phase__engagement_participant=participation
+        )
+        .select_related("participant_phase__phase")
+        .order_by("-created_at", "-id")
+    ):
+        key = (
+            artifact.participant_phase.phase.code,
+            artifact.original_name,
+        )
+        live_artifacts.setdefault(key, artifact)
+
+    for phase in snapshot.get("phases") or []:
+        for artifact in phase.get("artifacts") or []:
+            live = None
+            artifact_id = artifact.get("id")
+            if artifact_id:
+                live = next(
+                    (item for item in live_artifacts.values() if item.pk == artifact_id),
+                    None,
+                )
+            if live is None:
+                live = live_artifacts.get((phase.get("code"), artifact.get("name")))
+            if live is not None:
+                artifact["id"] = live.pk
+                artifact["content_type"] = live.content_type
+                artifact["url"] = reverse(
+                    "programs:phase-artifact-download",
+                    kwargs={"pk": live.pk},
+                )
+                artifact["absolute_url"] = request.build_absolute_uri(artifact["url"])
+    report_version.snapshot = snapshot
+
+
 def _build_dream_tree(nodes):
     by_id = {
         node.get("id"): {**node, "children": []}
@@ -269,6 +311,7 @@ class IndividualProgramReportView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         selected = self._selected_version()
+        _enrich_report_artifacts(self.participation, selected, self.request)
         latest = self.participation.individual_report_versions.first()
         report_phase = self.participation.phase_progress.select_related("phase").filter(
             phase__code="reporte-individual"
@@ -528,6 +571,7 @@ class IndividualProgramReportPdfView(LoginRequiredMixin, View):
             engagement_participant=participation,
             version=version,
         )
+        _enrich_report_artifacts(participation, report, request)
         content = build_individual_report_pdf(report)
         response = HttpResponse(content, content_type="application/pdf")
         response["Content-Disposition"] = (
