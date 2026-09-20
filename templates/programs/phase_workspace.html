@@ -1,0 +1,316 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ progress.phase.name }} | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/programs.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-toolbar animate__animated animate__fadeIn">
+    {% if workspace_scope == "participant" %}
+        {% if is_program_admin %}
+            <a class="page-back-link" href="{% url 'programs:engagement-detail' engagement.pk %}">
+                <i class="bi bi-arrow-left"></i> Volver al acompañamiento
+            </a>
+        {% else %}
+            <a class="page-back-link" href="{% url 'programs:my-engagement-detail' progress.engagement_participant.pk %}">
+                <i class="bi bi-arrow-left"></i> Volver a mi ruta
+            </a>
+        {% endif %}
+    {% else %}
+        <a class="page-back-link" href="{% url 'programs:engagement-detail' engagement.pk %}">
+            <i class="bi bi-arrow-left"></i> Volver al acompañamiento
+        </a>
+    {% endif %}
+</div>
+
+<section class="phase-hero animate__animated animate__fadeInUp motion-soft">
+    <div>
+        <div class="phase-hero-topline">
+            <span class="dashboard-eyebrow">Fase {{ progress.phase.order|stringformat:"02d" }}</span>
+            <span class="phase-status phase-status-{{ progress.status|lower }}">
+                {{ progress.get_status_display }}
+            </span>
+        </div>
+        <h1>{{ progress.phase.name }}</h1>
+        <p>
+            {% if workspace_scope == "participant" %}
+                {% if progress.engagement_participant.participant.get_full_name %}
+                    {{ progress.engagement_participant.participant.get_full_name }}
+                {% else %}
+                    {{ progress.engagement_participant.participant.email }}
+                {% endif %}
+                · {{ engagement.title }}
+            {% else %}
+                {{ engagement.organization.name|default:engagement.title }}
+                · {{ engagement.program.name }}
+            {% endif %}
+        </p>
+    </div>
+    <div class="phase-hero-meta">
+        {% if progress.phase.requires_artifact %}
+            <span><i class="bi bi-paperclip"></i> Soporte requerido</span>
+        {% else %}
+            <span><i class="bi bi-paperclip"></i> Soporte opcional</span>
+        {% endif %}
+        {% if progress.phase.requires_review %}
+            <span><i class="bi bi-person-check"></i> Requiere revisión</span>
+        {% else %}
+            <span><i class="bi bi-lightning-charge"></i> Cierre directo</span>
+        {% endif %}
+    </div>
+</section>
+
+<div class="phase-workspace-grid">
+    <main class="phase-workspace-main">
+        <section class="phase-card animate__animated animate__fadeInUp motion-card">
+            <div class="phase-card-head">
+                <div class="phase-card-icon"><i class="bi bi-folder2-open"></i></div>
+                <div>
+                    <h2>Soportes de la fase</h2>
+                    <p>Adjunta evidencias, actas, documentos, imágenes o archivos de trabajo relacionados con esta etapa.</p>
+                </div>
+            </div>
+
+            {% if progress.phase.allows_artifacts %}
+                {% if progress.status != "PENDING" and progress.status != "COMPLETED" %}
+                    <form
+                        method="post"
+                        enctype="multipart/form-data"
+                        action="{% if workspace_scope == 'participant' %}{% url 'programs:participant-phase-artifact' progress.pk %}{% else %}{% url 'programs:engagement-phase-artifact' progress.pk %}{% endif %}"
+                        class="phase-upload-form"
+                    >
+                        {% csrf_token %}
+                        <div class="phase-upload-zone">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                            <div>
+                                <strong>Agregar soporte</strong>
+                                <span>PDF, Word, PowerPoint, Excel o imágenes · Máx. 20 MB</span>
+                            </div>
+                            {{ artifact_form.file }}
+                        </div>
+                        <div class="phase-upload-description">
+                            {{ artifact_form.description }}
+                            <button class="button button-primary button-compact" type="submit">
+                                <i class="bi bi-upload"></i> Subir soporte
+                            </button>
+                        </div>
+                    </form>
+                {% endif %}
+            {% endif %}
+
+            <div class="phase-artifact-list">
+                {% for artifact in progress.artifacts.all %}
+                    <article class="phase-artifact-item">
+                        <span class="phase-artifact-icon"><i class="bi bi-file-earmark-text"></i></span>
+                        <div class="phase-artifact-copy">
+                            <strong>{{ artifact.original_name }}</strong>
+                            <span>
+                                {{ artifact.size_bytes|filesizeformat }}
+                                · {{ artifact.uploaded_by.email }}
+                                · {{ artifact.created_at|date:"d/m/Y H:i" }}
+                            </span>
+                            {% if artifact.description %}<p>{{ artifact.description }}</p>{% endif %}
+                        </div>
+                        <a class="phase-artifact-download" href="{{ artifact.file.url }}" target="_blank" rel="noopener">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                            Abrir
+                        </a>
+                    </article>
+                {% empty %}
+                    <div class="phase-empty-state">
+                        <i class="bi bi-folder2"></i>
+                        <strong>Aún no hay soportes</strong>
+                        <span>Los documentos cargados durante esta fase aparecerán aquí.</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="phase-card animate__animated animate__fadeInUp motion-card motion-delay-1">
+            <div class="phase-card-head">
+                <div class="phase-card-icon"><i class="bi bi-chat-left-text"></i></div>
+                <div>
+                    <h2>Apreciaciones y seguimiento</h2>
+                    <p>Registra observaciones que harán parte de la trazabilidad profesional del acompañamiento.</p>
+                </div>
+            </div>
+
+            <div class="phase-comment-list">
+                {% for comment in progress.comments.all %}
+                    {% if not comment.is_internal or is_program_admin %}
+                        <article class="phase-comment">
+                            <span class="phase-comment-avatar">{{ comment.author.email|first|upper }}</span>
+                            <div>
+                                <div class="phase-comment-head">
+                                    <strong>{{ comment.author.email }}</strong>
+                                    {% if comment.is_internal %}<span>Nota interna</span>{% endif %}
+                                    <time>{{ comment.created_at|date:"d/m/Y H:i" }}</time>
+                                </div>
+                                <p>{{ comment.body|linebreaksbr }}</p>
+                            </div>
+                        </article>
+                    {% endif %}
+                {% empty %}
+                    <div class="phase-empty-state phase-empty-compact">
+                        <i class="bi bi-chat-square-text"></i>
+                        <strong>Sin apreciaciones todavía</strong>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if progress.status != "COMPLETED" %}
+                <form
+                    method="post"
+                    action="{% if workspace_scope == 'participant' %}{% url 'programs:participant-phase-comment' progress.pk %}{% else %}{% url 'programs:engagement-phase-comment' progress.pk %}{% endif %}"
+                    class="phase-comment-form"
+                >
+                    {% csrf_token %}
+                    <label class="form-label" for="{{ comment_form.body.id_for_label }}">{{ comment_form.body.label }}</label>
+                    {{ comment_form.body }}
+                    {% if is_program_admin %}
+                        <label class="phase-internal-check">
+                            <input type="checkbox" name="is_internal">
+                            <span>Guardar como nota interna del equipo</span>
+                        </label>
+                    {% endif %}
+                    <div class="phase-form-actions">
+                        <button class="button button-secondary" type="submit">
+                            <i class="bi bi-chat-dots"></i> Guardar apreciación
+                        </button>
+                    </div>
+                </form>
+            {% endif %}
+        </section>
+    </main>
+
+    <aside class="phase-workspace-aside">
+        <section class="phase-action-card animate__animated animate__fadeInRight motion-soft">
+            <div class="phase-action-head">
+                <span class="phase-action-number">{{ progress.phase.order|stringformat:"02d" }}</span>
+                <div>
+                    <span>Estado actual</span>
+                    <strong>{{ progress.get_status_display }}</strong>
+                </div>
+            </div>
+
+            <div class="phase-action-timeline">
+                <div class="{% if progress.started_at %}is-done{% endif %}">
+                    <span></span>
+                    <p><strong>Inicio</strong>{% if progress.started_at %}<small>{{ progress.started_at|date:"d/m/Y H:i" }}</small>{% endif %}</p>
+                </div>
+                <div class="{% if progress.status == 'SUBMITTED' or progress.status == 'UNDER_REVIEW' or progress.status == 'COMPLETED' %}is-done{% endif %}">
+                    <span></span>
+                    <p><strong>Envío / revisión</strong></p>
+                </div>
+                <div class="{% if progress.status == 'COMPLETED' %}is-done{% endif %}">
+                    <span></span>
+                    <p><strong>Completada</strong>{% if progress.completed_at %}<small>{{ progress.completed_at|date:"d/m/Y H:i" }}</small>{% endif %}</p>
+                </div>
+            </div>
+
+            {% if progress.notes %}
+                <div class="phase-review-note">
+                    <span>Última retroalimentación</span>
+                    <p>{{ progress.notes }}</p>
+                </div>
+            {% endif %}
+
+            {% if progress.status == "PENDING" %}
+                <div class="phase-locked-box">
+                    <i class="bi bi-lock"></i>
+                    <strong>Fase bloqueada</strong>
+                    <p>Se habilitará automáticamente cuando se complete la fase anterior.</p>
+                </div>
+            {% elif progress.status == "COMPLETED" %}
+                <div class="phase-completed-box">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <strong>Fase completada</strong>
+                    <p>La hoja de ruta ya registró esta etapa como finalizada.</p>
+                </div>
+            {% else %}
+                {% if not is_program_admin or progress.status != "SUBMITTED" %}
+                    <form
+                        method="post"
+                        action="{% if workspace_scope == 'participant' %}{% url 'programs:participant-phase-submit' progress.pk %}{% else %}{% url 'programs:engagement-phase-submit' progress.pk %}{% endif %}"
+                        data-swal-confirm="true"
+                        data-swal-title="¿Finalizar trabajo de esta fase?"
+                        data-swal-text="{% if progress.phase.requires_review %}La fase quedará enviada a revisión del administrador.{% else %}La fase quedará marcada como completada.{% endif %}"
+                        data-swal-confirm-text="{% if progress.phase.requires_review %}Sí, enviar a revisión{% else %}Sí, completar fase{% endif %}"
+                        data-swal-icon="question"
+                    >
+                        {% csrf_token %}
+                        <button class="button button-primary phase-primary-action" type="submit">
+                            <i class="bi {% if progress.phase.requires_review %}bi-send-check{% else %}bi-check2-circle{% endif %}"></i>
+                            {% if progress.phase.requires_review %}Enviar a revisión{% else %}Completar fase{% endif %}
+                        </button>
+                    </form>
+                {% endif %}
+            {% endif %}
+
+            {% if is_program_admin and progress.phase.requires_review and progress.status == "SUBMITTED" %}
+                <div class="phase-review-box">
+                    <span class="phase-review-kicker">Revisión administrativa</span>
+                    <textarea class="form-control" id="review-note" rows="3" placeholder="Retroalimentación opcional"></textarea>
+                    <div class="phase-review-actions">
+                        <form
+                            method="post"
+                            action="{% if workspace_scope == 'participant' %}{% url 'programs:participant-phase-review' progress.pk %}{% else %}{% url 'programs:engagement-phase-review' progress.pk %}{% endif %}"
+                            data-review-form="approve"
+                            data-swal-confirm="true"
+                            data-swal-title="¿Aprobar esta fase?"
+                            data-swal-text="Al aprobarla, la siguiente fase se habilitará automáticamente."
+                            data-swal-confirm-text="Sí, aprobar"
+                            data-swal-icon="success"
+                        >
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="approve">
+                            <input type="hidden" name="review_note">
+                            <button class="button button-primary" type="submit"><i class="bi bi-check2"></i> Aprobar</button>
+                        </form>
+                        <form
+                            method="post"
+                            action="{% if workspace_scope == 'participant' %}{% url 'programs:participant-phase-review' progress.pk %}{% else %}{% url 'programs:engagement-phase-review' progress.pk %}{% endif %}"
+                            data-review-form="reopen"
+                            data-swal-confirm="true"
+                            data-swal-title="¿Solicitar ajustes?"
+                            data-swal-text="La fase se reabrirá para permitir correcciones o nuevos soportes."
+                            data-swal-confirm-text="Sí, solicitar ajustes"
+                            data-swal-icon="warning"
+                        >
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="reopen">
+                            <input type="hidden" name="review_note">
+                            <button class="button button-secondary" type="submit"><i class="bi bi-arrow-counterclockwise"></i> Reabrir</button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="phase-guidance-card">
+            <span class="phase-guidance-icon"><i class="bi bi-lightbulb"></i></span>
+            <div>
+                <strong>¿Qué queda registrado?</strong>
+                <p>Soportes, fechas, estado, observaciones y responsable de cierre forman parte de la trazabilidad de la hoja de ruta.</p>
+            </div>
+        </section>
+    </aside>
+</div>
+{% endblock %}
+
+{% block dashboard_extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const reviewNote = document.getElementById("review-note");
+    document.querySelectorAll("[data-review-form]").forEach(form => {
+        form.addEventListener("submit", () => {
+            const hidden = form.querySelector('input[name="review_note"]');
+            if (hidden && reviewNote) hidden.value = reviewNote.value.trim();
+        });
+    });
+});
+</script>
+{% endblock %}
