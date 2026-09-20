@@ -158,7 +158,10 @@
                             <article class="final-dimension-card">
                                 <div class="final-dimension-score">
                                     <span>{{ dimension.order|stringformat:"02d" }}</span>
-                                    <strong>{{ dimension.average|default:"—" }}<small>/10</small></strong>
+                                    <strong class="final-dimension-band final-dimension-band-{{ dimension.band_label|lower }}">
+                                        {{ dimension.average|default:"—" }}<small>/10</small>
+                                        {% if dimension.band_label %}<em>{{ dimension.band_label }}</em>{% endif %}
+                                    </strong>
                                 </div>
                                 <h3>{{ dimension.name }}</h3>
                                 {% if dimension.appreciation.interpretation %}
@@ -244,6 +247,41 @@
                                     <div class="final-report-subsection">
                                         <strong>Apreciaciones registradas</strong>
                                         {% for comment in phase.comments %}<p>{{ comment.body }}</p>{% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                {% if phase.artifacts %}
+                                    <div class="final-report-subsection">
+                                        <strong>Soportes de la fase</strong>
+                                        <div class="final-report-artifacts">
+                                            {% for artifact in phase.artifacts %}
+                                                <article class="final-report-artifact">
+                                                    <div class="final-report-artifact-icon">
+                                                        <i class="bi bi-paperclip"></i>
+                                                    </div>
+                                                    <div class="final-report-artifact-info">
+                                                        <b>{{ artifact.name }}</b>
+                                                        {% if artifact.description %}<p>{{ artifact.description }}</p>{% endif %}
+                                                        <span>
+                                                            {% if artifact.size_bytes %}{{ artifact.size_bytes|filesizeformat }}{% endif %}
+                                                            {% if artifact.created_at %} · {{ artifact.created_at|slice:":10" }}{% endif %}
+                                                        </span>
+                                                    </div>
+                                                    {% if artifact.url %}
+                                                        <a
+                                                            class="button button-secondary button-compact no-print"
+                                                            href="{{ artifact.url }}"
+                                                            target="_blank"
+                                                            rel="noopener"
+                                                        >
+                                                            <i class="bi bi-box-arrow-up-right"></i> Abrir soporte
+                                                        </a>
+                                                    {% else %}
+                                                        <span class="final-report-artifact-unavailable">Archivo no disponible</span>
+                                                    {% endif %}
+                                                </article>
+                                            {% endfor %}
+                                        </div>
                                     </div>
                                 {% endif %}
                             </article>
