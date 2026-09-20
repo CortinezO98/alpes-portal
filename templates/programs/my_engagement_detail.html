@@ -15,6 +15,9 @@
     <a class="button button-secondary" href="{% url 'programs:roadmap-detail' participation.pk %}">
         <i class="bi bi-journal-text"></i> Ver hoja de ruta
     </a>
+    <a class="button button-secondary" href="{% url 'reports:program-individual' participation.pk %}">
+        <i class="bi bi-file-earmark-richtext"></i> Reporte individual
+    </a>
 </div>
 <section class="journey-card">
     <ol class="journey-timeline">
