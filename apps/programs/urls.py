@@ -21,6 +21,7 @@ from .views import (
     MyEngagementListView,
     OrganizationCreateView,
     ParticipantPhaseArtifactCreateView,
+    PhaseArtifactDownloadView,
     ParticipantPhaseCommentCreateView,
     ParticipantPhaseDetailView,
     ParticipantPhaseReviewView,
@@ -114,6 +115,11 @@ urlpatterns = [
         "fases/participante/<int:pk>/soportes/",
         ParticipantPhaseArtifactCreateView.as_view(),
         name="participant-phase-artifact",
+    ),
+    path(
+        "soportes/<int:pk>/abrir/",
+        PhaseArtifactDownloadView.as_view(),
+        name="phase-artifact-download",
     ),
     path(
         "fases/participante/<int:pk>/comentarios/",
