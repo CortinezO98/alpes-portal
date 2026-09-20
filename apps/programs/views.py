@@ -274,6 +274,21 @@ class ParticipantProgressCompleteView(ProgramAdminMixin, View):
                 )
             )
 
+        if engagement.mode == Engagement.Mode.ORGANIZATIONAL:
+            report_phase = membership.phase_progress.filter(
+                phase__code="reporte-individual"
+            ).first()
+            if report_phase:
+                incomplete_exists = ParticipantPhase.objects.filter(
+                    engagement_participant__engagement=engagement,
+                    engagement_participant__is_active=True,
+                    phase=report_phase.phase,
+                ).exclude(status=ParticipantPhase.Status.COMPLETED).exists()
+                if not incomplete_exists:
+                    engagement.phase_progress.filter(
+                        status=ParticipantPhase.Status.PENDING
+                    ).update(status=ParticipantPhase.Status.AVAILABLE)
+
         messages.success(
             request,
             f"El proceso de {membership.participant.email} quedó marcado como completado.",
