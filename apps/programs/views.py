@@ -528,22 +528,46 @@ class ParticipantPhaseDetailView(LoginRequiredMixin, DetailView):
                 for goal in action_goals
             }
             context["dream_map_options"] = []
+            context["dream_map_pending_count"] = 0
             if map_progress:
-                context["dream_map_options"] = [
-                    {
-                        "node": node,
-                        "already_added": (
-                            self.object.action_goals.filter(source_node=node).exists()
-                            or (
-                                node.title.strip().lower(),
-                                (node.description or "").strip().lower(),
-                                node.target_date,
-                            )
-                            in existing_goal_keys
-                        ),
-                    }
-                    for node in map_progress.dream_map_nodes.select_related("parent").all()
-                ]
+                nodes = list(
+                    map_progress.dream_map_nodes.select_related("parent").all()
+                )
+                by_id = {node.pk: node for node in nodes}
+
+                def node_path(node):
+                    labels = [node.title]
+                    seen = {node.pk}
+                    parent = node.parent
+                    while parent and parent.pk not in seen:
+                        seen.add(parent.pk)
+                        labels.append(parent.title)
+                        parent = by_id.get(parent.parent_id)
+                    labels.reverse()
+                    return " → ".join(labels)
+
+                options = []
+                for node in nodes:
+                    already_added = (
+                        self.object.action_goals.filter(source_node=node).exists()
+                        or (
+                            node.title.strip().lower(),
+                            (node.description or "").strip().lower(),
+                            node.target_date,
+                        )
+                        in existing_goal_keys
+                    )
+                    options.append(
+                        {
+                            "node": node,
+                            "already_added": already_added,
+                            "path": node_path(node),
+                        }
+                    )
+                context["dream_map_options"] = options
+                context["dream_map_pending_count"] = sum(
+                    1 for option in options if not option["already_added"]
+                )
 
         return context
 
