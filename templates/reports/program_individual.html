@@ -62,6 +62,22 @@
             </div>
             {% endif %}
         </div>
+        {% if not can_generate_report %}
+        <div class="report-readiness-warning">
+            <i class="bi bi-lock"></i>
+            <div>
+                <strong>El reporte todavía no puede cerrarse</strong>
+                <p>Completa las fases anteriores antes de generar una versión final.</p>
+                {% if pending_report_phases %}
+                <ul>
+                    {% for pending in pending_report_phases %}
+                        <li>{{ pending.phase.order }}. {{ pending.phase.name }} · {{ pending.get_status_display }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
         <form method="post" action="{% url 'reports:program-individual-generate' participation.pk %}" class="report-editor-form">
             {% csrf_token %}
             <div class="report-editor-grid">
@@ -87,6 +103,7 @@
                 <button
                     class="button button-primary"
                     type="submit"
+                    {% if not can_generate_report %}disabled aria-disabled="true"{% endif %}
                     data-swal-confirm="true"
                     data-swal-title="¿Generar nueva versión?"
                     data-swal-text="Se guardará una fotografía inmutable del estado actual del acompañamiento."
