@@ -92,6 +92,31 @@
                         <div><dt>Finalización</dt><dd>{{ progress.completed_at|date:"d/m/Y H:i"|default:"Pendiente" }}</dd></div>
                     </dl>
 
+                    {% if progress.phase.code == "charla-inicial" and progress.consultant_experience %}
+                        <div class="roadmap-block">
+                            <h3>Charla y experiencia del consultor</h3>
+                            <div class="roadmap-structured-list">
+                                <article>
+                                    <div>
+                                        <strong>{{ progress.consultant_experience.session_date|date:"d/m/Y" }} · {{ progress.consultant_experience.topic }}</strong>
+                                    </div>
+                                    {% if progress.consultant_experience.consultant_experience %}
+                                        <p><b>Experiencia compartida:</b> {{ progress.consultant_experience.consultant_experience }}</p>
+                                    {% endif %}
+                                    {% if progress.consultant_experience.participant_learnings %}
+                                        <p><b>Aprendizajes:</b> {{ progress.consultant_experience.participant_learnings }}</p>
+                                    {% endif %}
+                                    {% if progress.consultant_experience.commitments %}
+                                        <p><b>Compromisos:</b> {{ progress.consultant_experience.commitments }}</p>
+                                    {% endif %}
+                                    {% if progress.consultant_experience.consultant_appreciation and is_program_admin %}
+                                        <p><b>Apreciación del consultor:</b> {{ progress.consultant_experience.consultant_appreciation }}</p>
+                                    {% endif %}
+                                </article>
+                            </div>
+                        </div>
+                    {% endif %}
+
                     {% if progress.phase.code == "conversaciones" and progress.transformation_sessions.all %}
                         <div class="roadmap-block">
                             <h3>Conversaciones transformadoras</h3>
