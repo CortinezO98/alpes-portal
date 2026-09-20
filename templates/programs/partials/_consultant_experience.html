@@ -1,0 +1,102 @@
+{% if progress.phase.code == "charla-inicial" %}
+<section class="phase-card phase-special-card animate__animated animate__fadeInUp motion-card">
+    <div class="phase-card-head">
+        <div class="phase-card-icon"><i class="bi bi-person-video3"></i></div>
+        <div>
+            <h2>Charla, experiencia y lecciones aprendidas</h2>
+            <p>Registra el contexto de la charla, los aprendizajes del participante, compromisos y la apreciación profesional del consultor.</p>
+        </div>
+    </div>
+
+    {% if consultant_experience_record %}
+        <div class="consultant-experience-summary">
+            <div class="consultant-experience-meta">
+                <span><i class="bi bi-calendar3"></i> {{ consultant_experience_record.session_date|date:"d/m/Y" }}</span>
+                <span><i class="bi bi-person-check"></i> {{ consultant_experience_record.updated_by.email }}</span>
+            </div>
+            <h3>{{ consultant_experience_record.topic }}</h3>
+
+            {% if consultant_experience_record.consultant_experience %}
+            <div class="special-content-block">
+                <strong>Experiencia y contenido compartido</strong>
+                <p>{{ consultant_experience_record.consultant_experience|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+
+            {% if consultant_experience_record.participant_learnings %}
+            <div class="special-content-block">
+                <strong>Aprendizajes del participante</strong>
+                <p>{{ consultant_experience_record.participant_learnings|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+
+            {% if consultant_experience_record.commitments %}
+            <div class="special-content-block">
+                <strong>Compromisos</strong>
+                <p>{{ consultant_experience_record.commitments|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+
+            {% if consultant_experience_record.consultant_appreciation and is_program_admin %}
+            <div class="session-consultant-note">
+                <i class="bi bi-person-check"></i>
+                <div>
+                    <strong>Apreciación del consultor</strong>
+                    <p>{{ consultant_experience_record.consultant_appreciation|linebreaksbr }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="phase-empty-state phase-empty-compact">
+            <i class="bi bi-person-video3"></i>
+            <strong>La charla aún no ha sido documentada</strong>
+            <span>El consultor debe registrar la sesión antes de enviar la fase a revisión.</span>
+        </div>
+    {% endif %}
+
+    {% if is_program_admin and progress.status != "PENDING" and progress.status != "COMPLETED" and progress.status != "SUBMITTED" and progress.status != "UNDER_REVIEW" %}
+    <details class="special-create-panel" {% if not consultant_experience_record %}open{% endif %}>
+        <summary>
+            <i class="bi bi-pencil-square"></i>
+            {% if consultant_experience_record %}Editar registro de la charla{% else %}Registrar charla{% endif %}
+        </summary>
+        <form method="post" action="{% url 'programs:consultant-experience-save' progress.pk %}" class="special-form">
+            {% csrf_token %}
+            <div class="special-form-grid">
+                <div>
+                    <label class="form-label">{{ consultant_experience_form.session_date.label }}</label>
+                    {{ consultant_experience_form.session_date }}
+                </div>
+                <div>
+                    <label class="form-label">{{ consultant_experience_form.topic.label }}</label>
+                    {{ consultant_experience_form.topic }}
+                </div>
+                <div class="special-span-two">
+                    <label class="form-label">{{ consultant_experience_form.consultant_experience.label }}</label>
+                    {{ consultant_experience_form.consultant_experience }}
+                </div>
+                <div>
+                    <label class="form-label">{{ consultant_experience_form.participant_learnings.label }}</label>
+                    {{ consultant_experience_form.participant_learnings }}
+                </div>
+                <div>
+                    <label class="form-label">{{ consultant_experience_form.commitments.label }}</label>
+                    {{ consultant_experience_form.commitments }}
+                </div>
+                <div class="special-span-two">
+                    <label class="form-label">{{ consultant_experience_form.consultant_appreciation.label }}</label>
+                    {{ consultant_experience_form.consultant_appreciation }}
+                </div>
+            </div>
+            <div class="special-form-actions">
+                <button class="button button-primary" type="submit">
+                    <i class="bi bi-check2-circle"></i>
+                    {% if consultant_experience_record %}Guardar cambios{% else %}Guardar charla{% endif %}
+                </button>
+            </div>
+        </form>
+    </details>
+    {% endif %}
+</section>
+{% endif %}
