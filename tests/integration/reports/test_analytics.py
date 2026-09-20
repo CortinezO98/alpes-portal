@@ -256,6 +256,17 @@ def test_admin_generates_versioned_individual_program_report(client, report_setu
         phase__order__lt=report_progress.phase.order
     ).update(status=ParticipantPhase.Status.COMPLETED)
 
+    for dimension in completed.template.dimensions.all():
+        DimensionAppreciation.objects.create(
+            assessment=completed,
+            dimension=dimension,
+            consultant=admin,
+            interpretation=f"Lectura {dimension.name}",
+            strengths="Fortaleza",
+            opportunities="Oportunidad",
+            recommendation="Recomendación",
+        )
+
     client.force_login(admin)
     response = client.post(
         reverse(
