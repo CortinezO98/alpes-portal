@@ -44,7 +44,7 @@ class AnalyticsFilterForm(forms.Form):
         return cleaned
 
 
-from .models import DimensionAppreciation
+from .models import DimensionAppreciation, IndividualReportVersion, OrganizationalReportVersion
 
 
 class DimensionAppreciationForm(forms.ModelForm):
@@ -86,4 +86,67 @@ class DimensionAppreciationForm(forms.ModelForm):
             "strengths": "Fortalezas identificadas",
             "opportunities": "Oportunidades",
             "recommendation": "Recomendación",
+        }
+
+
+
+class IndividualReportVersionForm(forms.ModelForm):
+    class Meta:
+        model = IndividualReportVersion
+        fields = (
+            "executive_summary",
+            "integral_appreciation",
+            "recommendations",
+            "conclusions",
+        )
+        widgets = {
+            "executive_summary": forms.Textarea(
+                attrs={"class": "form-control", "rows": 4, "placeholder": "Resumen ejecutivo del proceso..."}
+            ),
+            "integral_appreciation": forms.Textarea(
+                attrs={"class": "form-control", "rows": 5, "placeholder": "Lectura integral del acompañamiento..."}
+            ),
+            "recommendations": forms.Textarea(
+                attrs={"class": "form-control", "rows": 5, "placeholder": "Recomendaciones profesionales..."}
+            ),
+            "conclusions": forms.Textarea(
+                attrs={"class": "form-control", "rows": 4, "placeholder": "Conclusiones del proceso..."}
+            ),
+        }
+        labels = {
+            "executive_summary": "Resumen ejecutivo",
+            "integral_appreciation": "Apreciación integral",
+            "recommendations": "Recomendaciones",
+            "conclusions": "Conclusiones",
+        }
+
+
+class OrganizationalReportVersionForm(forms.ModelForm):
+    class Meta:
+        model = OrganizationalReportVersion
+        fields = (
+            "executive_summary",
+            "organizational_appreciation",
+            "recommendations",
+            "conclusions",
+        )
+        widgets = {
+            "executive_summary": forms.Textarea(
+                attrs={"class": "form-control", "rows": 4, "placeholder": "Resumen ejecutivo del acompañamiento organizacional..."}
+            ),
+            "organizational_appreciation": forms.Textarea(
+                attrs={"class": "form-control", "rows": 5, "placeholder": "Lectura profesional de los resultados agregados..."}
+            ),
+            "recommendations": forms.Textarea(
+                attrs={"class": "form-control", "rows": 5, "placeholder": "Recomendaciones para la organización..."}
+            ),
+            "conclusions": forms.Textarea(
+                attrs={"class": "form-control", "rows": 4, "placeholder": "Conclusiones organizacionales..."}
+            ),
+        }
+        labels = {
+            "executive_summary": "Resumen ejecutivo",
+            "organizational_appreciation": "Apreciación organizacional",
+            "recommendations": "Recomendaciones",
+            "conclusions": "Conclusiones",
         }
