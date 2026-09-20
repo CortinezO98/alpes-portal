@@ -89,7 +89,7 @@
                         <small>{{ request.user.email }}</small>
                     </div>
                 </div>
-                <form method="post" action="{% url 'accounts:logout' %}">
+                <form method="post" action="{% url 'accounts:logout' %}" data-swal-confirm="true" data-swal-title="¿Cerrar sesión?" data-swal-text="Tendrás que iniciar sesión nuevamente para volver a entrar." data-swal-confirm-text="Sí, cerrar sesión" data-swal-icon="question">
                     {% csrf_token %}
                     <button class="app-logout" type="submit">
                         <i class="bi bi-box-arrow-right"></i>
@@ -120,16 +120,6 @@
         </header>
 
         <main class="app-content">
-            {% if messages %}
-                <div class="app-messages" aria-live="polite">
-                    {% for message in messages %}
-                        <div class="app-message app-message-{{ message.tags|default:'info' }}">
-                            <i class="bi {% if message.tags == 'success' %}bi-check-circle{% elif message.tags == 'error' %}bi-exclamation-triangle{% else %}bi-info-circle{% endif %}"></i>
-                            <span>{{ message }}</span>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
             {% block dashboard_content %}{% endblock %}
         </main>
     </div>
