@@ -378,6 +378,14 @@ class ParticipantPhaseArtifactCreateView(LoginRequiredMixin, View):
         if not progress.phase.allows_artifacts:
             messages.error(request, "Esta fase no admite soportes.")
             return redirect("programs:participant-phase-detail", pk=progress.pk)
+        if progress.status in {
+            ParticipantPhase.Status.PENDING,
+            ParticipantPhase.Status.COMPLETED,
+            ParticipantPhase.Status.SUBMITTED,
+            ParticipantPhase.Status.UNDER_REVIEW,
+        }:
+            messages.error(request, "La fase no está disponible para cargar soportes.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
 
         form = PhaseArtifactForm(request.POST, request.FILES)
         if not form.is_valid():
@@ -410,6 +418,12 @@ class ParticipantPhaseArtifactCreateView(LoginRequiredMixin, View):
 class ParticipantPhaseCommentCreateView(LoginRequiredMixin, View):
     def post(self, request, pk):
         progress = _participant_phase_for_request(request, pk)
+        if progress.status in {
+            ParticipantPhase.Status.PENDING,
+            ParticipantPhase.Status.COMPLETED,
+        }:
+            messages.error(request, "La fase no está disponible para nuevas apreciaciones.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
         form = PhaseCommentForm(request.POST)
         if not form.is_valid():
             messages.error(request, "Escribe una apreciación antes de guardarla.")
@@ -755,6 +769,7 @@ class ActionPlanItemUpdateView(LoginRequiredMixin, View):
             messages.error(request, "La fase no está disponible para edición.")
             return redirect("programs:participant-phase-detail", pk=progress.pk)
 
+        previous_appreciation = item.consultant_appreciation
         form = ActionPlanItemForm(request.POST, instance=item)
         if not form.is_valid():
             messages.error(request, "No fue posible actualizar la acción.")
@@ -762,8 +777,102 @@ class ActionPlanItemUpdateView(LoginRequiredMixin, View):
 
         updated = form.save(commit=False)
         if not _user_is_program_admin(request.user):
-            updated.consultant_appreciation = item.consultant_appreciation
+            updated.consultant_appreciation = previous_appreciation
         updated.save()
         _mark_phase_in_progress(progress)
         messages.success(request, "La acción fue actualizada.")
+        return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+
+
+class TransformationSessionUpdateView(LoginRequiredMixin, View):
+    def post(self, request, pk, session_pk):
+        progress = _participant_phase_for_request(request, pk)
+        session = get_object_or_404(
+            TransformationSession,
+            pk=session_pk,
+            participant_phase=progress,
+        )
+        if progress.status in {
+            ParticipantPhase.Status.PENDING,
+            ParticipantPhase.Status.COMPLETED,
+            ParticipantPhase.Status.SUBMITTED,
+            ParticipantPhase.Status.UNDER_REVIEW,
+        }:
+            messages.error(request, "La sesión no puede editarse en el estado actual de la fase.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        previous_appreciation = session.consultant_appreciation
+        form = TransformationSessionForm(request.POST, instance=session)
+        if not form.is_valid():
+            messages.error(request, "Revisa la información de la sesión.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        updated = form.save(commit=False)
+        if not _user_is_program_admin(request.user):
+            updated.consultant_appreciation = previous_appreciation
+        updated.save()
+        _mark_phase_in_progress(progress)
+        messages.success(request, "La sesión fue actualizada.")
+        return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+
+class DreamChallengeNodeUpdateView(LoginRequiredMixin, View):
+    def post(self, request, pk, node_pk):
+        progress = _participant_phase_for_request(request, pk)
+        node = get_object_or_404(
+            DreamChallengeNode,
+            pk=node_pk,
+            participant_phase=progress,
+        )
+        if progress.status in {
+            ParticipantPhase.Status.PENDING,
+            ParticipantPhase.Status.COMPLETED,
+            ParticipantPhase.Status.SUBMITTED,
+            ParticipantPhase.Status.UNDER_REVIEW,
+        }:
+            messages.error(request, "El mapa no puede editarse en el estado actual de la fase.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        form = DreamChallengeNodeForm(
+            request.POST,
+            instance=node,
+            participant_phase=progress,
+        )
+        form.fields["parent"].queryset = form.fields["parent"].queryset.exclude(pk=node.pk)
+        if not form.is_valid():
+            messages.error(request, "Revisa la información del elemento del mapa.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        form.save()
+        _mark_phase_in_progress(progress)
+        messages.success(request, "El elemento del mapa fue actualizado.")
+        return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+
+class ActionPlanGoalUpdateView(LoginRequiredMixin, View):
+    def post(self, request, pk, goal_pk):
+        progress = _participant_phase_for_request(request, pk)
+        goal = get_object_or_404(
+            ActionPlanGoal,
+            pk=goal_pk,
+            participant_phase=progress,
+        )
+        if progress.status in {
+            ParticipantPhase.Status.PENDING,
+            ParticipantPhase.Status.COMPLETED,
+            ParticipantPhase.Status.SUBMITTED,
+            ParticipantPhase.Status.UNDER_REVIEW,
+        }:
+            messages.error(request, "La meta no puede editarse en el estado actual de la fase.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        form = ActionPlanGoalForm(request.POST, instance=goal)
+        if not form.is_valid():
+            messages.error(request, "Revisa la información de la meta.")
+            return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+        form.save()
+        _mark_phase_in_progress(progress)
+        messages.success(request, "La meta fue actualizada.")
         return redirect("programs:participant-phase-detail", pk=progress.pk)
