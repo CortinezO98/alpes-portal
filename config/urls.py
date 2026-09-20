@@ -22,6 +22,10 @@ urlpatterns = [
         include("apps.reports.urls"),
     ),
     path(
+        "programas/",
+        include("apps.programs.urls"),
+    ),
+    path(
         "auditoria/",
         include("apps.audit.urls"),
     ),
