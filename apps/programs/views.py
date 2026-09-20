@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.views import View
@@ -31,6 +32,7 @@ from .models import (
     EngagementPhase,
     Organization,
     ParticipantPhase,
+    PhaseArtifact,
     PhaseComment,
     TransformationSession,
 )
@@ -612,6 +614,38 @@ class ConsultantExperienceSaveView(ProgramAdminMixin, View):
         _mark_phase_in_progress(progress)
         messages.success(request, "La charla y experiencia del consultor fue guardada.")
         return redirect("programs:participant-phase-detail", pk=progress.pk)
+
+
+class PhaseArtifactDownloadView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        artifact = get_object_or_404(
+            PhaseArtifact.objects.select_related(
+                "participant_phase__engagement_participant__participant",
+                "participant_phase__engagement_participant__engagement",
+                "engagement_phase__engagement",
+            ),
+            pk=pk,
+        )
+        allowed = _user_is_program_admin(request.user)
+        if artifact.participant_phase_id:
+            allowed = allowed or (
+                artifact.participant_phase.engagement_participant.participant_id
+                == request.user.id
+            )
+        if not allowed:
+            raise Http404
+        if not artifact.file:
+            raise Http404
+        try:
+            file_handle = artifact.file.open("rb")
+        except (FileNotFoundError, OSError):
+            raise Http404
+        return FileResponse(
+            file_handle,
+            as_attachment=False,
+            filename=artifact.original_name,
+            content_type=artifact.content_type or "application/octet-stream",
+        )
 
 
 class ParticipantPhaseArtifactCreateView(LoginRequiredMixin, View):
