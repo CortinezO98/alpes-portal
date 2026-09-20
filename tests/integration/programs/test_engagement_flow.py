@@ -144,7 +144,7 @@ def test_unified_form_creates_company_process_participant_and_assessment(client,
         reverse("programs:engagement-create"),
         {
             "mode": Engagement.Mode.ORGANIZATIONAL,
-            "title": "Jubilación Plena · Empresa Prueba",
+            "title": "",
             "program": program.pk,
             "organization": "",
             "create_organization": "on",
@@ -163,11 +163,12 @@ def test_unified_form_creates_company_process_participant_and_assessment(client,
         },
     )
 
-    engagement = Engagement.objects.get(title="Jubilación Plena · Empresa Prueba")
+    engagement = Engagement.objects.get(organization__name="Empresa Prueba")
     membership = engagement.participants.get(participant=participant)
 
     assert response.status_code == 302
     assert engagement.organization.name == "Empresa Prueba"
+    assert engagement.title.startswith("Jubilación Plena · Empresa Prueba ·")
     assert membership.phase_progress.count() == 7
     assert Assessment.objects.filter(
         participant=participant,
