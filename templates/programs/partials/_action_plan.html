@@ -1,0 +1,144 @@
+{% if progress.phase.code == "plan-accion" %}
+<section class="phase-card phase-special-card animate__animated animate__fadeInUp motion-card">
+    <div class="phase-card-head">
+        <div class="phase-card-icon"><i class="bi bi-list-check"></i></div>
+        <div>
+            <h2>Plan de acción</h2>
+            <p>Convierte los hallazgos del proceso en metas concretas, acciones medibles, responsables y fechas de compromiso.</p>
+        </div>
+    </div>
+
+    {% if progress.status != "PENDING" and progress.status != "COMPLETED" %}
+    <details class="special-create-panel" {% if not action_goals %}open{% endif %}>
+        <summary><i class="bi bi-bullseye"></i> Crear una meta</summary>
+        <form method="post" action="{% url 'programs:action-goal-create' progress.pk %}" class="special-form">
+            {% csrf_token %}
+            <div class="special-form-grid">
+                <div>
+                    <label class="form-label">{{ action_goal_form.title.label }}</label>
+                    {{ action_goal_form.title }}
+                </div>
+                <div>
+                    <label class="form-label">{{ action_goal_form.target_date.label }}</label>
+                    {{ action_goal_form.target_date }}
+                </div>
+                <div class="special-span-two">
+                    <label class="form-label">{{ action_goal_form.description.label }}</label>
+                    {{ action_goal_form.description }}
+                </div>
+            </div>
+            <div class="special-form-actions">
+                <button class="button button-primary" type="submit"><i class="bi bi-plus-lg"></i> Crear meta</button>
+            </div>
+        </form>
+    </details>
+    {% endif %}
+
+    <div class="action-goal-list">
+        {% for goal in action_goals %}
+            <article class="action-goal-card">
+                <div class="action-goal-head">
+                    <div class="action-goal-number">{{ forloop.counter|stringformat:"02d" }}</div>
+                    <div class="action-goal-title">
+                        <span>Meta</span>
+                        <h3>{{ goal.title }}</h3>
+                        {% if goal.description %}<p>{{ goal.description }}</p>{% endif %}
+                    </div>
+                    {% if goal.target_date %}<span class="action-goal-date"><i class="bi bi-calendar3"></i> {{ goal.target_date|date:"d/m/Y" }}</span>{% endif %}
+                </div>
+
+                <div class="action-items-table">
+                    {% for item in goal.items.all %}
+                        <article class="action-item">
+                            <div class="action-item-main">
+                                <div class="action-item-title">
+                                    <span class="action-status action-status-{{ item.status|lower }}">{{ item.get_status_display }}</span>
+                                    <strong>{{ item.action }}</strong>
+                                </div>
+                                <dl>
+                                    {% if item.indicator %}<div><dt>Indicador</dt><dd>{{ item.indicator }}</dd></div>{% endif %}
+                                    {% if item.responsible %}<div><dt>Responsable</dt><dd>{{ item.responsible }}</dd></div>{% endif %}
+                                    {% if item.due_date %}<div><dt>Fecha</dt><dd>{{ item.due_date|date:"d/m/Y" }}</dd></div>{% endif %}
+                                </dl>
+                                {% if item.consultant_appreciation and is_program_admin %}
+                                <div class="action-consultant-note"><i class="bi bi-person-check"></i><span>{{ item.consultant_appreciation }}</span></div>
+                                {% endif %}
+                            </div>
+
+                            {% if progress.status != "PENDING" and progress.status != "COMPLETED" %}
+                            <details class="action-edit">
+                                <summary><i class="bi bi-pencil"></i> Editar</summary>
+                                <form method="post" action="{% url 'programs:action-item-update' progress.pk item.pk %}" class="special-form special-form-inline">
+                                    {% csrf_token %}
+                                    <div>
+                                        <label>Acción</label>
+                                        <input class="form-control" name="action" value="{{ item.action }}" required>
+                                    </div>
+                                    <div>
+                                        <label>Indicador</label>
+                                        <input class="form-control" name="indicator" value="{{ item.indicator }}">
+                                    </div>
+                                    <div>
+                                        <label>Responsable</label>
+                                        <input class="form-control" name="responsible" value="{{ item.responsible }}">
+                                    </div>
+                                    <div>
+                                        <label>Fecha</label>
+                                        <input class="form-control" type="date" name="due_date" value="{{ item.due_date|date:'Y-m-d' }}">
+                                    </div>
+                                    <div>
+                                        <label>Estado</label>
+                                        <select class="form-select" name="status">
+                                            <option value="PENDING" {% if item.status == "PENDING" %}selected{% endif %}>Pendiente</option>
+                                            <option value="IN_PROGRESS" {% if item.status == "IN_PROGRESS" %}selected{% endif %}>En curso</option>
+                                            <option value="COMPLETED" {% if item.status == "COMPLETED" %}selected{% endif %}>Completada</option>
+                                        </select>
+                                    </div>
+                                    {% if is_program_admin %}
+                                    <div class="special-span-two">
+                                        <label>Apreciación del consultor</label>
+                                        <textarea class="form-control" name="consultant_appreciation" rows="2">{{ item.consultant_appreciation }}</textarea>
+                                    </div>
+                                    {% else %}
+                                    <input type="hidden" name="consultant_appreciation" value="{{ item.consultant_appreciation }}">
+                                    {% endif %}
+                                    <div class="special-span-two special-form-actions"><button class="button button-secondary" type="submit">Guardar cambios</button></div>
+                                </form>
+                            </details>
+                            {% endif %}
+                        </article>
+                    {% empty %}
+                        <div class="action-empty">Esta meta todavía no tiene acciones.</div>
+                    {% endfor %}
+                </div>
+
+                {% if progress.status != "PENDING" and progress.status != "COMPLETED" %}
+                <details class="special-create-panel action-create-panel">
+                    <summary><i class="bi bi-plus-circle"></i> Agregar acción</summary>
+                    <form method="post" action="{% url 'programs:action-item-create' progress.pk goal.pk %}" class="special-form">
+                        {% csrf_token %}
+                        <div class="special-form-grid special-form-grid-three">
+                            <div class="special-span-three"><label>Acción</label>{{ action_item_form.action }}</div>
+                            <div><label>Indicador</label>{{ action_item_form.indicator }}</div>
+                            <div><label>Responsable</label>{{ action_item_form.responsible }}</div>
+                            <div><label>Fecha compromiso</label>{{ action_item_form.due_date }}</div>
+                            <div><label>Estado</label>{{ action_item_form.status }}</div>
+                            {% if is_program_admin %}
+                            <div class="special-span-three"><label>Apreciación del consultor</label>{{ action_item_form.consultant_appreciation }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="special-form-actions"><button class="button button-primary" type="submit">Agregar acción</button></div>
+                    </form>
+                </details>
+                {% endif %}
+            </article>
+        {% empty %}
+            <div class="phase-empty-state">
+                <i class="bi bi-bullseye"></i>
+                <strong>Aún no hay metas</strong>
+                <span>Crea la primera meta para comenzar el plan de acción.</span>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
