@@ -10,6 +10,7 @@ from django.views.generic import FormView, ListView, TemplateView
 
 from apps.accounts.mixins import RoleRequiredMixin
 from apps.accounts.models import User
+from apps.programs.services import mark_assessment_phase_completed, mark_assessment_phase_started
 
 from .forms import AssessmentAssignForm, DimensionAnswerForm, GeneralQuestionsForm
 from .models import Assessment, Dimension, Question
@@ -77,6 +78,7 @@ class AssessmentStartView(LoginRequiredMixin, View):
             assessment.status = Assessment.Status.IN_PROGRESS
             assessment.started_at = assessment.started_at or timezone.now()
             assessment.save(update_fields=("status", "started_at", "updated_at"))
+        mark_assessment_phase_started(assessment, actor=request.user)
 
         first_dimension = assessment.template.dimensions.order_by("order", "id").first()
         if not first_dimension:
@@ -141,6 +143,7 @@ class AssessmentDimensionView(LoginRequiredMixin, FormView):
             self.assessment.status = Assessment.Status.IN_PROGRESS
             self.assessment.started_at = self.assessment.started_at or timezone.now()
             self.assessment.save(update_fields=("status", "started_at", "updated_at"))
+        mark_assessment_phase_started(self.assessment, actor=self.request.user)
 
         form.save()
         next_dimension = self.assessment.template.dimensions.filter(
@@ -234,6 +237,7 @@ class AssessmentGeneralQuestionsView(LoginRequiredMixin, FormView):
         self.assessment.status = Assessment.Status.COMPLETED
         self.assessment.completed_at = timezone.now()
         self.assessment.save(update_fields=("status", "completed_at", "updated_at"))
+        mark_assessment_phase_completed(self.assessment, actor=self.request.user)
         messages.success(
             self.request,
             "Tu evaluación fue completada correctamente.",
