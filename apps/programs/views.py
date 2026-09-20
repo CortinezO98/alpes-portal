@@ -655,7 +655,12 @@ class TransformationSessionCreateView(LoginRequiredMixin, View):
         if progress.phase.code != "conversaciones":
             messages.error(request, "Esta fase no admite sesiones transformadoras.")
             return redirect("programs:participant-phase-detail", pk=progress.pk)
-        if progress.status in {ParticipantPhase.Status.PENDING, ParticipantPhase.Status.COMPLETED}:
+        if progress.status in {
+            ParticipantPhase.Status.PENDING,
+            ParticipantPhase.Status.COMPLETED,
+            ParticipantPhase.Status.SUBMITTED,
+            ParticipantPhase.Status.UNDER_REVIEW,
+        }:
             messages.error(request, "La fase no está disponible para edición.")
             return redirect("programs:participant-phase-detail", pk=progress.pk)
 
@@ -681,7 +686,12 @@ class DreamChallengeNodeCreateView(LoginRequiredMixin, View):
         if progress.phase.code != "mapa-retos-suenos":
             messages.error(request, "Esta fase no admite elementos del mapa.")
             return redirect("programs:participant-phase-detail", pk=progress.pk)
-        if progress.status in {ParticipantPhase.Status.PENDING, ParticipantPhase.Status.COMPLETED}:
+        if progress.status in {
+            ParticipantPhase.Status.PENDING,
+            ParticipantPhase.Status.COMPLETED,
+            ParticipantPhase.Status.SUBMITTED,
+            ParticipantPhase.Status.UNDER_REVIEW,
+        }:
             messages.error(request, "La fase no está disponible para edición.")
             return redirect("programs:participant-phase-detail", pk=progress.pk)
 
@@ -706,7 +716,12 @@ class ActionPlanGoalCreateView(LoginRequiredMixin, View):
         if progress.phase.code != "plan-accion":
             messages.error(request, "Esta fase no admite metas del plan de acción.")
             return redirect("programs:participant-phase-detail", pk=progress.pk)
-        if progress.status in {ParticipantPhase.Status.PENDING, ParticipantPhase.Status.COMPLETED}:
+        if progress.status in {
+            ParticipantPhase.Status.PENDING,
+            ParticipantPhase.Status.COMPLETED,
+            ParticipantPhase.Status.SUBMITTED,
+            ParticipantPhase.Status.UNDER_REVIEW,
+        }:
             messages.error(request, "La fase no está disponible para edición.")
             return redirect("programs:participant-phase-detail", pk=progress.pk)
 
@@ -736,7 +751,12 @@ class ActionPlanItemCreateView(LoginRequiredMixin, View):
         if progress.phase.code != "plan-accion":
             messages.error(request, "Esta fase no admite acciones.")
             return redirect("programs:participant-phase-detail", pk=progress.pk)
-        if progress.status in {ParticipantPhase.Status.PENDING, ParticipantPhase.Status.COMPLETED}:
+        if progress.status in {
+            ParticipantPhase.Status.PENDING,
+            ParticipantPhase.Status.COMPLETED,
+            ParticipantPhase.Status.SUBMITTED,
+            ParticipantPhase.Status.UNDER_REVIEW,
+        }:
             messages.error(request, "La fase no está disponible para edición.")
             return redirect("programs:participant-phase-detail", pk=progress.pk)
 
@@ -765,7 +785,12 @@ class ActionPlanItemUpdateView(LoginRequiredMixin, View):
             pk=item_pk,
             goal__participant_phase=progress,
         )
-        if progress.status in {ParticipantPhase.Status.PENDING, ParticipantPhase.Status.COMPLETED}:
+        if progress.status in {
+            ParticipantPhase.Status.PENDING,
+            ParticipantPhase.Status.COMPLETED,
+            ParticipantPhase.Status.SUBMITTED,
+            ParticipantPhase.Status.UNDER_REVIEW,
+        }:
             messages.error(request, "La fase no está disponible para edición.")
             return redirect("programs:participant-phase-detail", pk=progress.pk)
 
