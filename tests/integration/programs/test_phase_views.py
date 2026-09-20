@@ -582,6 +582,7 @@ def test_action_plan_lists_and_imports_nodes_from_dream_map(client, phase_views_
     )
     assert goal.description == "Ahorrar mensualmente para financiar viajes."
     assert str(goal.target_date) == "2027-06-30"
+    assert goal.source_node_id == node.pk
 
     action_plan.refresh_from_db()
     assert action_plan.status == ParticipantPhase.Status.IN_PROGRESS
@@ -597,3 +598,54 @@ def test_action_plan_lists_and_imports_nodes_from_dream_map(client, phase_views_
         reverse("programs:participant-phase-detail", kwargs={"pk": action_plan.pk})
     )
     assert b"Ya agregado" in detail.content
+
+
+@pytest.mark.django_db
+def test_dream_map_graph_exposes_linked_plan_actions(client, phase_views_setup):
+    admin, _, _, _, membership = phase_views_setup
+    dream_map = make_available(membership, "mapa-retos-suenos")
+    node = DreamChallengeNode.objects.create(
+        participant_phase=dream_map,
+        node_type=DreamChallengeNode.NodeType.GOAL,
+        title="Crear fondo de viajes",
+        description="Fondo destinado a viajes.",
+        priority=DreamChallengeNode.Priority.HIGH,
+        target_date="2027-06-30",
+        order=1,
+        created_by=admin,
+    )
+
+    action_plan = membership.phase_progress.get(phase__code="plan-accion")
+    goal = ActionPlanGoal.objects.create(
+        participant_phase=action_plan,
+        source_node=node,
+        title=node.title,
+        description=node.description,
+        target_date=node.target_date,
+        order=1,
+        created_by=admin,
+    )
+    ActionPlanItem.objects.create(
+        goal=goal,
+        action="Separar el 10% de los ingresos",
+        indicator="Aporte mensual registrado",
+        responsible="Participante",
+        due_date="2027-01-31",
+        status=ActionPlanItem.Status.IN_PROGRESS,
+        consultant_appreciation="Seguimiento mensual.",
+        order=1,
+        created_by=admin,
+    )
+
+    client.force_login(admin)
+    response = client.get(
+        reverse("programs:participant-phase-detail", kwargs={"pk": dream_map.pk})
+    )
+
+    assert response.status_code == 200
+    graph = response.context["dream_map_graph"]
+    assert len(graph) == 1
+    assert graph[0]["title"] == "Crear fondo de viajes"
+    assert graph[0]["goals"][0]["id"] == goal.pk
+    assert graph[0]["goals"][0]["items"][0]["action"] == "Separar el 10% de los ingresos"
+    assert b"Mapa mental de mi nueva etapa" in response.content
