@@ -1,0 +1,139 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Reporte organizacional | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/reports.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="final-report-page">
+    <div class="final-report-toolbar no-print">
+        <a class="page-back-link" href="{% url 'programs:engagement-detail' engagement.pk %}">
+            <i class="bi bi-arrow-left"></i> Volver al acompañamiento
+        </a>
+        {% if report_version %}
+            <button class="button button-secondary" type="button" onclick="window.print()">
+                <i class="bi bi-file-earmark-pdf"></i> Imprimir / Guardar PDF
+            </button>
+        {% endif %}
+    </div>
+
+    <section class="final-report-cover final-report-cover-organization">
+        <div class="final-report-cover-brand">ALPES</div>
+        <p class="dashboard-eyebrow">Reporte organizacional</p>
+        <h1>{{ engagement.program.name }}</h1>
+        <p>{{ engagement.organization.name }}</p>
+        <dl>
+            <div><dt>Proceso</dt><dd>{{ engagement.title }}</dd></div>
+            <div><dt>Consultor</dt><dd>{{ engagement.consultant.email }}</dd></div>
+            <div><dt>Estado</dt><dd>{{ engagement.get_status_display }}</dd></div>
+            {% if report_version %}<div><dt>Versión</dt><dd>v{{ report_version.version }} · {{ report_version.created_at|date:"d/m/Y H:i" }}</dd></div>{% endif %}
+        </dl>
+    </section>
+
+    <section class="report-editor no-print">
+        <div class="report-editor-head">
+            <div>
+                <p class="dashboard-eyebrow">Cierre organizacional</p>
+                <h2>{% if report_version %}Generar una nueva versión{% else %}Preparar reporte organizacional{% endif %}</h2>
+                <p>El informe usa datos agregados y no incorpora respuestas abiertas identificables de participantes.</p>
+            </div>
+            {% if report_versions %}
+            <div class="report-version-selector">
+                <label for="organization-version-select">Historial</label>
+                <select id="organization-version-select" onchange="if(this.value){window.location='?version='+this.value}">
+                    {% for version in report_versions %}
+                        <option value="{{ version.version }}" {% if report_version.version == version.version %}selected{% endif %}>
+                            v{{ version.version }} · {{ version.created_at|date:"d/m/Y H:i" }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+        </div>
+
+        <form method="post" action="{% url 'reports:program-organizational-generate' engagement.pk %}" class="report-editor-form">
+            {% csrf_token %}
+            <div class="report-editor-grid">
+                <div class="report-editor-field report-editor-span"><label>{{ report_form.executive_summary.label }}</label>{{ report_form.executive_summary }}</div>
+                <div class="report-editor-field"><label>{{ report_form.organizational_appreciation.label }}</label>{{ report_form.organizational_appreciation }}</div>
+                <div class="report-editor-field"><label>{{ report_form.recommendations.label }}</label>{{ report_form.recommendations }}</div>
+                <div class="report-editor-field report-editor-span"><label>{{ report_form.conclusions.label }}</label>{{ report_form.conclusions }}</div>
+            </div>
+            <div class="report-editor-actions">
+                <span><i class="bi bi-shield-lock"></i> Resultados agregados y versionados.</span>
+                <button class="button button-primary" type="submit" data-swal-confirm="true" data-swal-title="¿Generar reporte organizacional?" data-swal-text="Se guardará una nueva versión con los resultados agregados actuales." data-swal-confirm-text="Sí, generar reporte" data-swal-icon="question">
+                    <i class="bi bi-building-check"></i> Generar versión
+                </button>
+            </div>
+        </form>
+    </section>
+
+    {% if report_version %}
+    <article class="final-report-document">
+        <section class="organization-kpi-grid">
+            <article><span>Participantes</span><strong>{{ report_version.snapshot.participants.total }}</strong></article>
+            <article><span>Evaluaciones completadas</span><strong>{{ report_version.snapshot.participants.completed_assessments }}</strong></article>
+            <article><span>Reportes individuales</span><strong>{{ report_version.snapshot.participants.completed_individual_reports }}</strong></article>
+        </section>
+
+        <section class="final-report-section">
+            <span class="final-report-section-number">01</span>
+            <div><p class="dashboard-eyebrow">Síntesis</p><h2>Resumen ejecutivo</h2><p class="final-report-prose">{{ report_version.executive_summary|linebreaksbr }}</p></div>
+        </section>
+
+        <section class="final-report-section">
+            <span class="final-report-section-number">02</span>
+            <div>
+                <p class="dashboard-eyebrow">Resultados agregados</p>
+                <h2>Promedios por dimensión</h2>
+                <div class="organization-dimension-grid">
+                    {% for dimension in report_version.snapshot.dimension_averages %}
+                    <article>
+                        <span>{{ dimension.name }}</span>
+                        <strong>{{ dimension.average }}<small>/10</small></strong>
+                        <em>{{ dimension.participants }} participantes</em>
+                    </article>
+                    {% empty %}
+                    <p>No hay resultados cuantitativos disponibles.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="final-report-section">
+            <span class="final-report-section-number">03</span>
+            <div>
+                <p class="dashboard-eyebrow">Trazabilidad</p>
+                <h2>Avance del programa</h2>
+                <div class="organization-phase-summary">
+                    {% for phase in report_version.snapshot.phase_summary %}
+                    <article>
+                        <span>{{ phase.order|stringformat:"02d" }}</span>
+                        <div><strong>{{ phase.name }}</strong><small>Resumen agregado de estados de la fase.</small></div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="final-report-section"><span class="final-report-section-number">04</span><div><p class="dashboard-eyebrow">Lectura profesional</p><h2>Apreciación organizacional</h2><p class="final-report-prose">{{ report_version.organizational_appreciation|linebreaksbr }}</p></div></section>
+        <section class="final-report-section"><span class="final-report-section-number">05</span><div><p class="dashboard-eyebrow">Orientación</p><h2>Recomendaciones</h2><p class="final-report-prose">{{ report_version.recommendations|linebreaksbr }}</p></div></section>
+        <section class="final-report-section"><span class="final-report-section-number">06</span><div><p class="dashboard-eyebrow">Cierre</p><h2>Conclusiones</h2><p class="final-report-prose">{{ report_version.conclusions|linebreaksbr }}</p></div></section>
+
+        <div class="organization-privacy-note">
+            <i class="bi bi-shield-check"></i>
+            <span>{{ report_version.snapshot.privacy_note }}</span>
+        </div>
+    </article>
+    {% else %}
+    <section class="report-empty report-empty-large">
+        <i class="bi bi-buildings"></i>
+        <h2>El reporte organizacional aún no ha sido generado</h2>
+        <p>Debe completarse el reporte individual de todos los participantes antes del cierre organizacional.</p>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
