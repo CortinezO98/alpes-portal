@@ -3,6 +3,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
 from apps.accounts.models import User
+from apps.assessments.models import Assessment, AssessmentTemplate
 from apps.programs.models import (
     ActionPlanGoal,
     ActionPlanItem,
@@ -454,3 +455,86 @@ def test_admin_can_unlock_pending_phase_from_workspace(client, phase_views_setup
     )
     assert detail.status_code == 200
     assert b"Agregar soporte" in detail.content
+
+
+@pytest.mark.django_db
+def test_rueda_phase_reconciles_single_completed_unlinked_assessment(
+    client, phase_views_setup
+):
+    admin, participant, _, _, membership = phase_views_setup
+    template = AssessmentTemplate.objects.filter(
+        slug__startswith="alpes-jubilacion-plena"
+    ).order_by("-version", "-id").first()
+    assert template is not None
+
+    charla = membership.phase_progress.get(phase__code="charla-inicial")
+    charla.status = ParticipantPhase.Status.COMPLETED
+    charla.save(update_fields=("status", "updated_at"))
+
+    rueda = membership.phase_progress.get(phase__code="rueda-vida")
+    rueda.status = ParticipantPhase.Status.IN_PROGRESS
+    rueda.save(update_fields=("status", "updated_at"))
+
+    assessment = Assessment.objects.create(
+        template=template,
+        participant=participant,
+        created_by=admin,
+        status=Assessment.Status.COMPLETED,
+        started_at=timezone.now(),
+        completed_at=timezone.now(),
+    )
+    assert assessment.engagement_participant_id is None
+
+    client.force_login(admin)
+    response = client.get(
+        reverse("programs:participant-phase-detail", kwargs={"pk": rueda.pk})
+    )
+    assert response.status_code == 200
+
+    assessment.refresh_from_db()
+    rueda.refresh_from_db()
+    conversation = membership.phase_progress.get(phase__code="conversaciones")
+
+    assert assessment.engagement_participant_id == membership.pk
+    assert rueda.status == ParticipantPhase.Status.COMPLETED
+    assert conversation.status == ParticipantPhase.Status.AVAILABLE
+    assert response.context["assessment_reconciliation"]["status"] == "linked_completed"
+
+
+@pytest.mark.django_db
+def test_rueda_phase_does_not_guess_when_multiple_completed_assessments_exist(
+    client, phase_views_setup
+):
+    admin, participant, _, _, membership = phase_views_setup
+    template = AssessmentTemplate.objects.filter(
+        slug__startswith="alpes-jubilacion-plena"
+    ).order_by("-version", "-id").first()
+    assert template is not None
+
+    rueda = membership.phase_progress.get(phase__code="rueda-vida")
+    rueda.status = ParticipantPhase.Status.IN_PROGRESS
+    rueda.save(update_fields=("status", "updated_at"))
+
+    for _ in range(2):
+        Assessment.objects.create(
+            template=template,
+            participant=participant,
+            created_by=admin,
+            status=Assessment.Status.COMPLETED,
+            started_at=timezone.now(),
+            completed_at=timezone.now(),
+        )
+
+    client.force_login(admin)
+    response = client.get(
+        reverse("programs:participant-phase-detail", kwargs={"pk": rueda.pk})
+    )
+    assert response.status_code == 200
+    assert response.context["assessment_reconciliation"]["status"] == "ambiguous"
+    assert Assessment.objects.filter(
+        participant=participant,
+        engagement_participant=membership,
+    ).count() == 0
+
+    rueda.refresh_from_db()
+    assert rueda.status == ParticipantPhase.Status.IN_PROGRESS
