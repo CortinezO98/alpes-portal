@@ -8,66 +8,109 @@
 {% endblock %}
 
 {% block dashboard_content %}
-<section class="dashboard-header animate__animated animate__fadeInUp motion-soft">
-    <p class="dashboard-eyebrow">Gestión de accesos</p>
-    <h1 class="dashboard-title">Usuarios de la plataforma.</h1>
-    <p class="dashboard-description">Consulta las cuentas registradas y administra accesos con controles de privilegio.</p>
+<section class="page-hero page-hero-list animate__animated animate__fadeInUp motion-soft">
+    <div>
+        <p class="dashboard-eyebrow">Gestión de accesos</p>
+        <h1 class="dashboard-title">Usuarios</h1>
+        <p class="dashboard-description">Administra cuentas, roles y estados desde una vista clara y operativa.</p>
+    </div>
+    <a class="button button-primary" href="{% url 'accounts:user-management-create' %}">
+        <i class="bi bi-person-plus"></i>
+        Crear usuario
+    </a>
 </section>
 
-<div class="users-toolbar">
-    <p class="dashboard-description">{{ page_obj.paginator.count }} cuenta{{ page_obj.paginator.count|pluralize }} registrada{{ page_obj.paginator.count|pluralize }}.</p>
-    <a class="button button-primary" href="{% url 'accounts:user-management-create' %}">Crear usuario</a>
-</div>
+<section class="users-overview animate__animated animate__fadeInUp motion-card">
+    <div class="users-stat">
+        <span class="users-stat-icon"><i class="bi bi-people"></i></span>
+        <div><strong>{{ page_obj.paginator.count }}</strong><span>Cuentas registradas</span></div>
+    </div>
+    <div class="users-search">
+        <i class="bi bi-search"></i>
+        <input type="search" id="users-search" placeholder="Buscar por correo, rol o estado" autocomplete="off">
+    </div>
+</section>
 
 <div class="users-table-wrap animate__animated animate__fadeInUp motion-card">
     <table class="users-table">
         <thead>
             <tr>
-                <th>Correo</th>
+                <th>Usuario</th>
                 <th>Rol</th>
                 <th>Estado</th>
-                <th>Staff</th>
-                <th>Acciones</th>
+                <th>Acceso</th>
+                <th class="users-actions-heading">Acciones</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="users-table-body">
             {% for user in users %}
-                <tr>
+                <tr data-user-row data-search="{{ user.email|lower }} {{ user.get_role_display|lower }} {% if user.is_active %}activo{% else %}inactivo{% endif %}">
                     <td>
-                        <strong>{{ user.email }}</strong>
-                        {% if user.pk == request.user.pk %}
-                            <span class="user-self-label">Tu cuenta</span>
-                        {% endif %}
+                        <div class="user-identity">
+                            <span class="user-avatar">{{ user.email|first|upper }}</span>
+                            <div>
+                                <strong>{{ user.email }}</strong>
+                                {% if user.pk == request.user.pk %}<span class="user-self-label">Tu cuenta</span>{% endif %}
+                            </div>
+                        </div>
                     </td>
                     <td><span class="user-badge">{{ user.get_role_display }}</span></td>
                     <td>
                         {% if user.is_active %}
-                            <span class="user-status user-status-active">Activo</span>
+                            <span class="user-status user-status-active"><span></span>Activo</span>
                         {% else %}
-                            <span class="user-status user-status-inactive">Inactivo</span>
+                            <span class="user-status user-status-inactive"><span></span>Inactivo</span>
                         {% endif %}
                     </td>
-                    <td>{{ user.is_staff|yesno:"Sí,No" }}</td>
+                    <td>
+                        <span class="user-access-note">
+                            <i class="bi {% if user.is_staff %}bi-shield-check{% else %}bi-person{% endif %}"></i>
+                            {{ user.is_staff|yesno:"Administrativo,Estándar" }}
+                        </span>
+                    </td>
                     <td>
                         {% if not user.is_superuser and user.role != "SUPERADMIN" %}
                             <div class="user-actions">
-                                <a class="user-action-link" href="{% url 'accounts:user-management-edit' user.pk %}">Editar</a>
+                                <a class="user-action-icon" href="{% url 'accounts:user-management-edit' user.pk %}" aria-label="Editar {{ user.email }}" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
                                 <form method="post" action="{% url 'accounts:user-management-toggle-status' user.pk %}">
                                     {% csrf_token %}
-                                    <button class="user-action-link user-action-button" type="submit">
-                                        {% if user.is_active %}Desactivar{% else %}Activar{% endif %}
+                                    <button class="user-action-icon {% if user.is_active %}user-action-danger{% else %}user-action-success{% endif %}" type="submit" aria-label="{% if user.is_active %}Desactivar{% else %}Activar{% endif %} {{ user.email }}" title="{% if user.is_active %}Desactivar{% else %}Activar{% endif %}">
+                                        <i class="bi {% if user.is_active %}bi-person-x{% else %}bi-person-check{% endif %}"></i>
                                     </button>
                                 </form>
                             </div>
                         {% else %}
-                            <span class="user-protected">Protegido</span>
+                            <span class="user-protected"><i class="bi bi-lock"></i> Protegido</span>
                         {% endif %}
                     </td>
                 </tr>
             {% empty %}
-                <tr><td colspan="5">No hay usuarios registrados.</td></tr>
+                <tr><td colspan="5"><div class="users-empty"><i class="bi bi-people"></i><strong>No hay usuarios registrados</strong></div></td></tr>
             {% endfor %}
         </tbody>
     </table>
+    <div class="users-empty users-empty-search d-none" id="users-empty-search">
+        <i class="bi bi-search"></i>
+        <strong>No encontramos coincidencias</strong>
+        <span>Prueba con otro correo, rol o estado.</span>
+    </div>
 </div>
+
+{% if is_paginated %}
+<nav class="users-pagination" aria-label="Paginación de usuarios">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-left"></i> Anterior</a>
+    {% endif %}
+    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Siguiente <i class="bi bi-chevron-right"></i></a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block dashboard_extra_js %}
+<script src="{% static 'js/pages/users.js' %}"></script>
 {% endblock %}
