@@ -1,0 +1,39 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+{% block title %}Mi ruta | ALPES{% endblock %}
+{% block dashboard_extra_css %}<link rel="stylesheet" href="{% static 'css/pages/programs.css' %}">{% endblock %}
+{% block dashboard_content %}
+<section class="dashboard-header">
+    <p class="dashboard-eyebrow">{{ participation.engagement.program.name }}</p>
+    <h1 class="dashboard-title">{{ participation.engagement.title }}</h1>
+    <p class="dashboard-description">
+        {% if participation.engagement.organization %}{{ participation.engagement.organization.name }} · {% endif %}
+        {{ participation.progress_percent }}% del proceso completado.
+    </p>
+</section>
+<section class="journey-card">
+    <ol class="journey-timeline">
+        {% for progress in participation.phase_progress.all %}
+            {% if progress.phase.participant_visible %}
+                <li class="journey-step journey-step-{{ progress.status|lower }}">
+                    <div class="journey-marker">
+                        {% if progress.status == 'COMPLETED' %}✓{% elif progress.status == 'IN_PROGRESS' %}●{% else %}{{ progress.phase.order }}{% endif %}
+                    </div>
+                    <div class="journey-copy">
+                        <span>Fase {{ progress.phase.order|stringformat:"02d" }}</span>
+                        <h2>{{ progress.phase.name }}</h2>
+                        <p>{{ progress.get_status_display }}</p>
+                        {% if progress.phase.code == 'rueda-vida' %}
+                            {% if participation.assessments.all %}
+                                <a class="program-link" href="{% url 'assessments:my-list' %}">Ir a mi evaluación →</a>
+                            {% else %}
+                                <small>La evaluación todavía no ha sido asignada.</small>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</section>
+{% endblock %}
