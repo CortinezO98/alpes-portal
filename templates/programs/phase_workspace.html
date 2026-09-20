@@ -264,7 +264,26 @@
                     <p>La hoja de ruta ya registró esta etapa como finalizada.</p>
                 </div>
             {% else %}
-                {% if progress.phase.is_automatic %}
+                {% if progress.phase.code == "reporte-individual" %}
+                    <div class="phase-automatic-box">
+                        <i class="bi bi-file-earmark-richtext"></i>
+                        <strong>Cierre mediante reporte</strong>
+                        <p>Esta fase se completa automáticamente al generar una versión del reporte individual.</p>
+                        <a class="button button-primary phase-primary-action" href="{% url 'reports:program-individual' progress.engagement_participant.pk %}">
+                            <i class="bi bi-file-earmark-text"></i>
+                            {% if is_program_admin %}Preparar reporte{% else %}Ver reporte{% endif %}
+                        </a>
+                    </div>
+                {% elif progress.phase.code == "reporte-organizacional" %}
+                    <div class="phase-automatic-box">
+                        <i class="bi bi-buildings"></i>
+                        <strong>Cierre organizacional</strong>
+                        <p>Esta fase se completa al generar una versión del reporte organizacional agregado.</p>
+                        <a class="button button-primary phase-primary-action" href="{% url 'reports:program-organizational' engagement.pk %}">
+                            <i class="bi bi-bar-chart-line"></i> Preparar reporte organizacional
+                        </a>
+                    </div>
+                {% elif progress.phase.is_automatic %}
                     <div class="phase-automatic-box">
                         <i class="bi bi-lightning-charge-fill"></i>
                         <strong>Avance automático</strong>
