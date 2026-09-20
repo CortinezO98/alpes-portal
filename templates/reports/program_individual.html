@@ -75,6 +75,22 @@
                     {% endfor %}
                 </ul>
                 {% endif %}
+                {% if not completed_assessment %}
+                    <p>También falta completar la evaluación Rueda de la Vida.</p>
+                {% endif %}
+                {% if missing_appreciation_dimensions %}
+                    <p>Faltan apreciaciones profesionales en {{ missing_appreciation_dimensions|length }} dimensión(es):</p>
+                    <ul>
+                        {% for dimension in missing_appreciation_dimensions %}
+                            <li>{{ dimension.name }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% if completed_assessment %}
+                    <a class="program-link" href="{% url 'reports:assessment-detail' completed_assessment.pk %}">
+                        Completar apreciaciones →
+                    </a>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
         {% endif %}
