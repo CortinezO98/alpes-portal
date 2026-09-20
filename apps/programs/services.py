@@ -1,22 +1,229 @@
 from django.db import transaction
 from django.utils import timezone
 
-from .models import Engagement, EngagementParticipant, Organization, ParticipantPhase
+from .models import (
+    Engagement,
+    EngagementParticipant,
+    EngagementPhase,
+    Organization,
+    ParticipantPhase,
+    ProgramPhase,
+)
+
+
+@transaction.atomic
+def ensure_engagement_phases(engagement):
+    phases = engagement.program.phases.filter(
+        scope=ProgramPhase.Scope.ENGAGEMENT
+    ).order_by("order", "id")
+    for phase in phases:
+        if engagement.mode == Engagement.Mode.INDIVIDUAL:
+            continue
+        EngagementPhase.objects.get_or_create(
+            engagement=engagement,
+            phase=phase,
+        )
 
 
 @transaction.atomic
 def ensure_participant_phases(engagement_participant):
-    phases = engagement_participant.engagement.program.phases.order_by("order", "id")
+    phases = engagement_participant.engagement.program.phases.filter(
+        scope=ProgramPhase.Scope.PARTICIPANT
+    ).order_by("order", "id")
+
+    progress_items = []
     for phase in phases:
-        if (
-            engagement_participant.engagement.mode == Engagement.Mode.INDIVIDUAL
-            and phase.code == "reporte-organizacional"
-        ):
-            continue
-        ParticipantPhase.objects.get_or_create(
+        progress, _ = ParticipantPhase.objects.get_or_create(
             engagement_participant=engagement_participant,
             phase=phase,
         )
+        progress_items.append(progress)
+
+    if progress_items and not any(
+        item.status
+        in {
+            ParticipantPhase.Status.AVAILABLE,
+            ParticipantPhase.Status.IN_PROGRESS,
+            ParticipantPhase.Status.SUBMITTED,
+            ParticipantPhase.Status.UNDER_REVIEW,
+            ParticipantPhase.Status.COMPLETED,
+            ParticipantPhase.Status.REOPENED,
+        }
+        for item in progress_items
+    ):
+        first = progress_items[0]
+        first.status = ParticipantPhase.Status.AVAILABLE
+        first.save(update_fields=("status", "updated_at"))
+
+    ensure_engagement_phases(engagement_participant.engagement)
+
+
+def _participant_next_progress(progress):
+    return (
+        progress.engagement_participant.phase_progress.filter(
+            phase__scope=ProgramPhase.Scope.PARTICIPANT,
+            phase__order__gt=progress.phase.order,
+        )
+        .select_related("phase")
+        .order_by("phase__order", "id")
+        .first()
+    )
+
+
+def _unlock_after_participant_completion(progress):
+    next_progress = _participant_next_progress(progress)
+    while next_progress and next_progress.status == ParticipantPhase.Status.COMPLETED:
+        next_progress = _participant_next_progress(next_progress)
+
+    if next_progress and next_progress.status == ParticipantPhase.Status.PENDING:
+        next_progress.status = ParticipantPhase.Status.AVAILABLE
+        next_progress.save(update_fields=("status", "updated_at"))
+
+    if progress.phase.code == "reporte-individual":
+        engagement = progress.engagement_participant.engagement
+        individual_report_phase = progress.phase
+        incomplete_exists = ParticipantPhase.objects.filter(
+            engagement_participant__engagement=engagement,
+            engagement_participant__is_active=True,
+            phase=individual_report_phase,
+        ).exclude(status=ParticipantPhase.Status.COMPLETED).exists()
+
+        if not incomplete_exists:
+            org_progress = (
+                engagement.phase_progress.filter(
+                    phase__scope=ProgramPhase.Scope.ENGAGEMENT
+                )
+                .select_related("phase")
+                .order_by("phase__order", "id")
+                .first()
+            )
+            if org_progress and org_progress.status == ParticipantPhase.Status.PENDING:
+                org_progress.status = ParticipantPhase.Status.AVAILABLE
+                org_progress.save(update_fields=("status", "updated_at"))
+
+
+@transaction.atomic
+def submit_participant_phase(progress, actor):
+    if (
+        progress.phase.requires_artifact
+        and not progress.artifacts.exists()
+        and progress.phase.code != "rueda-vida"
+    ):
+        raise ValueError("Esta fase requiere al menos un soporte antes de enviarla.")
+
+    progress.started_at = progress.started_at or timezone.now()
+    if progress.phase.requires_review:
+        progress.status = ParticipantPhase.Status.SUBMITTED
+    else:
+        progress.status = ParticipantPhase.Status.COMPLETED
+        progress.completed_at = timezone.now()
+        progress.completed_by = actor
+
+    progress.save(
+        update_fields=(
+            "status",
+            "started_at",
+            "completed_at",
+            "completed_by",
+            "updated_at",
+        )
+    )
+
+    if progress.status == ParticipantPhase.Status.COMPLETED:
+        _unlock_after_participant_completion(progress)
+    return progress
+
+
+@transaction.atomic
+def review_participant_phase(progress, *, actor, approve, note=""):
+    if note:
+        progress.notes = note
+
+    if approve:
+        progress.status = ParticipantPhase.Status.COMPLETED
+        progress.started_at = progress.started_at or timezone.now()
+        progress.completed_at = timezone.now()
+        progress.completed_by = actor
+    else:
+        progress.status = ParticipantPhase.Status.REOPENED
+        progress.completed_at = None
+        progress.completed_by = None
+
+    progress.save(
+        update_fields=(
+            "status",
+            "started_at",
+            "completed_at",
+            "completed_by",
+            "notes",
+            "updated_at",
+        )
+    )
+
+    if approve:
+        _unlock_after_participant_completion(progress)
+    return progress
+
+
+@transaction.atomic
+def submit_engagement_phase(progress, actor):
+    if progress.phase.requires_artifact and not progress.artifacts.exists():
+        raise ValueError("Esta fase requiere al menos un soporte antes de enviarla.")
+
+    progress.started_at = progress.started_at or timezone.now()
+    if progress.phase.requires_review:
+        progress.status = ParticipantPhase.Status.SUBMITTED
+    else:
+        progress.status = ParticipantPhase.Status.COMPLETED
+        progress.completed_at = timezone.now()
+        progress.completed_by = actor
+
+    progress.save(
+        update_fields=(
+            "status",
+            "started_at",
+            "completed_at",
+            "completed_by",
+            "updated_at",
+        )
+    )
+    return progress
+
+
+@transaction.atomic
+def review_engagement_phase(progress, *, actor, approve, note=""):
+    if note:
+        progress.notes = note
+
+    if approve:
+        progress.status = ParticipantPhase.Status.COMPLETED
+        progress.started_at = progress.started_at or timezone.now()
+        progress.completed_at = timezone.now()
+        progress.completed_by = actor
+    else:
+        progress.status = ParticipantPhase.Status.REOPENED
+        progress.completed_at = None
+        progress.completed_by = None
+
+    progress.save(
+        update_fields=(
+            "status",
+            "started_at",
+            "completed_at",
+            "completed_by",
+            "notes",
+            "updated_at",
+        )
+    )
+
+    if approve and not progress.engagement.phase_progress.exclude(
+        status=ParticipantPhase.Status.COMPLETED
+    ).exists():
+        progress.engagement.status = Engagement.Status.COMPLETED
+        progress.engagement.end_date = progress.engagement.end_date or timezone.localdate()
+        progress.engagement.save(update_fields=("status", "end_date", "updated_at"))
+
+    return progress
 
 
 def _assessment_phase(assessment):
@@ -34,7 +241,11 @@ def mark_assessment_phase_started(assessment, actor=None):
     if progress is None or progress.status == ParticipantPhase.Status.COMPLETED:
         return
     changed = []
-    if progress.status == ParticipantPhase.Status.PENDING:
+    if progress.status in {
+        ParticipantPhase.Status.PENDING,
+        ParticipantPhase.Status.AVAILABLE,
+        ParticipantPhase.Status.REOPENED,
+    }:
         progress.status = ParticipantPhase.Status.IN_PROGRESS
         changed.append("status")
     if progress.started_at is None:
@@ -63,6 +274,7 @@ def mark_assessment_phase_completed(assessment, actor=None):
             "updated_at",
         )
     )
+    _unlock_after_participant_completion(progress)
 
 
 @transaction.atomic
@@ -86,11 +298,7 @@ def create_engagement_bundle(*, cleaned_data, actor):
     program = cleaned_data["program"]
     title = (cleaned_data.get("title") or "").strip()
     if not title:
-        context_name = (
-            organization.name
-            if organization is not None
-            else "Individual"
-        )
+        context_name = organization.name if organization is not None else "Individual"
         title = f"{program.name} · {context_name} · {timezone.localdate().year}"
 
     engagement = Engagement(
@@ -106,6 +314,7 @@ def create_engagement_bundle(*, cleaned_data, actor):
     )
     engagement.full_clean()
     engagement.save()
+    ensure_engagement_phases(engagement)
 
     users = list(cleaned_data.get("participants") or [])
     for row in cleaned_data.get("new_participants_json") or []:
