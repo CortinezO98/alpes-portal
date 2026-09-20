@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.utils import timezone
 
-from .models import Engagement, ParticipantPhase
+from .models import Engagement, Organization, ParticipantPhase
 
 
 @transaction.atomic
@@ -76,7 +76,7 @@ def create_engagement_bundle(*, cleaned_data, actor):
         cleaned_data["mode"] == Engagement.Mode.ORGANIZATIONAL
         and cleaned_data.get("create_organization")
     ):
-        organization = Engagement._meta.get_field("organization").remote_field.model.objects.create(
+        organization = Organization.objects.create(
             name=cleaned_data["organization_name"].strip(),
             tax_id=(cleaned_data.get("organization_tax_id") or "").strip(),
             contact_name=(cleaned_data.get("organization_contact_name") or "").strip(),
@@ -86,14 +86,12 @@ def create_engagement_bundle(*, cleaned_data, actor):
     program = cleaned_data["program"]
     title = (cleaned_data.get("title") or "").strip()
     if not title:
-        from django.utils import timezone as django_timezone
-
         context_name = (
             organization.name
             if organization is not None
             else "Individual"
         )
-        title = f"{program.name} · {context_name} · {django_timezone.localdate().year}"
+        title = f"{program.name} · {context_name} · {timezone.localdate().year}"
 
     engagement = Engagement(
         title=title,
