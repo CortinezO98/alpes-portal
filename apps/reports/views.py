@@ -249,12 +249,38 @@ class IndividualProgramReportView(LoginRequiredMixin, TemplateView):
             phase__order__lt=report_phase.phase.order if report_phase else 999,
         ).exclude(status=ParticipantPhase.Status.COMPLETED)
 
+        completed_assessment = (
+            self.participation.assessments.select_related("template")
+            .filter(status=Assessment.Status.COMPLETED)
+            .order_by("-completed_at", "-id")
+            .first()
+        )
+        missing_appreciation_dimensions = []
+        if completed_assessment:
+            appreciated_ids = set(
+                DimensionAppreciation.objects.filter(
+                    assessment=completed_assessment
+                ).values_list("dimension_id", flat=True)
+            )
+            missing_appreciation_dimensions = list(
+                completed_assessment.template.dimensions.exclude(
+                    pk__in=appreciated_ids
+                ).order_by("order", "id")
+            )
+
         context.update(
             participation=self.participation,
             engagement=self.participation.engagement,
             report_phase=report_phase,
-            can_generate_report=bool(report_phase and not blockers.exists()),
+            can_generate_report=bool(
+                report_phase
+                and not blockers.exists()
+                and completed_assessment
+                and not missing_appreciation_dimensions
+            ),
             pending_report_phases=list(blockers.select_related("phase").order_by("phase__order")),
+            completed_assessment=completed_assessment,
+            missing_appreciation_dimensions=missing_appreciation_dimensions,
             report_version=selected,
             report_versions=self.participation.individual_report_versions.all(),
             is_report_admin=_is_report_admin(self.request.user),
@@ -290,7 +316,33 @@ class IndividualProgramReportGenerateView(
         )
         form = IndividualReportVersionForm(request.POST)
         if not form.is_valid():
-            messages.error(request, "Revisa los campos del reporte antes de generar la versión.")
+            messages.error(request, "Completa todos los campos profesionales del reporte.")
+            return redirect("reports:program-individual", pk=participation.pk)
+
+        completed_assessment = (
+            participation.assessments.select_related("template")
+            .filter(status=Assessment.Status.COMPLETED)
+            .order_by("-completed_at", "-id")
+            .first()
+        )
+        if completed_assessment is None:
+            messages.error(
+                request,
+                "La evaluación Rueda de la Vida debe estar completada antes de generar el reporte.",
+            )
+            return redirect("reports:program-individual", pk=participation.pk)
+
+        appreciated_ids = DimensionAppreciation.objects.filter(
+            assessment=completed_assessment
+        ).values_list("dimension_id", flat=True)
+        missing_appreciations = completed_assessment.template.dimensions.exclude(
+            pk__in=appreciated_ids
+        ).exists()
+        if missing_appreciations:
+            messages.error(
+                request,
+                "Completa la apreciación profesional de todas las dimensiones antes de generar el reporte.",
+            )
             return redirect("reports:program-individual", pk=participation.pk)
 
         try:
