@@ -258,6 +258,25 @@ def build_individual_report_pdf(report_version):
             styles["small"],
         ))
 
+        consultant_experience = phase.get("consultant_experience") or {}
+        if consultant_experience:
+            story.append(_p("Registro de la charla", styles["subsection"]))
+            story.append(_p(
+                f"Fecha: {_date(consultant_experience.get('date'))} · Tema: {consultant_experience.get('topic', '')}",
+                styles["small"],
+            ))
+            for label, key in (
+                ("Experiencia y contenido compartido", "consultant_experience"),
+                ("Aprendizajes del participante", "participant_learnings"),
+                ("Compromisos", "commitments"),
+                ("Apreciacion del consultor", "consultant_appreciation"),
+            ):
+                if consultant_experience.get(key):
+                    story.append(_p(
+                        f"<b>{label}:</b> {consultant_experience.get(key)}",
+                        styles["body"],
+                    ))
+
         sessions = phase.get("sessions") or []
         if sessions:
             story.append(_p("Sesiones registradas", styles["subsection"]))
