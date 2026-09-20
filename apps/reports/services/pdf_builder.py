@@ -7,8 +7,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import (
+    CondPageBreak,
     KeepTogether,
-    PageBreak,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
@@ -219,60 +219,84 @@ def _dream_tree(nodes):
     return roots
 
 
-def _append_dream_tree(story, nodes, styles, level=0):
-    indent = min(level, 5) * 6 * mm
-    for node in nodes:
-        type_label = node.get("type_label", "")
-        title = node.get("title", "")
-        description = node.get("description", "")
-        priority = node.get("priority_label", "")
-        target_date = node.get("target_date")
+def _dream_type_color(node_type):
+    return {
+        "DREAM": PRIMARY,
+        "CHALLENGE": ACCENT,
+        "GOAL": colors.HexColor("#527b78"),
+        "MILESTONE": PRIMARY_DARK,
+    }.get(node_type, PRIMARY)
 
-        card_data = [[
-            _p(type_label or "Elemento", styles["label"]),
-            _p(title, styles["subsection"]),
-        ]]
-        if description:
-            card_data.append([
-                _p("", styles["small"]),
-                _p(description, styles["small"]),
-            ])
-        meta_parts = []
-        if priority:
-            meta_parts.append(f"Prioridad: {priority}")
-        if target_date:
-            meta_parts.append(f"Fecha objetivo: {_date(target_date)}")
-        if meta_parts:
-            card_data.append([
-                _p("", styles["small"]),
-                _p(" · ".join(meta_parts), styles["small"]),
-            ])
 
-        table = Table(
-            card_data,
-            colWidths=[24 * mm, max(80 * mm, 136 * mm - indent)],
-            hAlign="LEFT",
-        )
-        table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), SURFACE),
-            ("BOX", (0, 0), (-1, -1), 0.35, BORDER),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 5),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 5),
-            ("TOPPADDING", (0, 0), (-1, -1), 4),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-        ]))
-        wrapper = Table([[Spacer(indent, 1), table]], colWidths=[indent, 160 * mm - indent])
-        wrapper.setStyle(TableStyle([
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 0),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
-            ("TOPPADDING", (0, 0), (-1, -1), 1.5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 1.5),
-        ]))
-        story.append(wrapper)
-        if node.get("children"):
-            _append_dream_tree(story, node["children"], styles, level + 1)
+def _dream_node_card(node, styles, level=0):
+    indent = min(level, 4) * 7 * mm
+    stripe = _dream_type_color(node.get("type"))
+    description = node.get("description") or ""
+    meta_parts = []
+    if node.get("priority_label"):
+        meta_parts.append(f"Prioridad: {node.get('priority_label')}")
+    if node.get("target_date"):
+        raw_date = str(node.get("target_date"))
+        if len(raw_date) >= 10 and raw_date[4:5] == "-":
+            raw_date = f"{raw_date[8:10]}/{raw_date[5:7]}/{raw_date[:4]}"
+        meta_parts.append(f"Fecha objetivo: {raw_date}")
+
+    content = [
+        _p(node.get("type_label") or "Elemento", styles["label"]),
+        _p(node.get("title") or "", styles["subsection"]),
+    ]
+    if description:
+        content.append(_p(description, styles["small"]))
+    if meta_parts:
+        content.append(_p(" · ".join(meta_parts), styles["small"]))
+
+    card = Table(
+        [[Spacer(3 * mm, 1), content]],
+        colWidths=[3 * mm, 151 * mm - indent],
+        hAlign="LEFT",
+    )
+    card.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (0, -1), stripe),
+        ("BACKGROUND", (1, 0), (1, -1), SURFACE),
+        ("BOX", (0, 0), (-1, -1), 0.35, BORDER),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (0, -1), 0),
+        ("RIGHTPADDING", (0, 0), (0, -1), 0),
+        ("TOPPADDING", (0, 0), (0, -1), 0),
+        ("BOTTOMPADDING", (0, 0), (0, -1), 0),
+        ("LEFTPADDING", (1, 0), (1, -1), 7),
+        ("RIGHTPADDING", (1, 0), (1, -1), 7),
+        ("TOPPADDING", (1, 0), (1, -1), 5),
+        ("BOTTOMPADDING", (1, 0), (1, -1), 5),
+    ]))
+
+    wrapper = Table(
+        [[Spacer(indent, 1), card]],
+        colWidths=[indent, 154 * mm - indent],
+        hAlign="LEFT",
+    )
+    wrapper.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 1.2),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 1.2),
+    ]))
+    return wrapper
+
+
+def _dream_branch_flowables(node, styles, level=0):
+    flowables = [_dream_node_card(node, styles, level)]
+    for child in node.get("children") or []:
+        flowables.extend(_dream_branch_flowables(child, styles, level + 1))
+    return flowables
+
+
+def _append_dream_tree(story, nodes, styles):
+    for root in nodes:
+        story.append(CondPageBreak(72 * mm))
+        story.append(KeepTogether(_dream_branch_flowables(root, styles)))
+        story.append(Spacer(1, 2 * mm))
 
 
 def build_individual_report_pdf(report_version):
@@ -327,14 +351,17 @@ def build_individual_report_pdf(report_version):
     for phase in phases:
         if phase.get("code") == "reporte-individual":
             continue
-        story.append(_p(
-            f"{section_number}. {phase.get('name', 'Fase')}",
-            styles["section"],
-        ))
-        story.append(_p(
-            f"Estado: {phase.get('status_label', '')} · Inicio: {_date(phase.get('started_at'))} · Cierre: {_date(phase.get('completed_at'))}",
-            styles["small"],
-        ))
+        story.append(CondPageBreak(34 * mm))
+        story.append(KeepTogether([
+            _p(
+                f"{section_number}. {phase.get('name', 'Fase')}",
+                styles["section"],
+            ),
+            _p(
+                f"Estado: {phase.get('status_label', '')} · Inicio: {_date(phase.get('started_at'))} · Cierre: {_date(phase.get('completed_at'))}",
+                styles["small"],
+            ),
+        ]))
 
         consultant_experience = phase.get("consultant_experience") or {}
         if consultant_experience:
@@ -392,7 +419,7 @@ def build_individual_report_pdf(report_version):
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
             ]))
             story.append(root_box)
-            story.append(Spacer(1, 2 * mm))
+            story.append(Spacer(1, 3 * mm))
             _append_dream_tree(story, _dream_tree(nodes), styles)
 
         goals = phase.get("goals") or []
@@ -430,7 +457,7 @@ def build_individual_report_pdf(report_version):
                 ))
         section_number += 1
 
-    story.append(PageBreak())
+    story.append(CondPageBreak(58 * mm))
     story.append(_p(f"{section_number}. Apreciacion integral", styles["section"]))
     story.append(_p(report_version.integral_appreciation, styles["body"]))
     story.append(_p(f"{section_number + 1}. Recomendaciones", styles["section"]))
