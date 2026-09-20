@@ -1,0 +1,91 @@
+{% if progress.phase.code == "conversaciones" %}
+<section class="phase-card phase-special-card animate__animated animate__fadeInUp motion-card">
+    <div class="phase-card-head">
+        <div class="phase-card-icon"><i class="bi bi-chat-heart"></i></div>
+        <div>
+            <h2>Conversaciones transformadoras</h2>
+            <p>Registra cada encuentro como una sesión independiente para conservar hallazgos, compromisos y evolución.</p>
+        </div>
+    </div>
+
+    {% if progress.status != "PENDING" and progress.status != "COMPLETED" %}
+    <details class="special-create-panel" {% if not transformation_sessions %}open{% endif %}>
+        <summary><i class="bi bi-plus-circle"></i> Registrar nueva sesión</summary>
+        <form method="post" action="{% url 'programs:transformation-session-create' progress.pk %}" class="special-form">
+            {% csrf_token %}
+            <div class="special-form-grid">
+                <div>
+                    <label class="form-label">{{ transformation_form.session_date.label }}</label>
+                    {{ transformation_form.session_date }}
+                </div>
+                <div>
+                    <label class="form-label">{{ transformation_form.title.label }}</label>
+                    {{ transformation_form.title }}
+                </div>
+                <div class="special-span-two">
+                    <label class="form-label">{{ transformation_form.topics.label }}</label>
+                    {{ transformation_form.topics }}
+                </div>
+                <div>
+                    <label class="form-label">{{ transformation_form.findings.label }}</label>
+                    {{ transformation_form.findings }}
+                </div>
+                <div>
+                    <label class="form-label">{{ transformation_form.commitments.label }}</label>
+                    {{ transformation_form.commitments }}
+                </div>
+                {% if is_program_admin %}
+                <div class="special-span-two">
+                    <label class="form-label">{{ transformation_form.consultant_appreciation.label }}</label>
+                    {{ transformation_form.consultant_appreciation }}
+                </div>
+                {% endif %}
+            </div>
+            <div class="special-form-actions">
+                <button class="button button-primary" type="submit"><i class="bi bi-check2"></i> Guardar sesión</button>
+            </div>
+        </form>
+    </details>
+    {% endif %}
+
+    <div class="session-timeline">
+        {% for session in transformation_sessions %}
+            <article class="session-card">
+                <div class="session-date">
+                    <strong>{{ session.session_date|date:"d" }}</strong>
+                    <span>{{ session.session_date|date:"M Y" }}</span>
+                </div>
+                <div class="session-content">
+                    <div class="session-head">
+                        <div>
+                            <span>Sesión {{ forloop.counter|stringformat:"02d" }}</span>
+                            <h3>{{ session.title }}</h3>
+                        </div>
+                        <small>{{ session.created_by.email }}</small>
+                    </div>
+                    {% if session.topics %}
+                    <div class="session-block"><strong>Temas abordados</strong><p>{{ session.topics|linebreaksbr }}</p></div>
+                    {% endif %}
+                    <div class="session-columns">
+                        {% if session.findings %}
+                        <div class="session-block"><strong>Hallazgos</strong><p>{{ session.findings|linebreaksbr }}</p></div>
+                        {% endif %}
+                        {% if session.commitments %}
+                        <div class="session-block"><strong>Compromisos</strong><p>{{ session.commitments|linebreaksbr }}</p></div>
+                        {% endif %}
+                    </div>
+                    {% if session.consultant_appreciation and is_program_admin %}
+                    <div class="session-consultant-note"><i class="bi bi-person-check"></i><div><strong>Apreciación del consultor</strong><p>{{ session.consultant_appreciation|linebreaksbr }}</p></div></div>
+                    {% endif %}
+                </div>
+            </article>
+        {% empty %}
+            <div class="phase-empty-state">
+                <i class="bi bi-chat-square-heart"></i>
+                <strong>Aún no hay conversaciones registradas</strong>
+                <span>La primera sesión aparecerá aquí como inicio de la línea de tiempo.</span>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
