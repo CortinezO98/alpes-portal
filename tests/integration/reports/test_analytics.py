@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 from django.core.management import call_command
 from django.urls import reverse
@@ -13,6 +15,7 @@ from apps.programs.models import (
     ServiceProgram,
 )
 from apps.programs.services import ensure_participant_phases
+from apps.reports.services.pdf_builder import build_individual_report_pdf
 from apps.reports.models import (
     DimensionAppreciation,
     IndividualReportVersion,
@@ -450,3 +453,147 @@ def test_admin_can_download_organizational_report_pdf(client, report_setup):
     assert response["Content-Type"] == "application/pdf"
     assert response.content.startswith(b"%PDF")
     assert "attachment;" in response["Content-Disposition"]
+
+
+
+def test_individual_pdf_renders_complete_roadmap_snapshot():
+    report = SimpleNamespace(
+        version=3,
+        created_at=timezone.now(),
+        executive_summary="Resumen con visión integral.",
+        integral_appreciation="Apreciación integral del proceso.",
+        recommendations="Mantener hábitos y seguimiento.",
+        conclusions="La hoja de ruta queda consolidada.",
+        snapshot={
+            "participant": {
+                "name": "Participante Demo",
+                "email": "demo@example.com",
+            },
+            "engagement": {
+                "organization": "Empresa Demo",
+                "program": "Jubilación Plena",
+                "title": "Acompañamiento integral",
+                "consultant": "Consultor Demo",
+            },
+            "progress_percent": 100,
+            "assessment": {
+                "report": {
+                    "dimensions": [
+                        {
+                            "name": "Propósito",
+                            "average": 8.5,
+                            "band_label": "Verde",
+                            "appreciation": {
+                                "interpretation": "Fortaleza consolidada."
+                            },
+                        }
+                    ]
+                }
+            },
+            "phases": [
+                {
+                    "code": "charla-inicial",
+                    "name": "Charla y experiencia del consultor",
+                    "status_label": "Completada",
+                    "started_at": "2026-09-01T09:00:00",
+                    "completed_at": "2026-09-01T10:00:00",
+                    "consultant_experience": {
+                        "date": "2026-09-01",
+                        "topic": "Nueva etapa",
+                        "consultant_experience": "Experiencia compartida.",
+                        "participant_learnings": "Aprendizajes identificados.",
+                        "commitments": "Compromiso personal.",
+                        "consultant_appreciation": "Participación activa.",
+                    },
+                    "sessions": [],
+                    "nodes": [],
+                    "goals": [],
+                    "comments": [
+                        {
+                            "author": "Consultor Demo",
+                            "body": "Buena disposición al proceso.",
+                        }
+                    ],
+                    "artifacts": [
+                        {
+                            "name": "charla.pdf",
+                            "description": "Soporte de la sesión",
+                        }
+                    ],
+                },
+                {
+                    "code": "conversaciones",
+                    "name": "Conversaciones transformadoras",
+                    "status_label": "Completada",
+                    "started_at": "2026-09-02T09:00:00",
+                    "completed_at": "2026-09-02T10:00:00",
+                    "sessions": [
+                        {
+                            "title": "Adaptación al cambio",
+                            "date": "2026-09-02",
+                            "topics": "Propósito y transición",
+                            "findings": "Nuevas prioridades.",
+                            "commitments": "Definir acciones.",
+                            "consultant_appreciation": "Avance positivo.",
+                        }
+                    ],
+                    "nodes": [],
+                    "goals": [],
+                    "comments": [],
+                    "artifacts": [],
+                },
+                {
+                    "code": "mapa-retos-suenos",
+                    "name": "Mapa de retos y sueños",
+                    "status_label": "Completada",
+                    "started_at": "2026-09-03T09:00:00",
+                    "completed_at": "2026-09-03T10:00:00",
+                    "sessions": [],
+                    "nodes": [
+                        {
+                            "type_label": "Sueño",
+                            "title": "Viajar",
+                            "description": "Conocer nuevos destinos",
+                        }
+                    ],
+                    "goals": [],
+                    "comments": [],
+                    "artifacts": [],
+                },
+                {
+                    "code": "plan-accion",
+                    "name": "Plan de acción",
+                    "status_label": "Completada",
+                    "started_at": "2026-09-04T09:00:00",
+                    "completed_at": "2026-09-04T10:00:00",
+                    "sessions": [],
+                    "nodes": [],
+                    "goals": [
+                        {
+                            "title": "Estabilidad financiera",
+                            "description": "Crear un fondo de retiro.",
+                            "items": [
+                                {
+                                    "action": "Crear presupuesto mensual",
+                                    "status_label": "En progreso",
+                                    "indicator": "Presupuesto documentado",
+                                }
+                            ],
+                        }
+                    ],
+                    "comments": [],
+                    "artifacts": [],
+                },
+                {
+                    "code": "reporte-individual",
+                    "name": "Reporte individual",
+                    "status_label": "Completada",
+                },
+            ],
+        },
+    )
+
+    pdf = build_individual_report_pdf(report)
+
+    assert pdf.startswith(b"%PDF")
+    assert len(pdf) > 1000
