@@ -200,6 +200,33 @@ class DimensionAppreciationUpdateView(
 
 
 
+def _build_dream_tree(nodes):
+    by_id = {
+        node.get("id"): {**node, "children": []}
+        for node in (nodes or [])
+        if node.get("id") is not None
+    }
+    roots = []
+    for node in by_id.values():
+        parent_id = node.get("parent_id")
+        parent = by_id.get(parent_id)
+        if parent is not None and parent is not node:
+            parent["children"].append(node)
+        else:
+            roots.append(node)
+    return roots
+
+
+def _report_dream_tree(report_version):
+    if report_version is None:
+        return []
+    snapshot = report_version.snapshot or {}
+    for phase in snapshot.get("phases") or []:
+        if phase.get("code") == "mapa-retos-suenos":
+            return _build_dream_tree(phase.get("nodes") or [])
+    return []
+
+
 def _is_report_admin(user):
     return bool(
         user.is_authenticated
@@ -284,6 +311,7 @@ class IndividualProgramReportView(LoginRequiredMixin, TemplateView):
             completed_assessment=completed_assessment,
             missing_appreciation_dimensions=missing_appreciation_dimensions,
             report_version=selected,
+            report_dream_tree=_report_dream_tree(selected),
             report_versions=self.participation.individual_report_versions.all(),
             is_report_admin=_is_report_admin(self.request.user),
             report_form=IndividualReportVersionForm(
