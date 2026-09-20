@@ -14,9 +14,14 @@
             <i class="bi bi-arrow-left"></i> Volver al acompañamiento
         </a>
         {% if report_version %}
-            <button class="button button-secondary" type="button" onclick="window.print()">
-                <i class="bi bi-file-earmark-pdf"></i> Imprimir / Guardar PDF
-            </button>
+            <div class="final-report-toolbar-actions">
+                <a class="button button-primary" href="{% url 'reports:program-organizational-pdf' engagement.pk report_version.version %}">
+                    <i class="bi bi-download"></i> Descargar PDF
+                </a>
+                <button class="button button-secondary" type="button" onclick="window.print()">
+                    <i class="bi bi-printer"></i> Imprimir
+                </button>
+            </div>
         {% endif %}
     </div>
 
