@@ -539,3 +539,61 @@ def test_rueda_phase_does_not_guess_when_multiple_completed_assessments_exist(
 
     rueda.refresh_from_db()
     assert rueda.status == ParticipantPhase.Status.IN_PROGRESS
+
+
+@pytest.mark.django_db
+def test_action_plan_lists_and_imports_nodes_from_dream_map(client, phase_views_setup):
+    admin, _, _, _, membership = phase_views_setup
+    dream_map = membership.phase_progress.get(phase__code="mapa-retos-suenos")
+    dream_map.status = ParticipantPhase.Status.COMPLETED
+    dream_map.save(update_fields=("status", "updated_at"))
+
+    node = DreamChallengeNode.objects.create(
+        participant_phase=dream_map,
+        node_type=DreamChallengeNode.NodeType.GOAL,
+        title="Crear fondo de viajes",
+        description="Ahorrar mensualmente para financiar viajes.",
+        priority=DreamChallengeNode.Priority.HIGH,
+        target_date="2027-06-30",
+        order=1,
+        created_by=admin,
+    )
+
+    action_plan = make_available(membership, "plan-accion")
+    client.force_login(admin)
+
+    detail = client.get(
+        reverse("programs:participant-phase-detail", kwargs={"pk": action_plan.pk})
+    )
+    assert detail.status_code == 200
+    assert b"Crear fondo de viajes" in detail.content
+    assert b"Agregar al plan" in detail.content
+
+    url = reverse(
+        "programs:action-goal-import-map",
+        kwargs={"pk": action_plan.pk, "node_pk": node.pk},
+    )
+    response = client.post(url)
+    assert response.status_code == 302
+
+    goal = ActionPlanGoal.objects.get(
+        participant_phase=action_plan,
+        title="Crear fondo de viajes",
+    )
+    assert goal.description == "Ahorrar mensualmente para financiar viajes."
+    assert str(goal.target_date) == "2027-06-30"
+
+    action_plan.refresh_from_db()
+    assert action_plan.status == ParticipantPhase.Status.IN_PROGRESS
+
+    response = client.post(url)
+    assert response.status_code == 302
+    assert ActionPlanGoal.objects.filter(
+        participant_phase=action_plan,
+        title="Crear fondo de viajes",
+    ).count() == 1
+
+    detail = client.get(
+        reverse("programs:participant-phase-detail", kwargs={"pk": action_plan.pk})
+    )
+    assert b"Ya agregado" in detail.content
