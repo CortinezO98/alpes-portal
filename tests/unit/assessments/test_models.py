@@ -23,8 +23,8 @@ def test_assessment_domain_can_be_created():
         password="SecurePass123!",
     )
     template = AssessmentTemplate.objects.create(
-        name="ALPES Jubilación Plena",
-        slug="alpes-jubilacion-plena",
+        name="Plantilla de dominio de prueba",
+        slug="assessment-domain-test",
     )
     dimension = Dimension.objects.create(
         template=template,
