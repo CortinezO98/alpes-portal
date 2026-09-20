@@ -338,3 +338,115 @@ def test_admin_generates_aggregated_organizational_report(client, report_setup):
     assert "general_answers" not in version.snapshot
     engagement.refresh_from_db()
     assert engagement.status == Engagement.Status.COMPLETED
+
+
+@pytest.mark.django_db
+def test_participant_can_download_own_individual_report_pdf(client, report_setup):
+    superadmin, admin, participant, completed = report_setup
+    program = ServiceProgram.objects.get(code="jubilacion-plena")
+    engagement = Engagement.objects.create(
+        title="PDF individual",
+        program=program,
+        mode=Engagement.Mode.INDIVIDUAL,
+        consultant=superadmin,
+        status=Engagement.Status.COMPLETED,
+    )
+    participation = EngagementParticipant.objects.create(
+        engagement=engagement,
+        participant=participant,
+    )
+    ensure_participant_phases(participation)
+
+    version = IndividualReportVersion.objects.create(
+        engagement_participant=participation,
+        version=1,
+        executive_summary="Resumen ejecutivo.",
+        integral_appreciation="Apreciación integral.",
+        recommendations="Recomendaciones.",
+        conclusions="Conclusiones.",
+        snapshot={
+            "participant": {
+                "name": participant.email,
+                "email": participant.email,
+            },
+            "engagement": {
+                "title": engagement.title,
+                "program": program.name,
+                "organization": "",
+                "consultant": superadmin.email,
+            },
+            "progress_percent": 100,
+            "assessment": None,
+            "phases": [],
+        },
+        created_by=admin,
+    )
+
+    client.force_login(participant)
+    response = client.get(
+        reverse(
+            "reports:program-individual-pdf",
+            kwargs={"pk": participation.pk, "version": version.version},
+        )
+    )
+
+    assert response.status_code == 200
+    assert response["Content-Type"] == "application/pdf"
+    assert response.content.startswith(b"%PDF")
+    assert "attachment;" in response["Content-Disposition"]
+
+
+@pytest.mark.django_db
+def test_admin_can_download_organizational_report_pdf(client, report_setup):
+    superadmin, admin, participant, _ = report_setup
+    program = ServiceProgram.objects.get(code="jubilacion-plena")
+    organization = Organization.objects.create(name="Empresa PDF")
+    engagement = Engagement.objects.create(
+        title="PDF organizacional",
+        program=program,
+        mode=Engagement.Mode.ORGANIZATIONAL,
+        organization=organization,
+        consultant=superadmin,
+        status=Engagement.Status.COMPLETED,
+    )
+
+    version = OrganizationalReportVersion.objects.create(
+        engagement=engagement,
+        version=1,
+        executive_summary="Resumen ejecutivo.",
+        organizational_appreciation="Apreciación organizacional.",
+        recommendations="Recomendaciones.",
+        conclusions="Conclusiones.",
+        snapshot={
+            "engagement": {
+                "title": engagement.title,
+                "program": program.name,
+                "organization": organization.name,
+                "consultant": superadmin.email,
+            },
+            "participants": {
+                "total": 1,
+                "completed_assessments": 1,
+                "completed_individual_reports": 1,
+            },
+            "dimension_averages": [
+                {"name": "Propósito", "average": 8.5, "participants": 1}
+            ],
+            "phase_summary": [],
+            "privacy_note": "Reporte agregado sin respuestas abiertas identificables.",
+        },
+        created_by=admin,
+    )
+
+    client.force_login(admin)
+    response = client.get(
+        reverse(
+            "reports:program-organizational-pdf",
+            kwargs={"pk": engagement.pk, "version": version.version},
+        )
+    )
+
+    assert response.status_code == 200
+    assert response["Content-Type"] == "application/pdf"
+    assert response.content.startswith(b"%PDF")
+    assert "attachment;" in response["Content-Disposition"]
