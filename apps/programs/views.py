@@ -511,12 +511,13 @@ class ParticipantPhaseArtifactCreateView(LoginRequiredMixin, View):
             )
             return redirect("programs:participant-phase-detail", pk=progress.pk)
 
+        uploaded_file = form.cleaned_data["file"]
         artifact = form.save(commit=False)
         artifact.participant_phase = progress
         artifact.uploaded_by = request.user
-        artifact.original_name = artifact.file.name
-        artifact.content_type = getattr(artifact.file, "content_type", "") or ""
-        artifact.size_bytes = artifact.file.size
+        artifact.original_name = uploaded_file.name
+        artifact.content_type = getattr(uploaded_file, "content_type", "") or ""
+        artifact.size_bytes = uploaded_file.size
         artifact.save()
 
         if progress.status in {
@@ -638,12 +639,13 @@ class EngagementPhaseArtifactCreateView(ProgramAdminMixin, View):
         if not progress.phase.allows_artifacts:
             messages.error(request, "Esta fase no admite soportes.")
         elif form.is_valid():
+            uploaded_file = form.cleaned_data["file"]
             artifact = form.save(commit=False)
             artifact.engagement_phase = progress
             artifact.uploaded_by = request.user
-            artifact.original_name = artifact.file.name
-            artifact.content_type = getattr(artifact.file, "content_type", "") or ""
-            artifact.size_bytes = artifact.file.size
+            artifact.original_name = uploaded_file.name
+            artifact.content_type = getattr(uploaded_file, "content_type", "") or ""
+            artifact.size_bytes = uploaded_file.size
             artifact.save()
             if progress.status in {
                 ParticipantPhase.Status.AVAILABLE,
