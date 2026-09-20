@@ -1,0 +1,145 @@
+{% extends "base/dashboard.html" %}
+{% load static %}
+
+{% block title %}Hoja de ruta | ALPES{% endblock %}
+
+{% block dashboard_extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/programs.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="roadmap-page">
+    <div class="roadmap-toolbar no-print">
+        {% if is_program_admin %}
+            <a class="page-back-link" href="{% url 'programs:engagement-detail' participation.engagement.pk %}">
+                <i class="bi bi-arrow-left"></i> Volver al acompañamiento
+            </a>
+        {% else %}
+            <a class="page-back-link" href="{% url 'programs:my-engagement-detail' participation.pk %}">
+                <i class="bi bi-arrow-left"></i> Volver a mi proceso
+            </a>
+        {% endif %}
+        <button class="button button-primary" type="button" onclick="window.print()">
+            <i class="bi bi-printer"></i> Imprimir / Guardar PDF
+        </button>
+    </div>
+
+    <section class="roadmap-cover">
+        <span class="roadmap-brand">ALPES</span>
+        <p class="dashboard-eyebrow">Hoja de ruta de acompañamiento</p>
+        <h1>{{ participation.engagement.program.name }}</h1>
+        <p class="roadmap-process">{{ participation.engagement.title }}</p>
+
+        <dl class="roadmap-meta">
+            <div>
+                <dt>Participante</dt>
+                <dd>
+                    {% if participation.participant.get_full_name %}
+                        {{ participation.participant.get_full_name }}
+                    {% else %}
+                        {{ participation.participant.email }}
+                    {% endif %}
+                </dd>
+            </div>
+            <div>
+                <dt>Correo</dt>
+                <dd>{{ participation.participant.email }}</dd>
+            </div>
+            <div>
+                <dt>Organización</dt>
+                <dd>{{ participation.engagement.organization.name|default:"Acompañamiento individual" }}</dd>
+            </div>
+            <div>
+                <dt>Consultor</dt>
+                <dd>{{ participation.engagement.consultant.email }}</dd>
+            </div>
+            <div>
+                <dt>Avance</dt>
+                <dd>{{ participation.progress_percent }}%</dd>
+            </div>
+            <div>
+                <dt>Estado</dt>
+                <dd>{{ participation.engagement.get_status_display }}</dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="roadmap-progress-summary">
+        <div>
+            <span>Avance general</span>
+            <strong>{{ participation.progress_percent }}%</strong>
+        </div>
+        <div class="progress-track roadmap-progress-track">
+            <span style="width: {{ participation.progress_percent }}%"></span>
+        </div>
+    </section>
+
+    <section class="roadmap-phases">
+        {% for progress in participation.phase_progress.all %}
+            <article class="roadmap-phase">
+                <div class="roadmap-phase-number">{{ progress.phase.order|stringformat:"02d" }}</div>
+                <div class="roadmap-phase-body">
+                    <div class="roadmap-phase-head">
+                        <div>
+                            <span>Fase {{ progress.phase.order|stringformat:"02d" }}</span>
+                            <h2>{{ progress.phase.name }}</h2>
+                        </div>
+                        <span class="phase-status phase-status-{{ progress.status|lower }}">{{ progress.get_status_display }}</span>
+                    </div>
+
+                    <dl class="roadmap-phase-dates">
+                        <div><dt>Inicio</dt><dd>{{ progress.started_at|date:"d/m/Y H:i"|default:"Pendiente" }}</dd></div>
+                        <div><dt>Finalización</dt><dd>{{ progress.completed_at|date:"d/m/Y H:i"|default:"Pendiente" }}</dd></div>
+                    </dl>
+
+                    {% if progress.artifacts.all %}
+                        <div class="roadmap-block">
+                            <h3>Soportes</h3>
+                            <ul>
+                                {% for artifact in progress.artifacts.all %}
+                                    <li>
+                                        <strong>{{ artifact.original_name }}</strong>
+                                        <span>{{ artifact.created_at|date:"d/m/Y H:i" }} · {{ artifact.uploaded_by.email }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if progress.comments.all %}
+                        <div class="roadmap-block">
+                            <h3>Apreciaciones</h3>
+                            <div class="roadmap-comment-list">
+                                {% for comment in progress.comments.all %}
+                                    {% if not comment.is_internal or is_program_admin %}
+                                        <div class="roadmap-comment">
+                                            <div>
+                                                <strong>{{ comment.author.email }}</strong>
+                                                {% if comment.is_internal %}<span>Nota interna</span>{% endif %}
+                                                <time>{{ comment.created_at|date:"d/m/Y H:i" }}</time>
+                                            </div>
+                                            <p>{{ comment.body|linebreaksbr }}</p>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if progress.notes %}
+                        <div class="roadmap-block roadmap-review">
+                            <h3>Retroalimentación de revisión</h3>
+                            <p>{{ progress.notes|linebreaksbr }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </article>
+        {% endfor %}
+    </section>
+
+    <footer class="roadmap-footer">
+        <span>ALPES · {{ participation.engagement.program.name }}</span>
+        <span>Hoja de ruta generada desde la trazabilidad del proceso.</span>
+    </footer>
+</div>
+{% endblock %}
