@@ -568,6 +568,7 @@ def test_action_plan_lists_and_imports_nodes_from_dream_map(client, phase_views_
     assert detail.status_code == 200
     assert b"Crear fondo de viajes" in detail.content
     assert b"Agregar al plan" in detail.content
+    assert b"Traer elementos registrados al plan" in detail.content
 
     url = reverse(
         "programs:action-goal-import-map",
@@ -598,6 +599,7 @@ def test_action_plan_lists_and_imports_nodes_from_dream_map(client, phase_views_
         reverse("programs:participant-phase-detail", kwargs={"pk": action_plan.pk})
     )
     assert b"Ya agregado" in detail.content
+    assert b"Mapa de retos y sue" in detail.content
 
 
 @pytest.mark.django_db
