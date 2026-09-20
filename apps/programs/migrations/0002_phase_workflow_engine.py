@@ -12,7 +12,6 @@ def configure_phase_engine(apps, schema_editor):
 
     participant_codes_requiring_support = {
         "charla-inicial",
-        "rueda-vida",
         "conversaciones",
         "mapa-retos-suenos",
         "plan-accion",
