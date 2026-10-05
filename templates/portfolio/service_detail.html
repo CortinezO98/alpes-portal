@@ -97,7 +97,7 @@
                 <p>{% if service.number == "03" %}La mentoría y la consultoría se orientan a conversaciones y procesos concretos de cultura, desempeño, cambio y gestión de talento humano.{% else %}{{ service.description }}{% endif %}</p>
                 <div class="service-audience">
                     <span>¿Para quién?</span>
-                    <p>{% if service.number == "02" %}Personas pensionadas, próximas a pensionarse y organizaciones que desean acompañar esta transición con una mirada humana e integral.{% elif service.number == "03" %}Para áreas de talento humano y bienestar del personal que buscan consolidar sus capacidades y avanzar en sus prioridades estratégicas.{% elif service.number == "04" %}Para personas y equipos de trabajo de organizaciones que buscan avanzar con mayor propósito, bienestar y equilibrio.{% else %}{{ service.audience }}{% endif %}</p>
+                    <p>{% if service.number == "02" %}Personas pensionadas, próximas a pensionarse y organizaciones que desean acompañar esta transición con una mirada humana e integral.{% elif service.number == "03" %}Para áreas de talento humano y bienestar del personal que buscan consolidar sus capacidades y avanzar en sus prioridades estratégicas.{% elif service.number == "04" %}Dirigido a personas que desean comprender su situación actual en las diferentes áreas de la vida, definir retos y sueños y trazar caminos de acción para construir una vida con propósito, bienestar y equilibrio.{% else %}{{ service.audience }}{% endif %}</p>
                 </div>
                 {% if service.number == "01" %}
                     <section class="service-leadership-outcomes" aria-labelledby="leadership-outcomes-title">
