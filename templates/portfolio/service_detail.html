@@ -52,7 +52,7 @@
             <div class="animate__animated animate__fadeInUp motion-soft">
                 <a class="service-back-link" href="{% url 'portfolio:home' %}#servicios">← Portafolio de servicios</a>
                 <h1>{% if service.number == "01" %}Acompañamiento al Liderazgo de la Organización{% else %}{{ service.title }}{% endif %}</h1>
-                <p class="service-hero-lead">{% if service.number == "02" %}Un programa dirigido a personas pensionadas y próximas a pensionarse, así como a organizaciones que desean acompañar esta transición con una mirada humana e integral, hacia una nueva etapa de vida con propósito, bienestar y sentido.{% elif service.number == "04" %}Un acompañamiento personal para comprender tus áreas de vida, definir retos y sueños, y convertirlos en caminos concretos de acción.{% else %}{{ service.lead }}{% endif %}</p>
+                <p class="service-hero-lead">{% if service.number == "02" %}Un programa dirigido a personas pensionadas y próximas a pensionarse, así como a organizaciones que desean acompañar esta transición con una mirada humana e integral, hacia una nueva etapa de vida con propósito, bienestar y sentido.{% elif service.number == "04" %}Un proceso de acompañamiento para comprender el momento actual, definir retos y sueños y convertirlos en acciones concretas.{% else %}{{ service.lead }}{% endif %}</p>
                 <div class="public-hero-actions">
                     <a
                         class="public-button public-button-primary"
@@ -97,7 +97,7 @@
                 <p>{% if service.number == "03" %}La mentoría y la consultoría se orientan a conversaciones y procesos concretos de cultura, desempeño, cambio y gestión de talento humano.{% else %}{{ service.description }}{% endif %}</p>
                 <div class="service-audience">
                     <span>¿Para quién?</span>
-                    <p>{% if service.number == "02" %}Personas pensionadas, próximas a pensionarse y organizaciones que desean acompañar esta transición con una mirada humana e integral.{% elif service.number == "03" %}Para áreas de talento humano y bienestar del personal que buscan consolidar sus capacidades y avanzar en sus prioridades estratégicas.{% elif service.number == "04" %}Para personas que desean comprender su momento actual, definir un futuro deseado y convertirlo en acciones concretas.{% else %}{{ service.audience }}{% endif %}</p>
+                    <p>{% if service.number == "02" %}Personas pensionadas, próximas a pensionarse y organizaciones que desean acompañar esta transición con una mirada humana e integral.{% elif service.number == "03" %}Para áreas de talento humano y bienestar del personal que buscan consolidar sus capacidades y avanzar en sus prioridades estratégicas.{% elif service.number == "04" %}Para personas y equipos de trabajo de organizaciones que buscan avanzar con mayor propósito, bienestar y equilibrio.{% else %}{{ service.audience }}{% endif %}</p>
                 </div>
                 {% if service.number == "01" %}
                     <section class="service-leadership-outcomes" aria-labelledby="leadership-outcomes-title">
