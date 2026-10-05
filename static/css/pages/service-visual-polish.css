@@ -24,6 +24,43 @@
     pointer-events: none;
 }
 .service-hero-grid { position: relative; z-index: 1; }
+
+/* Hitos del acróstico: dan identidad propia a cada etapa del Modelo ALPES. */
+.service-page--alpes .service-process-list li {
+    grid-template-columns: 4.7rem minmax(0, 1fr);
+    gap: 1rem;
+}
+
+.service-page--alpes .service-process-list > li > span {
+    display: grid;
+    width: 2.8rem;
+    height: 2.8rem;
+    place-items: center;
+    border: 1px solid rgba(23, 107, 104, .24);
+    border-radius: 50%;
+    background: var(--color-primary-700);
+    box-shadow: 0 .45rem .9rem rgba(11, 79, 74, .14);
+    color: #f7f4ec;
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1;
+}
+
+@media (max-width: 36rem) {
+    .service-page--alpes .service-process-list li {
+        grid-template-columns: 3.8rem minmax(0, 1fr);
+        gap: .8rem;
+    }
+
+    .service-page--alpes .service-process-list > li > span {
+        width: 2.4rem;
+        height: 2.4rem;
+        font-size: 1.18rem;
+    }
+}
+
 .service-back-link,
 .service-home-link {
     background-image: linear-gradient(currentColor, currentColor);
